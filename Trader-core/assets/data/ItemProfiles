@@ -1,4 +1,0 @@
-id:steak;sprite:01'steak;value:4;food:5;
-"id:carrots;sprite:02'carrots;value:2;food:4;farmable:9,10,4,6;
-"id:beer;sprite:03'beer;value:4;food:2;
-"id:coin_bag;sprite:04'coinBag;coins:10;

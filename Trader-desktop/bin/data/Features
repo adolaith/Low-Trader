@@ -1,5 +1,0 @@
-#How to use:
-	id;dmg,range,duration,aoe; spell type/tags
-END_COMMENT#
-id:lamp;sprite:22'lamp,;deco:wall;
-"id:window;sprite:31'window,32'window_s;deco:wall;mask:windowMask_se,windowMask_sw;
