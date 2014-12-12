@@ -1,0 +1,33 @@
+#high priority
+*Selector
+	>RegulatorDecorator:5000f
+	*Sequence
+		-FindItem:com.ado.trader.items.FoodItem
+		-WalkToTarget
+		-Eat
+	!
+!
+#medium priority
+*Selector
+	#find and attack human
+	>RegulatorDecorator:20000f
+	*Sequence
+		-TargetHuman
+		>LoopDecorator
+		*Sequence
+			>CheckTargetsLocation
+			-WalkToTarget
+			-AttackTarget:2
+		!
+	!
+!
+#low priority
+*Selector
+	>RandomDecorator:25
+	-Idle
+	>RandomDecorator:25
+	*Sequence
+		-TargetRandomLocation:4
+		-WalkToTarget
+	!
+!

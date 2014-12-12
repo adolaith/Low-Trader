@@ -1,0 +1,43 @@
+#high priority
+*Selector
+	#hungry
+	>CheckHunger:0.5f
+	*Selector
+		>CheckInventory:com.ado.trader.items.FoodItem	
+		-Eat
+		*Sequence
+			-FindItem:com.ado.trader.items.FoodItem
+			>CheckTargetItem
+			-WalkToTarget
+			-PickUpItem
+			-Eat
+		!
+	!
+	>RegulatorDecorator:20000f
+	-FindHome
+!
+#medium priority
+*Selector
+	#pick stuff up
+	>CheckInventoryFull
+	*Sequence
+		-FindRandomItem
+		-WalkToTarget
+		-PickUpItem
+	!
+	#empty inventory
+	>InverterDeco
+	>CheckInventoryFull
+	*Sequence
+		-FindContainer
+		-WalkToTarget
+		-StoreInContainer
+	!
+!
+#low priority
+*Selector
+	#40% chance to idle every 2 secs
+	>RegulatorDecorator:2000f
+	>RandomDecorator:40
+	-Idle
+!

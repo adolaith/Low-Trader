@@ -1,0 +1,23 @@
+#How to use:
+		entity ID, group; COMPONENTS;
+		groups: 0-default, 1-decoration, 2-valuable, 3-food
+
+END_COMMENT#
+id:21;sprite:03'woodWall_sw,04'woodWall_se;tags:wall;
+"id:30;sprite:07'sign_sw,;
+"id:31;animation:human;ai:basicAi;movement:2;attributes:health,hunger,money;inventory:4;tags:human;
+"id:35;sprite:11'bed,;area:-1,0;
+"id:36;sprite:13'longTable,;area:-1,0;
+"id:37;sprite:15'counter,;
+"id:38;sprite:16'fence_sw,17'fence_se;tags:wall;
+"id:39;sprite:18'chair_s,19'chair_n;
+"id:40;sprite:20'table,;
+"id:43;sprite:23'barrel,;inventory:5;tags:container;
+"id:44;sprite:24'crate,;inventory:10;tags:container;
+"id:45;sprite:25'chest,;inventory:5;tags:container;
+"id:46;sprite:26'bucket,;inventory:1;tags:container;
+"id:47;sprite:27'smallTable,;
+"id:48;sprite:28'longCounter,;inventory:8;tags:container;
+"id:49;sprite:29'oven,;
+"id:50;sprite:30'smallDrawers,;
+"id:51;animation:dog;ai:dog;movement:3;tags:animal;
