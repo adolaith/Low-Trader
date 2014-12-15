@@ -74,6 +74,7 @@ public class FarmWindow extends BasicWindow {
 		
 		final SelectBox<String> box = new SelectBox<String>(styleSelect);
 		Array<String> list = new Array<String>();
+		
 		for(String s: game.getWorld().getSystem(FarmSystem.class).getProfiles().keys()){
 			list.add(s);
 		}

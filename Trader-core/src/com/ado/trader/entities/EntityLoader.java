@@ -17,6 +17,7 @@ import com.ado.trader.items.Item;
 import com.ado.trader.map.HomeZone;
 import com.ado.trader.map.LayerGroup;
 import com.ado.trader.map.WorkZone;
+import com.ado.trader.map.WorkZone.WorkArea;
 import com.ado.trader.screens.GameScreen;
 import com.ado.trader.systems.AnimationSystem;
 import com.ado.trader.systems.EntityRenderSystem.Direction;
@@ -148,15 +149,18 @@ public class EntityLoader {
 				WorkZone work = (WorkZone) game.getMap().zoneIdSearch(workId);
 				world.getMapper(Locations.class).get(e).setWork(work);
 				if(workData[1].matches("null")){
-					work.workArea.values[0].add(e.getId());
+					for(WorkArea a: work.workAreas){
+						if(a.area != null){
+							a.allEntities.add(e.getId());
+						}
+					}
 				}else{
 					String[] xy = workData[2].split("'");
 					int x = Integer.valueOf(xy[0]);
 					int y = Integer.valueOf(xy[1]);
-					for(Vector2 vec: work.workTiles.keys){
-						if(vec.x == x && vec.y == y){
-							int index = work.workTiles.indexOfKey(vec);
-							work.workTiles.setValue(index, e.getId());
+					for(WorkArea a: work.workAreas){
+						if(a.vec.x == x && a.vec.y == y){
+							a.entityId = e.getId();
 						}
 					}
 				}
@@ -179,19 +183,19 @@ public class EntityLoader {
 			case "mask":
 				Mask m = new Mask();
 				m.mask = game.getRenderer().getRenderEntitySystem().getMasks().getMask(entityData.get(key));
-				e.addComponent(m);
+				e.edit().add(m);
 				break;
 			case "feature":
 				String[] fData = entityData.get(key).split(",");
 				Sprite sprite = new Sprite(game.getRenderer().getRenderEntitySystem().getStaticSprites().get(Integer.valueOf(fData[0])));
 				sprite.flip(Boolean.parseBoolean(fData[1]), false);
 				Feature f = new Feature(sprite, Integer.valueOf(fData[0]));
-				e.addComponent(f);
+				e.edit().add(f);
 				break;
 			}
 			
 		}
-		world.changedEntity(e);
+//		world.changedEntity(e);
 	}
 	//loads entity profile templates
 	public void loadEntityProfiles(String fileName, EntityCollection collection, GameScreen game) {

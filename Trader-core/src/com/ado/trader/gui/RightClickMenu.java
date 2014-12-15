@@ -64,10 +64,6 @@ public class RightClickMenu {
 				entities.put("entity", w.getEntity(currentGroup.entityLayer.map[(int)mapClicked.x][(int)mapClicked.y]));
 			}
 		}
-		if(currentGroup.wallLayer.isOccupied((int)mapClicked.x, (int)mapClicked.y)){
-			root.add(createButton("wall", "wall")).width(root.getWidth()).height(26).row();
-			entities.put("wall", w.getEntity(currentGroup.wallLayer.map[(int)mapClicked.x][(int)mapClicked.y]));
-		}
 		if(currentGroup.zoneLayer.isOccupied((int)mapClicked.x, (int)mapClicked.y)){
 			root.add(createButton("zone", "zone")).width(root.getWidth()).height(26);
 			z = currentGroup.zoneLayer.zoneMap[(int)mapClicked.x][(int)mapClicked.y];

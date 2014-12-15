@@ -27,7 +27,7 @@ public class EntityFeatures {
 		for(String key: feature.keys()){
 			switch(key){
 			case "sprite":
-				e.addComponent(new Feature(sprite, spriteId));
+				e.edit().add(new Feature(sprite, spriteId));
 				break;
 			case "mask":
 				applyMask(e, feature.get(key));
@@ -44,7 +44,7 @@ public class EntityFeatures {
 		}else if(wC.firstSprite==Direction.SE||wC.firstSprite==Direction.NW){
 			m.mask = maskSys.getMask(list[0]);
 		}
-		e.addComponent(m);
+		e.edit().add(m);
 	}
 	private ArrayMap<String, ArrayMap<String,String>> loadEntityProfiles(String fileName, GameScreen game) {
 		ArrayMap<String, ArrayMap<String,String>> entities = new ArrayMap<String, ArrayMap<String,String>>();

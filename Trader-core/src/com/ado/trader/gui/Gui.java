@@ -30,6 +30,7 @@ public class Gui {
 	ItemWindow itemWindow;
 	NpcInfoWindow npcWindow;
 	ContainerWindow containerWindow;
+	WorkZoneWindow workWindow;
 	
 	public Gui(GameScreen game) {
 		this.game = game;
@@ -53,6 +54,7 @@ public class Gui {
 		itemWindow = new ItemWindow(this);
 		npcWindow = new NpcInfoWindow(this);
 		containerWindow = new ContainerWindow(this);
+		workWindow = new WorkZoneWindow(this);
 	}
 	public void update(float x, float y){
 		toolTip.updateToolTip();
@@ -90,6 +92,9 @@ public class Gui {
 	}
 	public ContainerWindow getContainerWindow() {
 		return containerWindow;
+	}
+	public WorkZoneWindow getWorkWindow() {
+		return workWindow;
 	}
 	public Skin getSkin(){
 		return skin;

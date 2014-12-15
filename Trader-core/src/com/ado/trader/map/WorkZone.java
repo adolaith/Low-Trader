@@ -2,71 +2,88 @@ package com.ado.trader.map;
 
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.ArrayMap;
 
 public class WorkZone extends Zone {
-	public ArrayMap<Vector2, Integer> workTiles;
-	public ArrayMap<Array<Vector2>, Array<Integer>> workArea;
+	public Array<WorkArea> workAreas;
 
 	public WorkZone(int id, Vector2 zone, ZoneType type) {
 		super(id, zone, type);
+		workAreas = new Array<WorkZone.WorkArea>();
 	}
 
 	public WorkZone(int id, Array<Vector2> area, ZoneType type) {
 		super(id, area, type);
+		workAreas = new Array<WorkZone.WorkArea>();
 	}
 	
-	public void addWorkTile(Vector2 vec){
-		if(workTiles == null){
-			workTiles = new ArrayMap<Vector2, Integer>();
+	public void addWorkTile(Vector2 vec, String aiProfile){
+		workAreas.add(new WorkArea(vec, aiProfile));
+	}
+	
+	public WorkArea getWorkArea(Vector2 vec){
+		for(WorkArea a: workAreas){
+			if(a.vec != null){
+				if(a.vec.x == vec.x && a.vec.y == vec.y){
+					return a;
+				}
+			}
+			if(a.area != null){
+				for(Vector2 t: a.area){
+					if(t.x == vec.x && t.y == vec.y){
+						return a;
+					}
+				}
+			}
 		}
-		workTiles.put(vec, null);
+		return null;
 	}
 	
 	public void removeWorkTile(Vector2 click){
-		workTiles.removeKey(click);
+		WorkArea a = getWorkArea(click);
+		if(a != null){
+			workAreas.removeValue(a, false);
+		}
 	}
 	
-	public void addWorkArea(Array<Vector2> area){
-		if(workArea == null){
-			workArea = new ArrayMap<Array<Vector2>, Array<Integer>>();
-			workArea.put(new Array<Vector2>(), new Array<Integer>());
-		}
-		workArea.put(area, new Array<Integer>());
+	public void addWorkArea(Array<Vector2> area, String aiProfile){
+		workAreas.add(new WorkArea(area, aiProfile));
 	}
 	
 	public void updateWorkArea(Array<Vector2> area){
-		workArea.firstKey().clear();
-		workArea.firstKey().addAll(area);
+		WorkArea a = getWorkArea(area.first());
+		a.area.clear();
+		a.area.addAll(area);
 	}
 	
-	public boolean findWork(int id){
-		if(workTiles != null){
-			for(Vector2 key: workTiles.keys){
-				if(workTiles.get(key) == null){
-					int index = workTiles.indexOfKey(key);
-					workTiles.setValue(index, id);
-					return true;
+	public WorkArea findWork(int id){
+		for(WorkArea a: workAreas){
+			if(a.vec == null && a.entityId == null){
+				a.entityId = id;
+				return a;
+			}
+			if(a.area != null){
+				if(a.allEntities.size < a.area.size / 4){
+					a.allEntities.add(id);
+					return a;
 				}
 			}
+			
 		}
-		if(workArea != null){
-			for(Array<Vector2> key: workArea.keys()){
-				Array<Integer> workers = workArea.get(key);
-				if(workers.size < key.size / 4){
-					workers.add(id);
-					return true;
-				}
-			}
-		}
-		return false;
+		return null;
 	}
 	
 	public boolean isWorkTile(int x, int y){
-		if(workTiles != null){
-			for(Vector2 key: workTiles.keys()){
-				if(key.x == x && key.y == y){
+		for(WorkArea a: workAreas){
+			if(a.vec != null){
+				if(a.vec.x == x && a.vec.y == y){
 					return true;
+				}
+			}
+			if(a.area != null){
+				for(Vector2 vec: a.area){
+					if(vec.x == x && vec.y == y){
+						return true;
+					}	
 				}
 			}
 		}
@@ -75,24 +92,19 @@ public class WorkZone extends Zone {
 	}
 	
 	public void removeWorker(int id){
-		if(workTiles != null){
-			for(Vector2 key: workTiles.keys()){
-				if(workTiles.get(key) == id){
-					int index = workTiles.indexOfKey(key);
-					workTiles.setValue(index, null);
+		for(WorkArea a: workAreas){
+			if(a.vec != null){
+				if(a.entityId == id){
+					a.entityId = null;
 					return;
 				}
 			}
-		}
-		if(workArea != null){
-			for(Array<Vector2> key: workArea.keys()){
-				Array<Integer> workers = workArea.get(key);
-				if(workers.removeValue(id, true)){
-					return;
-				}
+			if(a.area != null){
+				a.allEntities.removeValue(id, true);
 			}
 		}
 	}
+
 	public class WorkArea{
 		public Vector2 vec;
 		public Array<Vector2> area;

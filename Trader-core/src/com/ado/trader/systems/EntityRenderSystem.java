@@ -76,6 +76,7 @@ public class EntityRenderSystem{
 						if(drawWideEntity(batch, game))continue;
 						
 						renderNorthernWall(x, y, batch);
+						
 						if(game.getMap().getCurrentLayerGroup().itemLayer.isOccupied(x, y)){
 							Item i = game.getMap().getCurrentLayerGroup().itemLayer.map[x][y];
 							Vector2 itemPos = IsoUtils.getIsoXY(x, y, game.getMap().getTileWidth(), game.getMap().getTileHeight());
@@ -84,6 +85,7 @@ public class EntityRenderSystem{
 							batch.draw(item.sprite, itemPos.x-item.sprite.getWidth(), itemPos.y, 
 									item.sprite.getWidth()*item.sprite.getScaleX(),item.sprite.getHeight()*item.sprite.getScaleY());
 						}
+						
 						if(game.getMap().getCurrentLayerGroup().entityLayer.map[x][y]!=null){
 							Entity e = world.getEntity(game.getMap().getCurrentLayerGroup().entityLayer.map[x][y]);
 
@@ -167,12 +169,12 @@ public class EntityRenderSystem{
 		switch(dir){
 		case NE:
 			vec = new Vector2((int)p.getIsoPosition().x+(30*s.getScaleX()), (int)p.getIsoPosition().y+(16*s.getScaleY()));
-			masks.drawMask(batch, "wallMask_sw", vec, p, m, game);
+			masks.drawMask(batch, "wallMask_sw", vec, s.getHeight(), p, m, game);
 			batch.draw(s , vec.x, vec.y,s.getWidth()*s.getScaleX(),s.getHeight()*s.getScaleY());
 			break;
 		case NW:
 			vec = new Vector2((int)p.getIsoPosition().x-4, (int)p.getIsoPosition().y+(16*s.getScaleY()));
-			masks.drawMask(batch, "wallMask_se", vec, p, m, game);
+			masks.drawMask(batch, "wallMask_se", vec, s.getHeight(), p, m, game);
 			batch.draw(s , vec.x, vec.y,s.getWidth()*s.getScaleX(),s.getHeight()*s.getScaleY());
 			break;
 		}
@@ -217,12 +219,12 @@ public class EntityRenderSystem{
 		switch(dir){
 		case SE:
 			vec = new Vector2((int)p.getIsoPosition().x+(28*s.getScaleX()), (int)p.getIsoPosition().y);
-			masks.drawMask(batch, "wallMask_se", vec, p, m, game);
+			masks.drawMask(batch, "wallMask_se", vec, s.getHeight(), p, m, game);
 			batch.draw(s , vec.x, vec.y,s.getWidth()*s.getScaleX(),s.getHeight()*s.getScaleY());
 			break;
 		case SW:
 			vec = new Vector2((int)p.getIsoPosition().x, (int)p.getIsoPosition().y);
-			masks.drawMask(batch, "wallMask_sw", vec, p, m, game);
+			masks.drawMask(batch, "wallMask_sw", vec, s.getHeight(), p, m, game);
 			batch.draw(s , vec.x, vec.y,s.getWidth()*s.getScaleX(),s.getHeight()*s.getScaleY());
 			break;
 		}

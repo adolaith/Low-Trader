@@ -16,6 +16,7 @@ import com.ado.trader.entities.components.Type;
 import com.ado.trader.entities.components.Wall;
 import com.ado.trader.items.Item;
 import com.ado.trader.map.WorkZone;
+import com.ado.trader.map.WorkZone.WorkArea;
 import com.ado.trader.screens.GameScreen;
 import com.ado.trader.utils.FileParser;
 import com.ado.trader.utils.MaskingSystem;
@@ -47,7 +48,6 @@ public class SaveSystem extends EntityProcessingSystem {
 
 	@Override
 	protected void process(Entity e) {
-		Gdx.app.log(GameMain.LOG, "processing saveSystem");
 		Type t = world.getMapper(Type.class).get(e);
 		parser.addElement("id", Integer.toString(t.getTypeID()));
 		
@@ -108,11 +108,15 @@ public class SaveSystem extends EntityProcessingSystem {
 			ComponentMapper<Locations> loc = world.getMapper(Locations.class);
 			if(loc.get(e).getWork() != null){
 				WorkZone wZone = (WorkZone) loc.get(e).getWork();
-				if(wZone.workTiles.containsValue(e.getId(), true)){
-					Vector2 tile = wZone.workTiles.getKey(e.getId(), true);
-					parser.addElement("workZone", loc.get(e).getWork().getId() + "," + tile.x + "'" + tile.y);
-				}else{
-					parser.addElement("workZone", loc.get(e).getWork().getId() + ",null");
+				for(WorkArea a: wZone.workAreas){
+					if(a.entityId != null){
+						if(a.entityId == e.getId()){
+							parser.addElement("workZone", wZone.getId() + "," + a.vec.x + "'" + a.vec.y);
+						}
+					}else if(a.allEntities != null){
+						parser.addElement("workZone", wZone.getId() + ",null");
+					}
+					
 				}
 			}
 			if(loc.get(e).getHome() != null){

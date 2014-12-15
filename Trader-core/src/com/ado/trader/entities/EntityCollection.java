@@ -58,9 +58,9 @@ public class EntityCollection{
 		}else{
 			profile = staticEntities.get(typeID);
 		}
-		entity.addComponent(new Type(typeID));
+		entity.edit().add(new Type(typeID));
 		
-		entity.addComponent(new Position(game.getMap().getTileWidth(), game.getMap().getTileHeight()));
+		entity.edit().add(new Position(game.getMap().getTileWidth(), game.getMap().getTileHeight()));
 		for(String key: profile.keys()){
 			switch(key){
 			case "tags":
@@ -70,7 +70,7 @@ public class EntityCollection{
 					if(s.isEmpty())break;
 					gm.add(entity, s);
 					if(s.matches("wall")){
-						entity.addComponent(new Wall());
+						entity.edit().add(new Wall());
 					}
 				}
 				break;
@@ -80,19 +80,19 @@ public class EntityCollection{
 				AnimationSystem animSys = game.getWorld().getSystem(AnimationSystem.class);
 				Animation c = new Animation(skel, animSys.getAnimationPool().get(profile.get(key)),
 						game.getMap().getTileWidth(),game.getMap().getTileHeight());
-				entity.addComponent(c);
+				entity.edit().add(c);
 				break;
 			case "sprite":
-				entity.addComponent(new SpriteComp());
+				entity.edit().add(new SpriteComp());
 				break;
 			case "movement":
-				entity.addComponent(new Movement(Float.parseFloat(profile.get(key))));
-				entity.addComponent(new Target());
+				entity.edit().add(new Movement(Float.parseFloat(profile.get(key))));
+				entity.edit().add(new Target());
 				break;
 			case "ai":
 				AiSystem aiSys = game.getWorld().getSystem(AiSystem.class);
-				entity.addComponent(new AiProfile(aiSys.getAiProfile(profile.get(key))));
-				entity.addComponent(new Locations());
+				entity.edit().add(new AiProfile(aiSys.getAiProfile(profile.get(key))));
+				entity.edit().add(new Locations());
 				break;
 			case "area":
 				Area areaComp = new Area();
@@ -101,31 +101,31 @@ public class EntityCollection{
 					String[] vec = s.split(","); 
 					areaComp.area.add(new Vector2(Float.valueOf(vec[0]), Float.valueOf(vec[1])));
 				}
-				entity.addComponent(areaComp);
+				entity.edit().add(areaComp);
 				break;
 			case "attributes":
 				String[] aList = profile.get(key).split(",");
 				for(String s: aList){
 					switch(s){
 					case "health":
-						entity.addComponent(new Health());
+						entity.edit().add(new Health());
 						break;
 					case "hunger":
-						entity.addComponent(new Hunger());
+						entity.edit().add(new Hunger());
 						break;
 					case "money":
-						entity.addComponent(new Money());
+						entity.edit().add(new Money());
 						break;
 					}
 				}
 				break;
 			case "inventory":
-				entity.addComponent(new Inventory(Integer.valueOf(profile.get(key))));
+				entity.edit().add(new Inventory(Integer.valueOf(profile.get(key))));
 				break;
 			}
 		}
 		game.getWorld().getEntityManager().added(entity);
-		game.getWorld().changedEntity(entity);
+//		game.getWorld().changedEntity(entity);
 		return entity;
 	}
 
@@ -139,7 +139,7 @@ public class EntityCollection{
 	public void deleteEntity(int x, int y, IntMapLayer layer){
 		if(layer.isOccupied(x,y)){
 			Entity e = game.getWorld().getEntity(layer.map[x][y]);
-			game.getWorld().disable(e);
+//			game.getWorld().disable(e);
 			Position p = game.getWorld().getMapper(Position.class).get(e);
 			layer.deleteFromMap(p.getX(),p.getY());
 			ComponentMapper<Area> areaM = game.getWorld().getMapper(Area.class);
@@ -148,7 +148,7 @@ public class EntityCollection{
 					layer.deleteFromMap((int)(p.getX()+vec.x),(int)(p.getY()+vec.y));
 				}
 			}
-			game.getWorld().deleteEntity(e);
+			e.edit().deleteEntity();
 		}
 	}
 	public ArrayMap<Integer, ArrayMap<String, String>> getEntities() {

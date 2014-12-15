@@ -172,7 +172,7 @@ public class BuildMenu{
 				if(buildMenu.get("terrainmenu").isVisible()){
 					buildMenu.get("terrainmenu").setVisible(false);
 				}else{
-					buildMenu.get("terrainmenu").setPosition(buildMenu.get("mainmenu").getX()-160, buildMenu.get("mainmenu").getY());
+					buildMenu.get("terrainmenu").setPosition(buildMenu.get("mainmenu").getX()-184, buildMenu.get("mainmenu").getY());
 					buildMenu.get("terrainmenu").layout();
 					buildMenu.get("terrainmenu").setVisible(true);
 				}
@@ -396,7 +396,7 @@ public class BuildMenu{
 		return itemsMenu;
 	}
 	private void addToTable(Button b, Table t){
-		if(t.getCells().size % 5==0){
+		if(t.getCells().size != 0 && (t.getCells().size + 1) % 5 == 0){
 			t.add(b).width(56).height(56).row();
 		}else{
 			t.add(b).width(56).height(56);				

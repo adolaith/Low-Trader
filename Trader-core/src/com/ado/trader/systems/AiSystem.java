@@ -146,15 +146,17 @@ public class AiSystem extends EntityProcessingSystem{
 		String line = profile[taskIndex];
 		Task parent = null;
 		
-		switch(line.substring(1)){
+		String[] t = line.substring(1).split(":"); 
+		
+		switch(t[0]){
 		case "Sequence":
-			parent = new Sequence(this);
+			parent = new Sequence(this, t[1]);
 			break;
 		case "Selector":
-			parent = new Selector(this);
+			parent = new Selector(this, t[1]);
 			break;
 		case "Parallel":
-			parent = new Parallel(this);
+			parent = new Parallel(this, t[1]);
 			break;
 		}
 		taskIndex = taskIndex + 1;
@@ -247,7 +249,9 @@ public class AiSystem extends EntityProcessingSystem{
 		}
 		return null;
 	}
-	
+	public ArrayMap<String, String[]> getAllAiProfiles(){
+		return profiles;
+	}
 	public ComponentMapper<Position> getPm() {
 		return pm;
 	}

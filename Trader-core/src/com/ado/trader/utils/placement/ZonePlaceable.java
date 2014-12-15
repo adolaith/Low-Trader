@@ -33,8 +33,8 @@ public class ZonePlaceable extends Placeable {
 	public void place(int x, int y) {
 		ZoneLayer zLayer = game.getMap().getCurrentLayerGroup().zoneLayer;
 		
-		//sets or unsets work tiles in zone
 		if(workZone){
+			//sets or unsets work tiles in zone
 			if(zLayer.isOccupied(x, y)){
 				Zone z = zLayer.zoneMap[x][y];
 				if(z instanceof WorkZone){
@@ -42,7 +42,7 @@ public class ZonePlaceable extends Placeable {
 					if(wZone.isWorkTile(x, y)){
 						wZone.removeWorkTile(new Vector2(x, y));
 					}else{
-						wZone.addWorkTile(new Vector2(x, y));
+						game.getGui().getWorkWindow().showWindow(x, y, game.getMap().getTileWidth(), game.getMap().getTileHeight(), wZone);
 					}
 					if(!Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)){
 						workZone = false;

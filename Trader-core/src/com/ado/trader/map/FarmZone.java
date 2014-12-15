@@ -10,14 +10,14 @@ public class FarmZone extends WorkZone {
 	
 	public FarmZone(int id, Array<Vector2> area){
 		super(id, area, ZoneType.FARM);
-		addWorkArea(area);
+		addWorkArea(area, "workFarmer");
 		itemName = "";
 	}
 	public FarmZone(int id, Vector2 zone){
 		super(id, zone, ZoneType.FARM);
 		Array<Vector2> a = new Array<Vector2>();
 		a.add(zone);
-		addWorkArea(a);
+		addWorkArea(a, "workFarmer");
 		itemName = "";
 	}
 	

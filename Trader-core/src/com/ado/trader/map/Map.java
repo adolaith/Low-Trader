@@ -6,8 +6,8 @@ import com.ado.trader.items.Item;
 import com.ado.trader.items.ItemPosition;
 import com.ado.trader.map.Zone.ZoneType;
 import com.ado.trader.screens.GameScreen;
-import com.ado.trader.systems.GameTime;
 import com.ado.trader.systems.EntityRenderSystem.Direction;
+import com.ado.trader.systems.GameTime;
 import com.ado.trader.utils.FileParser;
 import com.ado.trader.utils.IsoUtils;
 import com.ado.trader.utils.pathfinding.Mover;
@@ -165,30 +165,20 @@ public class Map implements TileBasedMap{
 				WorkZone wZone = (WorkZone) n;
 				//work tiles
 				if(z.containsKey("workTiles")){
-					wZone.workTiles = new ArrayMap<Vector2, Integer>();
-					String[] tiles = z.get("workTiles").split(",");
-					for(String t: tiles){
+					String[] xy = z.get("workTiles").split("'");
+					Vector2 vec = new Vector2(Float.valueOf(xy[0]), Float.valueOf(xy[1]));
+					wZone.addWorkTile(vec, z.get("workProfile"));
+				}
+				//work area
+				if(z.containsKey("workArea")){
+					String[] wArea = z.get("workArea").split(",");
+					Array<Vector2> vecArr = new Array<Vector2>();
+					for(String t: wArea){
 						String[] xy = t.split("'");
 						Vector2 vec = new Vector2(Float.valueOf(xy[0]), Float.valueOf(xy[1]));
-						wZone.workTiles.put(vec, null);
+						vecArr.add(vec);
 					}
-				}
-				if(z.containsKey("workArea")){
-					wZone.workArea = new ArrayMap<Array<Vector2>, Array<Integer>>();
-					wZone.workArea.put(new Array<Vector2>(), new Array<Integer>());
-					String[] wArea = z.get("workArea").split(",");
-					for(String t: wArea){
-						
-						Array<Vector2> vecArr = new Array<Vector2>();
-						String[] vecs = t.split("-");
-						for(String v: vecs){
-							String[] xy = v.split("'");
-							Vector2 vec = new Vector2(Float.valueOf(xy[0]), Float.valueOf(xy[1]));
-							vecArr.add(vec);
-						}
-						
-						wZone.workArea.put(vecArr, new Array<Integer>());
-					}
+					wZone.addWorkArea(vecArr, z.get("workProfile"));
 				}
 			}
 			

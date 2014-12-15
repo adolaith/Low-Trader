@@ -12,6 +12,7 @@ import com.badlogic.gdx.utils.ArrayMap;
 
 public class MaskingSystem {
 	ArrayMap<String, Sprite> maskSprites;
+	InputHandler input;
 	
 	public MaskingSystem(GameScreen game){
 		maskSprites = new ArrayMap<String, Sprite>();
@@ -22,14 +23,18 @@ public class MaskingSystem {
 		s.scale(1f);
 		loadMask("wallMask_sw", s);
 	}
-	public void drawMask(SpriteBatch batch, String wallDir, Vector2 vec, Position p, Mask mask, GameScreen game){
+	public void drawMask(SpriteBatch batch, String wallDir, Vector2 vec, float height, Position p, Mask mask, GameScreen game){
 		Vector2 tmp = IsoUtils.getColRow((int)game.getInput().getMousePos().x, (int)game.getInput().getMousePos().y, game.getMap().getTileWidth(), game.getMap().getTileHeight());
-		if((int)tmp.dst2(p.getX(), p.getY())<=6){
-			setGlMask(batch);
-			Sprite s = maskSprites.get(wallDir);
-			batch.draw(s, vec.x, vec.y, s.getWidth()*s.getScaleX(),s.getHeight()*s.getScaleY());
-			setGlBlend(batch);
+		//wall is within 6 tiles of x,y
+		if(Math.abs((int)p.getX() - (int)tmp.x) < 6 &&  Math.abs((int)p.getY() - (int)tmp.y) < 4){
+			if(height > 64){
+				setGlMask(batch);
+				Sprite s = maskSprites.get(wallDir);
+				batch.draw(s, vec.x, vec.y, s.getWidth()*s.getScaleX(),s.getHeight()*s.getScaleY());
+				setGlBlend(batch);
+			}
 		}else if(mask!=null){
+			//wall has a feature mask(window, door)
 			setGlMask(batch);
 			batch.draw(mask.mask, vec.x, vec.y, mask.mask.getWidth()*mask.mask.getScaleX(),mask.mask.getHeight()*mask.mask.getScaleY());
 			setGlBlend(batch);

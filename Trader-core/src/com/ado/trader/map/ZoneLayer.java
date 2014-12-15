@@ -1,5 +1,6 @@
 package com.ado.trader.map;
 
+import com.ado.trader.map.WorkZone.WorkArea;
 import com.ado.trader.map.Zone.ZoneType;
 import com.ado.trader.screens.GameScreen;
 import com.ado.trader.utils.FileParser;
@@ -46,23 +47,18 @@ public class ZoneLayer implements Layer{
 				//save work tile data
 				if(z instanceof WorkZone){
 					WorkZone wZone = (WorkZone) z;
-					if(wZone.workTiles != null){
-						String value = "";
-						for(Vector2 key: wZone.workTiles.keys()){
-							value += key.x + "'" + key.y + ",";
+					for(WorkArea a: wZone.workAreas){
+						if(a.vec != null){
+							p.addElement("workTiles", a.vec.x + "'" + a.vec.y);
 						}
-						p.addElement("workTiles", value);
-					}
-					if(wZone.workArea != null){
-						String value = "";
-						for(Array<Vector2> key: wZone.workArea.keys()){
-							for(Vector2 vec : key){
-								value += vec.x + "'" + vec.y + "-";
+						if(a.area != null){
+							String value = "";
+							for(Vector2 key: a.area){
+								value += key.x + "'" + key.y + ",";
 							}
-							
-							value += ",";
-						}
-						p.addElement("workArea", value);
+							p.addElement("workArea", value);
+						}	
+						p.addElement("workProfile", a.aiWorkProfile);
 					}
 				}
 				
@@ -125,32 +121,30 @@ public class ZoneLayer implements Layer{
 				if(z instanceof WorkZone){
 					batch.setColor(Color.GREEN);
 					WorkZone wZone = (WorkZone) z;
-					
-					//work tiles
-					if(wZone.workTiles != null){
-						for(Vector2 vec: wZone.workTiles.keys()){
+					for(WorkArea a: wZone.workAreas){
+						//work tiles
+						if(a.vec != null){
 							//isometric/screen coords
-							vec = IsoUtils.getIsoXY((int)vec.x, (int)vec.y, 
+							Vector2 vec = IsoUtils.getIsoXY((int)a.vec.x, (int)a.vec.y, 
 									game.getMap().getTileWidth(), game.getMap().getTileHeight());
-					
+
 							batch.draw(s, vec.x, vec.y, 
 									game.getMap().getTileWidth(), game.getMap().getTileHeight());				
 						}
-					}
-					//work area
-					if(wZone.workArea != null){
-						for(Array<Vector2> area : wZone.workArea.keys()){
-							for(Vector2 vec : area){
+						//work area
+						if(a.area != null){
+							for(Vector2 vec : a.area){
 								//isometric/screen coords
-								vec = IsoUtils.getIsoXY((int)vec.x, (int)vec.y, 
+								Vector2 v = IsoUtils.getIsoXY((int)vec.x, (int)vec.y, 
 										game.getMap().getTileWidth(), game.getMap().getTileHeight());
-						
-								batch.draw(s, vec.x, vec.y, 
+
+								batch.draw(s, v.x, v.y, 
 										game.getMap().getTileWidth(), game.getMap().getTileHeight());
 							}
+
 						}
-						
 					}
+
 					batch.setColor(Color.WHITE);
 				}
 			}
