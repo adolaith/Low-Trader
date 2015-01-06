@@ -2,28 +2,24 @@ package com.ado.trader.map;
 
 import java.io.IOException;
 
-import com.ado.trader.screens.GameScreen;
 import com.ado.trader.utils.FileParser;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ArrayMap;
 
 //Contains tile templates and basic tile pooling
 public class TileCollection {
-	GameScreen game;
 	ArrayMap<Integer, ArrayMap<String,String>> tileProfiles;
 
-	public TileCollection(GameScreen game) {
-		this.game = game;
+	public TileCollection(FileParser p) {
 		try {
-			loadTiles("data/tiles");
+			loadTiles("data/tiles", p);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 	
-	public void loadTiles(String fileName) throws IOException{
+	public void loadTiles(String fileName, FileParser p) throws IOException{
 		tileProfiles = new ArrayMap<Integer, ArrayMap<String,String>>();
-		FileParser p = game.getParser();  
 		p.initParser(fileName, false, false);
 		
 		Array<ArrayMap<String, String>> array = p.readFile();
@@ -41,7 +37,7 @@ public class TileCollection {
 	}
 	
 	//Takes entityName, gets entityProfile from master collection and creates entity accordingly
-	public Tile createTile(int index, int x, int y){
+	public Tile createTile(int index, int x, int y, int h){
 		ArrayMap<String, String> profile = tileProfiles.get(index);
 		Tile t = new Tile();
 		for(String key: profile.keys()){
@@ -56,7 +52,7 @@ public class TileCollection {
 			}
 		}
 		t.id = index;
-		t.setPosition(x, y);
+		t.setPosition(x, y, h);
 		return t;
 	}
 	public ArrayMap<Integer, ArrayMap<String, String>> getTileProfiles() {

@@ -1,15 +1,16 @@
 package com.ado.trader.gui;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
@@ -20,22 +21,22 @@ public class BasicWindow {
 	int width, height;
 	Label title;
 	
-	public BasicWindow(String title, int width, int height, Gui gui){
+	public BasicWindow(String title, int width, int height, BitmapFont font, Skin skin, Stage stage){
 		this.width = width;
 		this.height = height;
-		LabelStyle ls = new LabelStyle(gui.font, Color.WHITE);
+		LabelStyle ls = new LabelStyle(font, Color.WHITE);
 		this.title = new Label(title, ls);
-		init(gui);
+		init(skin, stage);
 	}
-	private void init(final Gui gui){
+	private void init(Skin skin, Stage stage){
 		bgTable = new Table();
 		bgTable.top();
 		bgTable.setHeight(height);
 		bgTable.setWidth(width);
-		bgTable.setBackground(gui.skin.getDrawable("gui/bGround"));
-		Image i = new Image(gui.skin.getDrawable("gui/fGround"));
+		bgTable.setBackground(skin.getDrawable("gui/bGround"));
+		Image i = new Image(skin.getDrawable("gui/fGround"));
 		bgTable.add(i).pad(4).height(24).width(width-10).row();
-		i = new Image(gui.skin.getDrawable("gui/fGround"));
+		i = new Image(skin.getDrawable("gui/fGround"));
 		bgTable.add(i).width(width-10).height(height-38);
 		
 		functionTable = new Table();
@@ -52,7 +53,7 @@ public class BasicWindow {
 		});
 		functionTable.add(title).padLeft(6).padTop(6).padBottom(6).width(width-36).fill();
 		
-		ImageButton closeButton = new ImageButton(GuiUtils.setImgButtonStyle(gui.skin.getDrawable("gui/delete"), null, gui.skin.getDrawable("gui/button"), null));
+		ImageButton closeButton = new ImageButton(GuiUtils.setImgButtonStyle(skin.getDrawable("gui/delete"), null, skin.getDrawable("gui/button"), null));
 		closeButton.addListener(new ChangeListener() {
 			public void changed(ChangeEvent event, Actor actor) {
 				hideWindow();
@@ -61,15 +62,14 @@ public class BasicWindow {
 		functionTable.add(closeButton).left().padRight(6).padTop(6).padBottom(6).width(22).height(22).row();
 		
 		root = new Table();
-//		root.debug();
-		root.pad(2).padTop(2).setSize(width - 12, height - ((8 * 3) + 18));
-		functionTable.add(root).top().left().colspan(2).padLeft(4);
+		root.pad(2).padTop(2);
+		functionTable.add(root).top().left().fill().expand().colspan(2).padLeft(4).padBottom(4).padRight(4);
 		
 		bgTable.setVisible(false);
 		functionTable.setVisible(false);
 		
-		gui.stage.addActor(bgTable);
-		gui.stage.addActor(functionTable);
+		stage.addActor(bgTable);
+		stage.addActor(functionTable);
 	}
 	protected void addLabelPair(String key, String value, BitmapFont font){
 		LabelStyle ls = new LabelStyle(font, Color.WHITE);

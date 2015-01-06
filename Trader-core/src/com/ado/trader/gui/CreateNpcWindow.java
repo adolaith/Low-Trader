@@ -95,7 +95,7 @@ public class CreateNpcWindow extends BasicWindow{
 							Vector2 tmp = IsoUtils.getColRow((int)x, (int)y, gui.game.getMap().getTileWidth(), gui.game.getMap().getTileHeight());
 							
 							e.getComponent(Position.class).setPosition((int)tmp.x, (int)tmp.y, gui.game.getMap().currentLayer);
-							gui.game.getMap().getCurrentLayerGroup().entityLayer.addToMap(e.getId(), (int)tmp.x, (int)tmp.y);
+							gui.game.getMap().getEntityLayer().addToMap(e.getId(), (int)tmp.x, (int)tmp.y, gui.game.getMap().currentLayer);
 							
 							hideWindow();
 						}
@@ -184,6 +184,6 @@ public class CreateNpcWindow extends BasicWindow{
 		Vector2 tmp = IsoUtils.getColRow((int)x, (int)y, gui.game.getMap().getTileWidth(), gui.game.getMap().getTileHeight());
 		
 		e.getComponent(Position.class).setPosition((int)tmp.x, (int)tmp.y, gui.game.getMap().currentLayer);
-		gui.game.getMap().getCurrentLayerGroup().entityLayer.addToMap(e.getId(), (int)tmp.x, (int)tmp.y);
+		gui.game.getMap().getEntityLayer().addToMap(e.getId(), (int)tmp.x, (int)tmp.y, gui.game.getMap().currentLayer);
 	}
 }

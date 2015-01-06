@@ -1,0 +1,118 @@
+package com.ado.syphon.entities.AiComponents.base;
+
+import com.ado.syphon.GameMain;
+import com.ado.syphon.systems.AiSystem;
+import com.badlogic.gdx.Gdx;
+
+/**
+ * Inner node of the behavior tree, a flow director node, 
+ * that selects a child to be executed next.
+ * 
+ * Sets a specific kind of TaskController for these kinds of tasks.
+ */
+/*
+ * Original code by @author Ying
+ * Modified
+ */
+
+public abstract class ParentTask extends Task{
+	
+	/**
+     * TaskControler for the parent task
+     */
+    ParentTaskController control;
+
+	public ParentTask(AiSystem aiSys) {
+		super(aiSys);
+		createController();
+	}
+
+	@Override
+	public void start() {
+		control.curTask = control.subtasks.first();		
+	}
+
+	@Override
+	public void end() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void doTask() {
+		if(control.finished())
+		{
+			return;
+		}
+		if(control.curTask == null)
+		{
+			// If there is a null task, we've done something wrong
+			Gdx.app.log(GameMain.LOG, "curTask is null. ParentTask error");
+			return;
+		}
+
+		// If we do have a curTask...
+		if( !control.curTask.getControl().started())
+		{
+			// ... and it's not started yet, start it.
+			control.curTask.getControl().safeStart();
+		}               
+		else if(control.curTask.getControl().finished())
+		{
+
+			// ... and it's finished, end it properly.
+			control.curTask.getControl().safeEnd();
+
+			if(control.curTask.getControl().succeeded())
+			{
+				Gdx.app.log(GameMain.LOG, "FINISHED child task");
+				this.childSucceeded();
+			}
+			else if(control.curTask.getControl().failed())
+			{
+				Gdx.app.log(GameMain.LOG, "FAILED child task");
+				this.childFailed();
+			}
+		}
+		else
+		{               
+			// ... and it's ready, update it. 
+			if(control.curTask.checkConditions()){
+				Gdx.app.log(GameMain.LOG, "UPDATING child task");
+				control.curTask.doTask();
+			}else{
+				control.curTask.getControl().finishWithFailure();
+			}
+		}       
+
+	}
+
+	@Override
+	public TaskController getControl() {
+		return control;
+	}
+
+	@Override
+	public boolean checkConditions() {
+		return control.subtasks.size > 0;
+	}
+	
+	/**
+     * Abstract to be overridden in child classes. Called when a child finishes with success.
+     */
+    public abstract void childSucceeded();
+    
+    /**
+     * Abstract to be overridden in child classes. Called when a child finishes with failure.
+     */
+    public abstract void childFailed();
+    
+    /**
+     * Creates the TaskController.
+     */
+	private void createController()
+    {
+            this.control = new ParentTaskController(this);
+    }
+
+}

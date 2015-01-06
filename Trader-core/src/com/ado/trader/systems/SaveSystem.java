@@ -1,6 +1,7 @@
 package com.ado.trader.systems;
 
 import com.ado.trader.GameMain;
+import com.ado.trader.buildings.Building;
 import com.ado.trader.entities.components.Animation;
 import com.ado.trader.entities.components.Area;
 import com.ado.trader.entities.components.Feature;
@@ -15,11 +16,9 @@ import com.ado.trader.entities.components.SpriteComp;
 import com.ado.trader.entities.components.Type;
 import com.ado.trader.entities.components.Wall;
 import com.ado.trader.items.Item;
-import com.ado.trader.map.WorkZone;
-import com.ado.trader.map.WorkZone.WorkArea;
+import com.ado.trader.rendering.MaskingSystem;
 import com.ado.trader.screens.GameScreen;
 import com.ado.trader.utils.FileParser;
-import com.ado.trader.utils.MaskingSystem;
 import com.artemis.Aspect;
 import com.artemis.ComponentMapper;
 import com.artemis.Entity;
@@ -31,6 +30,7 @@ import com.badlogic.gdx.utils.Array;
 public class SaveSystem extends EntityProcessingSystem {
 	FileParser parser;
 	GameScreen game;
+	String saveDir;
 
 	@SuppressWarnings("unchecked")
 	public SaveSystem(GameScreen game) {
@@ -40,10 +40,14 @@ public class SaveSystem extends EntityProcessingSystem {
 	public void setPassive(boolean passive){
 		super.setPassive(passive);
 	}
+	public void saveEntities(String saveDir){
+		this.saveDir = saveDir;
+		process();
+	}
 	@Override
 	protected void begin(){
 		parser = game.getParser();
-		parser.initParser("saves/"+GameScreen.saveDir+"/entities.sav", true, true);
+		parser.initParser("saves/"+saveDir+"/entities.sav", true, true);
 	}
 
 	@Override
@@ -62,7 +66,7 @@ public class SaveSystem extends EntityProcessingSystem {
 		
 		parser.addElement("pos", (int)world.getMapper(Position.class).get(e).getIsoPosition().x+
 				","+(int)world.getMapper(Position.class).get(e).getIsoPosition().y+
-				","+world.getMapper(Position.class).get(e).layer);
+				","+world.getMapper(Position.class).get(e).getHeightLayer());
 		
 		if(world.getMapper(SpriteComp.class).has(e)){		//sprite
 			SpriteComp sC = world.getMapper(SpriteComp.class).get(e);
@@ -106,21 +110,15 @@ public class SaveSystem extends EntityProcessingSystem {
 		
 		if(world.getMapper(Locations.class).has(e)){	//locations
 			ComponentMapper<Locations> loc = world.getMapper(Locations.class);
-			if(loc.get(e).getWork() != null){
-				WorkZone wZone = (WorkZone) loc.get(e).getWork();
-				for(WorkArea a: wZone.workAreas){
-					if(a.entityId != null){
-						if(a.entityId == e.getId()){
-							parser.addElement("workZone", wZone.getId() + "," + a.vec.x + "'" + a.vec.y);
-						}
-					}else if(a.allEntities != null){
-						parser.addElement("workZone", wZone.getId() + ",null");
-					}
-					
-				}
+			
+			WorkArea w = loc.get(e).getWork();
+			if(w != null){
+				parser.addElement("work", ""+w.getId() + ","+w.getParentId());
 			}
-			if(loc.get(e).getHome() != null){
-				parser.addElement("homeZone", ""+loc.get(e).getHome().getId());
+			
+			Building b = loc.get(e).getHome(); 
+			if(b != null){
+				parser.addElement("home", ""+b.getBuildingId());
 			}
 		}
 		

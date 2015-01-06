@@ -1,10 +1,15 @@
 package com.ado.trader.screens;
 
 import com.ado.trader.GameMain;
+import com.ado.trader.buildings.BuildingCollection;
 import com.ado.trader.entities.EntityCollection;
 import com.ado.trader.gui.Gui;
+import com.ado.trader.input.InputHandler;
 import com.ado.trader.items.ItemCollection;
 import com.ado.trader.map.Map;
+import com.ado.trader.pathfinding.AStarPathFinder;
+import com.ado.trader.placement.PlacementManager;
+import com.ado.trader.rendering.WorldRenderer;
 import com.ado.trader.systems.AiSystem;
 import com.ado.trader.systems.AnimationSystem;
 import com.ado.trader.systems.FarmSystem;
@@ -13,11 +18,7 @@ import com.ado.trader.systems.MovementSystem;
 import com.ado.trader.systems.SaveSystem;
 import com.ado.trader.systems.StatusIconSystem;
 import com.ado.trader.utils.FileParser;
-import com.ado.trader.utils.InputHandler;
 import com.ado.trader.utils.IsoUtils;
-import com.ado.trader.utils.WorldRenderer;
-import com.ado.trader.utils.pathfinding.AStarPathFinder;
-import com.ado.trader.utils.placement.PlacementManager;
 import com.artemis.Entity;
 import com.artemis.World;
 import com.artemis.managers.GroupManager;
@@ -42,13 +43,11 @@ public class GameScreen implements Screen{
 	
 	EntityCollection entities;
 	ItemCollection items;
+	BuildingCollection buildings;
 	AStarPathFinder pathfinder;
 	PlacementManager placement;
 	
 	static Vector2 velocity = new Vector2(); //camera velocity
-	public static String saveDir;
-	
-	Entity currentlySelected;
 	
 	//initialize
 	public GameScreen(GameMain game) {
@@ -61,6 +60,7 @@ public class GameScreen implements Screen{
 		map = new Map(this);
 		placement = new PlacementManager(this);
 		
+		buildings = new BuildingCollection(this);
 		items = new ItemCollection("data/ItemProfiles", this);
 		
 		gui = new Gui(this);
@@ -116,12 +116,6 @@ public class GameScreen implements Screen{
 		entities = new EntityCollection(this);
 	}
 	
-	public void saveGame(String fileName){
-		saveDir = fileName;
-		map.saveMap(fileName);
-		world.getSystem(SaveSystem.class).process();
-		Gdx.app.log(GameMain.LOG, "GAME SAVED");
-	}
 	public void setSpeed(float modifier){
 		if(modifier == 0){
 			speed = 1;
@@ -166,12 +160,10 @@ public class GameScreen implements Screen{
 		renderer.render(delta);
 	}
 	
-	public Entity getCurrentlySelected() {
-		return currentlySelected;
+	public BuildingCollection getBuildingCollection() {
+		return buildings;
 	}
-	public void setCurrentlySelected(Entity currentlySelected) {
-		this.currentlySelected = currentlySelected;
-	}
+
 	public FileParser getParser() {
 		return parser;
 	}

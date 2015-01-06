@@ -1,7 +1,7 @@
 package com.ado.trader.entities.components;
 
-import com.ado.trader.utils.pathfinding.Mover;
-import com.ado.trader.utils.pathfinding.Path;
+import com.ado.trader.pathfinding.Mover;
+import com.ado.trader.pathfinding.Path;
 import com.artemis.Component;
 import com.badlogic.gdx.math.Vector2;
 

@@ -47,12 +47,6 @@ public class BuildMenu{
 		root.stage.addActor(entityMenu);
 		buildMenu.put("entitymenu", entityMenu);
 		
-		//zone menu
-		Table zoneMenu = zoneMenu(root);
-		zoneMenu.setVisible(false);
-		root.stage.addActor(zoneMenu);
-		buildMenu.put("zonemenu", zoneMenu);
-		
 		//items menu
 		Table itemsMenu = itemsMenu(root);
 		itemsMenu.setVisible(false);
@@ -83,7 +77,6 @@ public class BuildMenu{
 		mainMenu.add(createEntityButton(root.font, root.skin)).row();
 		mainMenu.add(createItemsButton(root.font, root.skin)).row();
 		mainMenu.add(createTerrainButton(root.font, root.skin)).row();
-		mainMenu.add(createZoneButton(root.font, root.skin)).row();
 
 		mainMenu.setVisible(false);
 		root.stage.addActor(mainMenu);
@@ -181,25 +174,6 @@ public class BuildMenu{
 		return b;
 	}
 	
-	private Button createZoneButton(BitmapFont font, Skin skin){
-		LabelStyle lStyle = new LabelStyle(font, Color.BLACK);
-		
-		Button b = new Button(GuiUtils.setButtonStyle(skin.getDrawable("gui/button"),null));
-		b.add(new Label("Zones",lStyle));
-		b.addListener(new ChangeListener() {
-			public void changed(ChangeEvent event, Actor actor) {
-				if(buildMenu.get("zonemenu").isVisible()){
-					buildMenu.get("zonemenu").setVisible(false);
-				}else{
-					buildMenu.get("zonemenu").setPosition(buildMenu.get("mainmenu").getX()-175, buildMenu.get("mainmenu").getY());
-					buildMenu.get("zonemenu").layout();
-					buildMenu.get("zonemenu").setVisible(true);
-				}
-			}
-		});
-		return b;
-	}
-	
 	//terrain tile menu
 	private Table terrainMenu(final Gui root){
 		Table terrainMenu = new Table();
@@ -219,46 +193,6 @@ public class BuildMenu{
 		}
 		
 		return terrainMenu;
-	}
-	
-	private Table zoneMenu(final Gui root){
-		Table zoneMenu = new Table();
-		zoneMenu.left();
-		zoneMenu.setFillParent(false);
-		LabelStyle lStyle = new LabelStyle(root.font, Color.BLACK);
-		
-		Button b = new Button(GuiUtils.setButtonStyle(root.skin.getDrawable("gui/button"),null));
-		
-		b.add(new Label("Default Zone",lStyle));
-		b.addListener(new ChangeListener() {
-			public void changed(ChangeEvent event, Actor actor) {
-				root.game.getPlaceManager().setPlacementSelection("zone", 0);
-			}
-		});
-		zoneMenu.add(b);
-		zoneMenu.row();
-		zoneMenu.setSize(b.getWidth(), 110);
-		
-		b = new Button(GuiUtils.setButtonStyle(root.skin.getDrawable("gui/button"),null));
-		b.add(new Label("Work Tile",lStyle));
-		b.addListener(new ChangeListener() {
-			public void changed(ChangeEvent event, Actor actor) {
-				root.game.getPlaceManager().setPlacementSelection("zone", 1);
-			}
-		});
-		zoneMenu.add(b);
-		zoneMenu.row();
-		
-		ImageButton deleteModeButton = new ImageButton(GuiUtils.setImgButtonStyle(root.skin.getDrawable("gui/delete"), null, root.skin.getDrawable("gui/button"), null));
-		deleteModeButton.addListener(new ChangeListener() {
-			public void changed(ChangeEvent event, Actor actor) {
-				root.game.getPlaceManager().setPlacementSelection("zone", 0);
-				root.game.getPlaceManager().getZonePl().delete = true;
-			}
-		});
-		zoneMenu.add(deleteModeButton).width(56).height(56);
-		
-		return zoneMenu;
 	}
 
 	private Table entityMenu(final Gui root){

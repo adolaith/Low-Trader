@@ -1,6 +1,8 @@
-package com.ado.trader.entities;
+ package com.ado.trader.entities;
 
 import com.ado.trader.GameMain;
+import com.ado.trader.buildings.Building;
+import com.ado.trader.buildings.WorkArea;
 import com.ado.trader.entities.components.Animation;
 import com.ado.trader.entities.components.Area;
 import com.ado.trader.entities.components.Feature;
@@ -14,16 +16,12 @@ import com.ado.trader.entities.components.Position;
 import com.ado.trader.entities.components.SpriteComp;
 import com.ado.trader.entities.components.Wall;
 import com.ado.trader.items.Item;
-import com.ado.trader.map.HomeZone;
-import com.ado.trader.map.LayerGroup;
-import com.ado.trader.map.WorkZone;
-import com.ado.trader.map.WorkZone.WorkArea;
+import com.ado.trader.placement.PlacementManager;
+import com.ado.trader.rendering.EntityRenderSystem.Direction;
 import com.ado.trader.screens.GameScreen;
 import com.ado.trader.systems.AnimationSystem;
-import com.ado.trader.systems.EntityRenderSystem.Direction;
 import com.ado.trader.utils.FileParser;
 import com.ado.trader.utils.IsoUtils;
-import com.ado.trader.utils.placement.PlacementManager;
 import com.artemis.Entity;
 import com.artemis.World;
 import com.artemis.managers.GroupManager;
@@ -89,20 +87,19 @@ public class EntityLoader {
 				Vector2 mapXY=IsoUtils.getColRow(Integer.valueOf(pos[0]), Integer.valueOf(pos[1]), game.getMap().getTileWidth(), game.getMap().getTileHeight());
 				mapXY.x+=0.5;
 				world.getMapper(Position.class).get(e).setPosition((int)mapXY.x, (int)mapXY.y, Integer.valueOf(pos[2]));
-				LayerGroup layer = game.getMap().getLayer(Integer.valueOf(pos[2]));
 				PlacementManager placeM = game.getPlaceManager();
 				if(e.getWorld().getManager(GroupManager.class).isInAnyGroup(e)){
 					ImmutableBag<String> arr = e.getWorld().getManager(GroupManager.class).getGroups(e);
 					for(int i=0;i<arr.size();i++){
 						switch(arr.get(i)){
 						case "wall":
-							layer.wallLayer.addToMap(e.getId(), (int)mapXY.x, (int)mapXY.y);
+							game.getMap().getWallLayer().addToMap(e.getId(), (int)mapXY.x, (int)mapXY.y, Integer.valueOf(pos[2]));
 							break;
 						}
 					}
 				}else{
-					layer.entityLayer.addToMap(e.getId(), (int)mapXY.x, (int)mapXY.y);
-					placeM.getEntityPl().markAreaOccupied((int)mapXY.x, (int)mapXY.y, e, layer.entityLayer);
+					game.getMap().getEntityLayer().addToMap(e.getId(), (int)mapXY.x, (int)mapXY.y, Integer.valueOf(pos[2]));
+					placeM.getEntityPl().markAreaOccupied((int)mapXY.x, (int)mapXY.y, Integer.valueOf(pos[2]), e, game.getMap().getEntityLayer());
 				}
 				break;
 			case "sprite":
@@ -145,32 +142,25 @@ public class EntityLoader {
 				break;
 			case "workZone":
 				String[] workData = entityData.get(key).split(",");
-				int workId = Integer.valueOf(workData[0]);
-				WorkZone work = (WorkZone) game.getMap().zoneIdSearch(workId);
-				world.getMapper(Locations.class).get(e).setWork(work);
-				if(workData[1].matches("null")){
-					for(WorkArea a: work.workAreas){
-						if(a.area != null){
-							a.allEntities.add(e.getId());
+				int workId = Integer.valueOf(workData[1]);
+				Building workBuilding = game.getBuildingCollection().getBuilding(workId);
+
+				for(WorkArea a: workBuilding.getWorkAreas()){
+					if(a.getId() == Integer.valueOf(workData[0])){
+						if(a.getVec() != null){
+							a.setEntityId(e.getId());
+						}else{
+							a.getAllWorkers().add(e.getId());
 						}
-					}
-				}else{
-					String[] xy = workData[2].split("'");
-					int x = Integer.valueOf(xy[0]);
-					int y = Integer.valueOf(xy[1]);
-					for(WorkArea a: work.workAreas){
-						if(a.vec.x == x && a.vec.y == y){
-							a.entityId = e.getId();
-						}
+						world.getMapper(Locations.class).get(e).setWork(a);
 					}
 				}
-				
+
 				break;
 			case "homeZone":
 				int homeId = Integer.valueOf(entityData.get(key));
-				HomeZone h = (HomeZone) game.getMap().zoneIdSearch(homeId);
-				world.getMapper(Locations.class).get(e).setHome(h);
-				h.addOccupant(e.getId());
+				Building homeBuilding = game.getBuildingCollection().getBuilding(homeId);
+				world.getMapper(Locations.class).get(e).setHome(homeBuilding);
 				
 				break;
 			case "wall":

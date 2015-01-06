@@ -1,0 +1,105 @@
+package com.ado.trader.input;
+
+import com.ado.trader.map.EntityLayer;
+import com.ado.trader.map.Map;
+import com.ado.trader.placement.PlacementManager;
+import com.ado.trader.screens.GameScreen;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input.Buttons;
+import com.badlogic.gdx.Input.Keys;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+
+public class GameInput extends InputHandler {
+	PlacementManager plManager;
+
+	public GameInput(Stage stage, Map map, PlacementManager plManager, OrthographicCamera camera) {
+		super(stage, map, camera);
+		this.plManager = plManager;
+	}
+
+	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+		super.touchUp(screenX, screenY, pointer, button);
+		
+		if(button == Buttons.LEFT){
+			EntityLayer layer = map.getEntityLayer();
+			
+			if(layer.isOccupied((int)mapClicked.x, (int)mapClicked.y, map.currentLayer)){		//entity selection
+				game.setCurrentlySelected(game.getWorld().getEntity(layer.map[(int)mapClicked.x][(int)mapClicked.y][map.currentLayer])); 
+				return true;
+			}
+			
+			game.setCurrentlySelected(null);
+			return true;
+		}else if(button == Buttons.RIGHT){
+			
+			if(plManager.getPlacementSelection()!=null){
+				plManager.resetSelection();
+				return true;
+			}
+			
+			if(game.getGui().rightClickAction()) return true;
+			
+		}
+		
+		if(plManager.handleClick(mapClicked, this)) return true;
+		
+		return false;
+	}
+	public boolean keyUp(int keycode) {
+		switch(keycode){
+		case Keys.ESCAPE:
+			Gdx.app.exit();
+		case Keys.W:
+			if(GameScreen.getVelocity().y == velocity){
+				GameScreen.getVelocity().y = 0;}
+			break;
+		case Keys.S:
+			if(GameScreen.getVelocity().y == -velocity){
+				GameScreen.getVelocity().y = 0;}
+			break;
+		case Keys.A:
+			if(GameScreen.getVelocity().x == -velocity){
+				GameScreen.getVelocity().x = 0;}
+			break;
+		case Keys.D:
+			if(GameScreen.getVelocity().x == velocity){
+				GameScreen.getVelocity().x = 0;}
+			break;
+		case Keys.R:
+			plManager.rotateSelection();
+			break;
+		case Keys.MINUS:
+			game.saveGame("testSaveDERP");
+			break;
+		case Keys.F1:game
+			DEBUG = !DEBUG;
+			break;
+		case Keys.F3:
+			plManager.setEditMode(!plManager.isEditMode());
+			break;
+		default:
+			break;
+		}
+	}
+	@Override
+	public boolean keyDown(int keycode) {
+			switch(keycode){
+			case Keys.W:
+				GameScreen.getVelocity().y = velocity;
+				break;
+			case Keys.S:
+				GameScreen.getVelocity().y = -(velocity);
+				break;
+			case Keys.A:
+				GameScreen.getVelocity().x = -(velocity);
+				break;
+			case Keys.D:
+				GameScreen.getVelocity().x = velocity;
+				break;
+			
+			default:
+				break;
+			}
+	}
+}

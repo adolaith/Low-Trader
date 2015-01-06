@@ -1,0 +1,10 @@
+package com.ado.trader.buildings;
+
+public abstract class Business extends Building {
+
+	public Business(int id) {
+		super(id);
+		// TODO Auto-generated constructor stub
+	}
+
+}

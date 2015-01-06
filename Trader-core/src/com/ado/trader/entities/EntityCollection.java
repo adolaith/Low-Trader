@@ -61,17 +61,15 @@ public class EntityCollection{
 		entity.edit().add(new Type(typeID));
 		
 		entity.edit().add(new Position(game.getMap().getTileWidth(), game.getMap().getTileHeight()));
+		
+		GroupManager gm = game.getWorld().getManager(GroupManager.class);
 		for(String key: profile.keys()){
 			switch(key){
 			case "tags":
 				String[] tags = profile.get(key).split(",");
-				GroupManager gm = game.getWorld().getManager(GroupManager.class);
 				for(String s:tags){
 					if(s.isEmpty())break;
 					gm.add(entity, s);
-					if(s.matches("wall")){
-						entity.edit().add(new Wall());
-					}
 				}
 				break;
 			case "animation":
@@ -93,6 +91,9 @@ public class EntityCollection{
 				AiSystem aiSys = game.getWorld().getSystem(AiSystem.class);
 				entity.edit().add(new AiProfile(aiSys.getAiProfile(profile.get(key))));
 				entity.edit().add(new Locations());
+				break;
+			case "wall":
+				entity.edit().add(new Wall());
 				break;
 			case "area":
 				Area areaComp = new Area();
@@ -136,16 +137,16 @@ public class EntityCollection{
 		e.getComponent(SpriteComp.class).mainSprite = sprite;
 		return e;
 	}
-	public void deleteEntity(int x, int y, IntMapLayer layer){
-		if(layer.isOccupied(x,y)){
-			Entity e = game.getWorld().getEntity(layer.map[x][y]);
+	public void deleteEntity(int x, int y, int h, IntMapLayer layer){
+		if(layer.isOccupied(x,y,h)){
+			Entity e = game.getWorld().getEntity(layer.map[x][y][h]);
 //			game.getWorld().disable(e);
 			Position p = game.getWorld().getMapper(Position.class).get(e);
-			layer.deleteFromMap(p.getX(),p.getY());
+			layer.deleteFromMap(p.getX(),p.getY(),h);
 			ComponentMapper<Area> areaM = game.getWorld().getMapper(Area.class);
 			if(areaM.has(e)){
 				for(Vector2 vec: areaM.get(e).area){
-					layer.deleteFromMap((int)(p.getX()+vec.x),(int)(p.getY()+vec.y));
+					layer.deleteFromMap((int)(p.getX()+vec.x),(int)(p.getY()+vec.y),h);
 				}
 			}
 			e.edit().deleteEntity();

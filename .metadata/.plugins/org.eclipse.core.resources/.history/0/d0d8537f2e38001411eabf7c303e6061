@@ -1,0 +1,142 @@
+package com.ado.syphon.entities;
+
+import com.ado.syphon.entities.components.AiProfile;
+import com.ado.syphon.entities.components.Animation;
+import com.ado.syphon.entities.components.Area;
+import com.ado.syphon.entities.components.Attribute;
+import com.ado.syphon.entities.components.Attributes;
+import com.ado.syphon.entities.components.Locations;
+import com.ado.syphon.entities.components.Modifiers;
+import com.ado.syphon.entities.components.Movement;
+import com.ado.syphon.entities.components.Position;
+import com.ado.syphon.entities.components.SpriteComp;
+import com.ado.syphon.entities.components.Tags;
+import com.ado.syphon.entities.components.Wall;
+import com.ado.syphon.map.IntMapLayer;
+import com.ado.syphon.screens.GameScreen;
+import com.artemis.ComponentMapper;
+import com.artemis.Entity;
+import com.artemis.managers.GroupManager;
+import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.ArrayMap;
+import com.esotericsoftware.spine.Skeleton;
+import com.esotericsoftware.spine.SkeletonData;
+
+//Contains entity templates and creates entities.
+public class EntityCollection{
+	
+	GameScreen game;
+	EntityLoader loader;
+
+	ArrayMap<Integer, ArrayMap<String, String>> entities;
+	ArrayMap<String, SkeletonData> skeletons;
+
+	public EntityCollection(GameScreen game){
+		this.game = game;
+
+		loader = new EntityLoader(game.getWorld());
+		entities = loader.loadEntityProfiles("data/EntityProfiles", game);
+		skeletons = loader.loadSpineData(game);
+	}
+
+	//Takes entityName, gets entityProfile from master collection and creates entity accordingly
+	public Entity createEntity(int typeID){
+		Entity entity = game.getWorld().createEntity();
+		ArrayMap<String, String> profile = entities.get(typeID);
+		entity.addComponent(new Tags(typeID));
+
+		entity.addComponent(new Position(game.getMap().getTileWidth(), game.getMap().getTileHeight()));
+		for(String key: profile.keys()){
+			switch(key){
+			case "tags":
+				String[] tags = profile.get(key).split(",");
+				GroupManager gm = game.getWorld().getManager(GroupManager.class);
+				for(String s:tags){
+					if(s.isEmpty())break;
+					gm.add(entity, s);
+					if(s.matches("wall")){
+						entity.addComponent(new Wall());
+					}
+				}
+				break;
+			case "animation":
+				Skeleton skel = new Skeleton(skeletons.get(profile.get(key)));
+				skel.setToSetupPose();
+				Animation c = new Animation(skel, game.getAnimSystem().getAnimationPool().get(profile.get(key)),game.getMap().getTileWidth(),game.getMap().getTileHeight());
+				entity.addComponent(c);
+				break;
+			case "sprite":
+				entity.addComponent(new SpriteComp());
+				break;
+			case "movement":
+				entity.addComponent(new Locations());
+				entity.addComponent(new Movement(Float.parseFloat(profile.get(key))));
+				entity.addComponent(new AiProfile(game.getAi().createBasicProfile()));		//AI HERE
+				break;
+			case "area":
+				Area areaComp = new Area();
+				String[] sList = profile.get(key).split("'");
+				for(String s: sList){
+					String[] vec = s.split(","); 
+					areaComp.area.add(new Vector2(Float.valueOf(vec[0]), Float.valueOf(vec[1])));
+				}
+				entity.addComponent(areaComp);
+				break;
+			case "attributes":
+				Attributes att = new Attributes();
+				entity.addComponent(new Modifiers());
+				String[] attributes = profile.get(key).split(",");
+				for(int i=0;i<attributes.length;i++){
+					if(attributes[i].isEmpty())continue;
+					String[] values = attributes[i].split("'");
+					Attribute a = new Attribute();
+					a.setValues(Integer.valueOf(values[0]), Integer.valueOf(values[2]), Integer.valueOf(values[1]));
+					switch(i){
+					case 0:
+						att.getAllAttributes().put("lifepoints", a);
+						break;
+					case 1:
+						att.getAllAttributes().put("energy", a);
+						break;
+					}
+				}
+				entity.addComponent(att);
+				break;
+			}
+		}
+		game.getWorld().getEntityManager().added(entity);
+		game.getWorld().changedEntity(entity);
+		return entity;
+	}
+
+	//create entity with specified sprite
+	public Entity createEntity(int typeID, int spriteId, Sprite sprite){
+		Entity e = createEntity(typeID);
+		e.getComponent(SpriteComp.class).mainId = spriteId;
+		e.getComponent(SpriteComp.class).mainSprite = sprite;
+		return e;
+	}
+	public void deleteEntity(int x, int y, IntMapLayer layer){
+		if(layer.isOccupied(x,y)){
+			Entity e = game.getWorld().getEntity(layer.map[x][y]);
+			game.getWorld().disable(e);
+			Position p = game.getWorld().getMapper(Position.class).get(e);
+			layer.deleteFromMap(p.getX(),p.getY());
+			ComponentMapper<Area> areaM = game.getWorld().getMapper(Area.class);
+			if(areaM.has(e)){
+				for(Vector2 vec: areaM.get(e).area){
+					layer.deleteFromMap((int)(x+vec.x),(int)(y+vec.y));
+				}
+			}
+			game.getWorld().deleteEntity(e);
+			game.getWorld().changedEntity(e);
+		}
+	}
+	public ArrayMap<Integer, ArrayMap<String, String>> getEntities() {
+		return entities;
+	}
+	public EntityLoader getLoader() {
+		return loader;
+	}
+}

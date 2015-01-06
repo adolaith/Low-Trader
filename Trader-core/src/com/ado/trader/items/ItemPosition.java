@@ -1,12 +1,12 @@
 package com.ado.trader.items;
 
-import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 
 public class ItemPosition extends ItemData {
-	public Vector2 position;
+	public Vector3 position;
 
 	public ItemPosition() {
 		super("Position");
-		position = new Vector2();
+		position = new Vector3();
 	}
 }

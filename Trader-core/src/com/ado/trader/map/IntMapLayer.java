@@ -1,18 +1,15 @@
 package com.ado.trader.map;
 
-import com.ado.trader.screens.GameScreen;
 
 public abstract class IntMapLayer implements Layer{
-	public Integer[][] map;
-	GameScreen game;
+	public Integer[][][] map;
 	
-	public IntMapLayer(GameScreen game, int w, int h){
-		this.game = game;
-		map = new Integer[w][h];
+	public IntMapLayer(int w, int h){
+		map = new Integer[w][h][8];
 	}
-	public boolean isOccupied(int x, int y){
+	public boolean isOccupied(int x, int y, int h){
 		return map[x][y]!=null;
 	}
-	public void addToMap(Integer id, int x, int y) {}
-	public void deleteFromMap(int x, int y){}
+	public void addToMap(Integer id, int x, int y, int h) {}
+	public void deleteFromMap(int x, int y, int h){}
 }

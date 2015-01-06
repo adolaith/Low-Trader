@@ -1,0 +1,88 @@
+package com.ado.syphon.gui;
+
+import com.ado.syphon.entities.components.Animation;
+import com.ado.syphon.entities.components.Health;
+import com.ado.syphon.entities.components.Hunger;
+import com.ado.syphon.entities.components.Money;
+import com.ado.syphon.entities.components.Position;
+import com.ado.syphon.utils.IsoUtils;
+import com.artemis.Entity;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
+import com.badlogic.gdx.scenes.scene2d.ui.TextField;
+import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldFilter;
+import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldStyle;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+
+public class NpcCustomization extends BasicWindow{
+	float x,y;
+
+	public NpcCustomization(final Gui gui) {
+		super("New Npc", 260, 230, gui);
+		
+		addInputpair("Head #:", "head", gui);
+		addInputpair("Skin colour:", "skin", gui);
+		addInputpair("Role:", "role", gui);
+		addInputpair("Health:", "health", gui);
+		addInputpair("Hunger", "hunger", gui);
+		addInputpair("Money:", "money", gui);
+		root.add();
+		
+		TextButtonStyle bStyle = new TextButtonStyle();
+		bStyle.font = gui.font;
+		bStyle.up = gui.skin.getDrawable("gui/button");
+		TextButton b = new TextButton("Create", bStyle);
+		b.addListener(new ChangeListener() {
+			public void changed(ChangeEvent event, Actor actor) {
+				TextField hp = root.findActor("health");
+				TextField hunger = root.findActor("hunger");
+				TextField money = root.findActor("money");
+				TextField role = root.findActor("role");
+				TextField outfit = root.findActor("skin");
+				TextField head = root.findActor("head");
+				
+				createCustomEntity(Integer.valueOf(hp.getText()), Integer.valueOf(hunger.getText()), Integer.valueOf(money.getText()), 
+						role.getText(), outfit.getText(), Integer.valueOf(head.getText()), gui);
+			}
+		});
+		root.add(b);
+	}
+	private void addInputpair(String label, String name, Gui gui){
+		LabelStyle ls = new LabelStyle(gui.font, Color.WHITE);
+		Label l = new Label(label, ls);
+		root.add(l).width(root.getWidth()/2);
+		
+		TextFieldStyle fieldStyle = new TextFieldStyle();
+		fieldStyle.background = gui.skin.getDrawable("gui/bGround");
+		fieldStyle.font = gui.font;
+		fieldStyle.fontColor = Color.YELLOW;
+		TextField field = new TextField("", fieldStyle);
+		field.setName(name);
+		field.setRightAligned(true);
+		field.setTextFieldFilter(new TextFieldFilter.DigitsOnlyFilter());
+		root.add(field).width(root.getWidth()/2).row();
+	}
+	
+	public void createCustomEntity(int health, int hunger, int money, String role, String outfit, int head, Gui root){
+		Entity e = root.game.getEntities().createEntity(31);
+		e.getComponent(Animation.class).getSkeleton().setSkin("m"+outfit+"_Front");
+		e.getComponent(Animation.class).getSkeleton().setAttachment("head", "human/guyF_head"+head);
+		e.getComponent(Health.class).setMax(health);
+		e.getComponent(Hunger.class).setMax(hunger);
+		e.getComponent(Money.class).value = money;
+		
+		Vector2 tmp = IsoUtils.getColRow((int)x, (int)y, root.game.getMap().getTileWidth(), root.game.getMap().getTileHeight());
+		e.getComponent(Position.class).setPosition((int)tmp.x, (int)tmp.y, root.game.getMap().currentLayer);
+		root.game.getMap().getCurrentLayerGroup().entityLayer.addToMap(e.getId(), (int)tmp.x, (int)tmp.y);
+	}
+	public void showWindow(float x, float y){
+		super.showWindow(x, y);
+		this.x = x;
+		this.y = y;
+	}
+}

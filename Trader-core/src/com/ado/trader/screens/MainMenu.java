@@ -1,6 +1,7 @@
 package com.ado.trader.screens;
 
 import com.ado.trader.GameMain;
+import com.ado.trader.gui.GameOptions;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
@@ -14,6 +15,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
@@ -27,9 +29,8 @@ public class MainMenu implements Screen {
 	TextureAtlas atlas;
 	Skin skin;
 	SpriteBatch batch;
-	TextButton play,load, exit;
-	Label label;
 	TextButtonStyle style;
+	GameOptions options;
 	
 	public MainMenu(GameMain game){
 		this.game = game;
@@ -53,17 +54,29 @@ public class MainMenu implements Screen {
 		if(stage == null){
 			stage = new Stage();
 		}
-		stage.clear();
+		
+	}
+
+	@Override
+	public void show() {
+
+		//init call
+		batch = new SpriteBatch();
+		atlas = new TextureAtlas(Gdx.files.internal("img/master.pack")); 
+		skin = new Skin();
+		skin.addRegions(atlas);
+		white = new BitmapFont(Gdx.files.internal("font/baseFontWhite.fnt"), false);
+		stage = new Stage();
+		options = new GameOptions(white, skin, stage);
 		
 		Gdx.input.setInputProcessor(stage);
 		
+		Table root = new Table();
+		root.defaults().width(400).height(60);
+		
 		setStyle("gui/panelButton", "gui/panelButton2", white);
 		
-		play = new TextButton("Play", style);
-		play.setWidth(400);
-		play.setHeight(100);
-		play.setX(Gdx.graphics.getWidth()/2 - play.getWidth() /2);
-		play.setY(Gdx.graphics.getHeight()/2+100 - play.getHeight() /2);
+		TextButton play = new TextButton("New Game", style);
 		
 		//handles button action on pressed down/up
 		play.addListener(new InputListener(){
@@ -77,11 +90,7 @@ public class MainMenu implements Screen {
 			}
 		});
 		
-		load = new TextButton("Load", style);
-		load.setWidth(400);
-		load.setHeight(100);
-		load.setX(Gdx.graphics.getWidth()/2 - load.getWidth() /2);
-		load.setY(Gdx.graphics.getHeight()/2 - load.getHeight() /2);
+		TextButton load = new TextButton("Load Game", style);
 		
 		//handles button action on pressed down/up
 		load.addListener(new InputListener(){
@@ -94,14 +103,36 @@ public class MainMenu implements Screen {
 			}
 		});
 		
-		exit = new TextButton("Exit", style);
-		exit.setWidth(400);
-		exit.setHeight(100);
-		exit.setX(Gdx.graphics.getWidth()/2 - exit.getWidth() /2);
-		exit.setY(Gdx.graphics.getHeight()/2-100 - exit.getHeight() /2);
+		TextButton buildingEditor = new TextButton("Building Editor", style);
 		
 		//handles button action on pressed down/up
-		exit.addListener(new InputListener(){
+		buildingEditor.addListener(new InputListener(){
+			public boolean touchDown(InputEvent e, float x, float y, int pointer, int button){
+				return true;
+			}
+			public void touchUp(InputEvent e, float x, float y, int pointer, int button){
+				System.out.println("Starting Building Editor...");
+
+			}
+		});
+		
+		TextButton optionsButton = new TextButton("Options", style);
+		
+		//handles button action on pressed down/up
+		optionsButton.addListener(new InputListener(){
+			public boolean touchDown(InputEvent e, float x, float y, int pointer, int button){
+				return true;
+			}
+			public void touchUp(InputEvent e, float x, float y, int pointer, int button){
+				System.out.println("Game options coming soon...");
+				options.showWindow(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() / 2);
+			}
+		});
+		
+		TextButton quit = new TextButton("Quit", style);
+		
+		//handles button action on pressed down/up
+		quit.addListener(new InputListener(){
 			public boolean touchDown(InputEvent e, float x, float y, int pointer, int button){
 				return true;
 			}
@@ -111,27 +142,20 @@ public class MainMenu implements Screen {
 		});
 		
 		LabelStyle ls = new LabelStyle(white, Color.BLUE);
-		label = new Label("RTS Prototype", ls);
-		label.setX(0);
-		label.setY(Gdx.graphics.getHeight()/2+200);
-		label.setWidth(width);
+		Label label = new Label("RTS Prototype", ls);
+		label.setWidth(400);
 		label.setAlignment(Align.center);
 		
-		stage.addActor(play);
-		stage.addActor(load);
-		stage.addActor(exit);
-		stage.addActor(label);
-	}
-
-	@Override
-	public void show() {
-
-		//init call
-		batch = new SpriteBatch();
-		atlas = new TextureAtlas(Gdx.files.internal("img/master.pack")); 
-		skin = new Skin();
-		skin.addRegions(atlas);
-		white = new BitmapFont(Gdx.files.internal("font/baseFontWhite.fnt"), false);
+		root.add(label).row();
+		root.add(play).row();
+		root.add(load).row();
+		root.add(buildingEditor).row();
+		root.add(optionsButton).row();
+		root.add(quit);
+		root.setX(Gdx.graphics.getWidth() / 2);
+		root.setY(Gdx.graphics.getHeight() / 2);
+		
+		stage.addActor(root);
 	}
 
 	@Override

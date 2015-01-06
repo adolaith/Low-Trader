@@ -6,9 +6,9 @@ import com.ado.trader.entities.components.Movement;
 import com.ado.trader.entities.components.Position;
 import com.ado.trader.entities.components.Target;
 import com.ado.trader.map.EntityLayer;
+import com.ado.trader.pathfinding.Path;
 import com.ado.trader.systems.AiSystem;
 import com.ado.trader.systems.MovementSystem;
-import com.ado.trader.utils.pathfinding.Path;
 import com.badlogic.gdx.math.Vector2;
 
 public class WalkToTarget extends LeafTask {

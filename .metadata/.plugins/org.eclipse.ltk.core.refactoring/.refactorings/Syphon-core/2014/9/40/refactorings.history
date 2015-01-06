@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename local variable &apos;root&apos; in &apos;com.ado.syphon.gui.ZoneDialog.ZoneDialog(...)&apos; to &apos;gui&apos;&#x0A;- Original project: &apos;Syphon-core&apos;&#x0A;- Original element: &apos;com.ado.syphon.gui.ZoneDialog.ZoneDialog(Gui).root&apos;&#x0A;- Renamed element: &apos;root&apos;&#x0A;- Update references to refactored element" description="Rename local variable &apos;root&apos;" id="org.eclipse.jdt.ui.rename.local.variable" input="/src&lt;com.ado.syphon.gui{ZoneDialog.java[ZoneDialog~ZoneDialog~QGui;@root!918!931!928!931!QGui;!16!true" name="gui" references="true" stamp="1411997282374" version="1.0"/>
+</session>

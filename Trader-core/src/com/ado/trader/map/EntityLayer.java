@@ -1,54 +1,54 @@
 package com.ado.trader.map;
 
-import com.ado.trader.screens.GameScreen;
 import com.artemis.Entity;
+import com.artemis.World;
 import com.artemis.managers.GroupManager;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 
 public class EntityLayer extends IntMapLayer {
 
-	public EntityLayer(GameScreen game, int w, int h) {
-		super(game, w, h);
+	public EntityLayer(int w, int h) {
+		super(w, h);
 	}
-	public void addToMap(Integer id, int x, int y) {
-		map[x][y] = id;
+	public void addToMap(Integer id, int x, int y, int h) {
+		map[x][y][h] = id;
 	}
-	public void deleteFromMap(int x, int y) {
-		map[x][y] = null;
+	public void deleteFromMap(int x, int y, int h) {
+		map[x][y][h] = null;
 	}
 	
 	//finds neighbours of x,y to a depth of n with the desired tag.
-	public Array<Integer> getNeighborEntitys(int x, int y, int n, String tag) {
+	public Array<Integer> getNeighborEntitys(int x, int y, int h, int n, String tag, World world) {
 		Array<Integer> neighbours = new Array<Integer>();
-		GroupManager gm = game.getWorld().getManager(GroupManager.class);
+		GroupManager gm = world.getManager(GroupManager.class);
 		for(int i = x-n; i<x+n+n; i++){
 			for(int j = y-n; j<y+n+n; j++){
 				if((i==x && j==y) || i < 0 || j < 0 || i >= map.length || j >= map[i].length){
 					continue;
 				}
 				if(map[i][j]!=null){
-					Entity e = game.getWorld().getEntity(map[i][j]);
+					Entity e = world.getEntity(map[i][j][h]);
 					if(gm.isInGroup(e, tag)){
-						neighbours.add(map[i][j]);
+						neighbours.add(map[i][j][h]);
 					}
 				}
 			}
 		}
 		return neighbours;		  
 	}
-	public Entity getClosestEntity(int x, int y,int n, String tag){
-		GroupManager gm = game.getWorld().getManager(GroupManager.class);
+	public Entity getClosestEntity(int x, int y, int h,int n, String tag, World world){
+		GroupManager gm = world.getManager(GroupManager.class);
 		for(int d = 1; d <= n; d++){
 			int i = x - d;
 			int j = y + d;
 			
-			if(outOfMap(i, j)){
+			if(outOfMap(i, j, h)){
 				continue;
 			}
 			
 			if(map[i][j]!=null){
-				Entity e = game.getWorld().getEntity(map[i][j]);
+				Entity e = world.getEntity(map[i][j][h]);
 				if(gm.isInGroup(e, tag)){
 					return e;
 				}
@@ -56,11 +56,11 @@ public class EntityLayer extends IntMapLayer {
 			
 			for(int q = 0; q < d*2; q++){
 				i++;
-				if(outOfMap(i, j)){
+				if(outOfMap(i, j, h)){
 					continue;
 				}
 				if(map[i][j]!=null){
-					Entity e = game.getWorld().getEntity(map[i][j]);
+					Entity e = world.getEntity(map[i][j][h]);
 					if(gm.isInGroup(e, tag)){
 						return e;
 					}
@@ -68,11 +68,11 @@ public class EntityLayer extends IntMapLayer {
 			}
 			for(int q = 0; q < d*2; q++){
 				j--;
-				if(outOfMap(i, j)){
+				if(outOfMap(i, j, h)){
 					continue;
 				}
 				if(map[i][j]!=null){
-					Entity e = game.getWorld().getEntity(map[i][j]);
+					Entity e = world.getEntity(map[i][j][h]);
 					if(gm.isInGroup(e, tag)){
 						return e;
 					}
@@ -80,11 +80,11 @@ public class EntityLayer extends IntMapLayer {
 			}
 			for(int q = 0; q < d*2; q++){
 				i--;
-				if(outOfMap(i, j)){
+				if(outOfMap(i, j, h)){
 					continue;
 				}
 				if(map[i][j]!=null){
-					Entity e = game.getWorld().getEntity(map[i][j]);
+					Entity e = world.getEntity(map[i][j][h]);
 					if(gm.isInGroup(e, tag)){
 						return e;
 					}
@@ -92,11 +92,11 @@ public class EntityLayer extends IntMapLayer {
 			}
 			for(int q = 0; q < d*2-1; q++){
 				j++;
-				if(outOfMap(i, j)){
+				if(outOfMap(i, j, h)){
 					continue;
 				}
 				if(map[i][j]!=null){
-					Entity e = game.getWorld().getEntity(map[i][j]);
+					Entity e = world.getEntity(map[i][j][h]);
 					if(gm.isInGroup(e, tag)){
 						return e;
 					}
@@ -105,7 +105,7 @@ public class EntityLayer extends IntMapLayer {
 		}
 		return null;
 	}
-	private boolean outOfMap(int x, int y){
+	private boolean outOfMap(int x, int y, int h){
 		if(x < 0 || x >= map.length ||
 				y < 0 || y >= map[x].length){
 			return true;
@@ -113,11 +113,11 @@ public class EntityLayer extends IntMapLayer {
 		return false;
 	}
 	//returns the first entity found inside given area
-	public Integer getFirstEntity(Vector2 origin, Vector2 widthHeight){
+	public Integer getFirstEntity(Vector2 origin, Vector2 widthHeight, int h){
 		for(int x=(int)origin.x; x<=(int)widthHeight.x; x++){
 			for(int y=(int)origin.y; y<=(int)widthHeight.y; y++){
 				if(map[x][y]!=null){
-					return map[x][y];
+					return map[x][y][h];
 				}
 			}
 		}

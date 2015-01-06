@@ -1,6 +1,5 @@
 package com.ado.trader.map;
 
-import com.ado.trader.screens.GameScreen;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -11,9 +10,8 @@ import com.badlogic.gdx.utils.ArrayMap;
 public class TileOverlay {
 	ArrayMap<Mask, Sprite> maskTextures;
 	
-	public TileOverlay(GameScreen game){
-		
-		loadMasks(game.getAtlas());
+	public TileOverlay(TextureAtlas atlas){
+		loadMasks(atlas);
 	}
 	public void loadMasks(TextureAtlas atlas){
 		maskTextures = new ArrayMap<TileOverlay.Mask, Sprite>();

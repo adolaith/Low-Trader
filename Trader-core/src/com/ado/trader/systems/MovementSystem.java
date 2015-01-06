@@ -6,9 +6,9 @@ import com.ado.trader.entities.components.Movement;
 import com.ado.trader.entities.components.Position;
 import com.ado.trader.map.Map;
 import com.ado.trader.map.Tile;
+import com.ado.trader.pathfinding.Path.Step;
 import com.ado.trader.screens.GameScreen;
 import com.ado.trader.utils.IsoUtils;
-import com.ado.trader.utils.pathfinding.Path.Step;
 import com.artemis.Aspect;
 import com.artemis.ComponentMapper;
 import com.artemis.Entity;
@@ -70,12 +70,12 @@ public class MovementSystem  extends EntityProcessingSystem {
 				//next step in the path
 				if(tmp.x==0&&tmp.y==0){
 					//moves entity in collision grid
-					map.getCurrentLayerGroup().entityLayer.deleteFromMap(p.getX(), p.getY());
-					map.getCurrentLayerGroup().entityLayer.addToMap(e.getId(), (int)(newTile.x+1),(int)newTile.y);		
+					map.getEntityLayer().deleteFromMap(p.getX(), p.getY(), p.getHeightLayer());
+					map.getEntityLayer().addToMap(e.getId(), (int)(newTile.x+1),(int)newTile.y, map.currentLayer);		
 					p.setPosition((int)m.getPath().getX(m.getStep()), (int)m.getPath().getY(m.getStep()), map.currentLayer);
 					
 					//check for damage from tile
-					Tile t = map.getCurrentLayerGroup().tileLayer.map[(int)(newTile.x+1)][(int)newTile.y];
+					Tile t = map.getTileLayer().map[(int)(newTile.x+1)][(int)newTile.y][map.currentLayer];
 					if(t.dmg > 0){
 						StatusIconSystem iconSys = world.getSystem(StatusIconSystem.class);
 						iconSys.newIconAnimation("iconImportant", e);

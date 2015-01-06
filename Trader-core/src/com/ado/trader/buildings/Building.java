@@ -1,66 +1,35 @@
- package com.ado.trader.buildings;
+package com.ado.trader.buildings;
 
-import com.ado.trader.buildings.BuildingEnum.BuildingType;
-import com.ado.trader.buildings.BuildingEnum.SubType;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 
 public class Building {
-	Integer ownerId;
-	int id, x, y, w, h;
-	int numOfFloors;
-	Array<WorkArea> workAreas;
-	
-	BuildingType type;
-	SubType subType;
+	int id;
+	Array<Vector3> tiles;
 
-	public Building() {
-
+	public Building(int id) {
+		this.id = id;
+		tiles = new Array<Vector3>();
 	}
-	
-	
-	public void setDimensions(int minX, int minY, int maxX, int maxY){
-		this.x = minX;
-		this.y = minY;
-		this.w = maxX - minX;
-		this.h = maxY - minY;
+	public Building(int id, Array<Vector3> tiles){
+		this.id = id;
+		this.tiles = tiles;
 	}
-	public int getId(){
+	public boolean hasTile(int x, int y, int h){
+		for(Vector3 vec: tiles){
+			if(vec.x == x && vec.y == y && vec.z == h){
+				return true;
+			}
+		}
+		return false;
+	}
+	public void addTile(int x, int y, int h){
+		tiles.add(new Vector3(x, y, h));
+	}
+	public void removeTile(Vector3 vec){
+		tiles.removeValue(vec, false);
+	}
+	public int getBuildingId(){
 		return id;
-	}
-	public int getX(){
-		return x;
-	}
-	public int getY(){
-		return y;
-	}
-	public int getWidth(){
-		return w;
-	}
-	public int getHeight(){
-		return h;
-	}
-	public Integer getOwnerId() {
-		return ownerId;
-	}
-	public void setOwnerId(Integer ownerId) {
-		this.ownerId = ownerId;
-	}
-	public int getNumOfFloors() {
-		return numOfFloors;
-	}
-	public void setNumOfFloors(int numOfFloors) {
-		this.numOfFloors = numOfFloors;
-	}
-	public BuildingType getType() {
-		return type;
-	}
-	public void setType(BuildingType type) {
-		this.type = type;
-	}
-	public SubType getSubType() {
-		return subType;
-	}
-	public void setSubType(SubType subType) {
-		this.subType = subType;
 	}
 }

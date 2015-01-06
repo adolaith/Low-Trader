@@ -2,12 +2,9 @@ package com.ado.trader.gui;
 
 import com.ado.trader.entities.components.AiProfile;
 import com.ado.trader.entities.components.Inventory;
+import com.ado.trader.input.InputHandler;
 import com.ado.trader.items.Item;
-import com.ado.trader.map.FarmZone;
-import com.ado.trader.map.HomeZone;
-import com.ado.trader.map.LayerGroup;
-import com.ado.trader.map.Zone;
-import com.ado.trader.utils.InputHandler;
+import com.ado.trader.map.Map;
 import com.artemis.ComponentMapper;
 import com.artemis.Entity;
 import com.artemis.World;
@@ -28,7 +25,6 @@ public class RightClickMenu {
 	Button viewEntity, viewZone, viewItem;
 	ArrayMap<String, Entity> entities;
 	Item i;
-	Zone z;
 	Gui gui;
 	
 	public RightClickMenu(Gui gui){
@@ -46,30 +42,27 @@ public class RightClickMenu {
 		gui.stage.addActor(root);
 	}
 	
-	public void setupMenu(Vector2 mapClicked, LayerGroup currentGroup){
+	public void setupMenu(Vector2 mapClicked, Map map){
 		World w = gui.game.getWorld();
-		if(currentGroup.itemLayer.isOccupied((int)mapClicked.x, (int)mapClicked.y)){
+		if(map.getItemLayer().isOccupied((int)mapClicked.x, (int)mapClicked.y, map.currentLayer)){
 			root.add(createButton("item", "item")).width(root.getWidth()).height(26).row();
-			i = currentGroup.itemLayer.map[(int)mapClicked.x][(int)mapClicked.y];
+			i = map.getItemLayer().map[(int)mapClicked.x][(int)mapClicked.y][map.currentLayer];
 		}
-		if(currentGroup.entityLayer.isOccupied((int)mapClicked.x, (int)mapClicked.y)){
+		if(map.getEntityLayer().isOccupied((int)mapClicked.x, (int)mapClicked.y, map.currentLayer)){
 			ComponentMapper<Inventory> inventoryMapper = w.getMapper(Inventory.class);
 			ComponentMapper<AiProfile> aiMapper = w.getMapper(AiProfile.class);
-			Entity e = w.getEntity(currentGroup.entityLayer.map[(int)mapClicked.x][(int)mapClicked.y]);
+			Entity e = w.getEntity(map.getEntityLayer().map[(int)mapClicked.x][(int)mapClicked.y][map.currentLayer]);
 			if(inventoryMapper.has(e) && !aiMapper.has(e)){
 				root.add(createButton("container", "container")).width(root.getWidth()).height(26).row();
-				entities.put("container", w.getEntity(currentGroup.entityLayer.map[(int)mapClicked.x][(int)mapClicked.y]));
+				entities.put("container", w.getEntity(map.getEntityLayer().map[(int)mapClicked.x][(int)mapClicked.y][map.currentLayer]));
 			}else if(aiMapper.has(e)){
 				root.add(createButton("entity", "entity")).width(root.getWidth()).height(26).row();
-				entities.put("entity", w.getEntity(currentGroup.entityLayer.map[(int)mapClicked.x][(int)mapClicked.y]));
+				entities.put("entity", w.getEntity(map.getEntityLayer().map[(int)mapClicked.x][(int)mapClicked.y][map.currentLayer]));
 			}
-		}
-		if(currentGroup.zoneLayer.isOccupied((int)mapClicked.x, (int)mapClicked.y)){
-			root.add(createButton("zone", "zone")).width(root.getWidth()).height(26);
-			z = currentGroup.zoneLayer.zoneMap[(int)mapClicked.x][(int)mapClicked.y];
 		}
 		root.layout();
 	}
+	
 	private Button createButton(String text, final String key){
 		LabelStyle lStyle = new LabelStyle(gui.font, Color.WHITE);
 		Button b = new Button(GuiUtils.setButtonStyle(gui.skin.getDrawable("gui/button"),null));
@@ -79,18 +72,6 @@ public class RightClickMenu {
 		b.addListener(new ChangeListener() {
 			public void changed(ChangeEvent event, Actor actor) {
 				switch(key){
-				case "zone":
-					switch(z.type){
-					case FARM:
-						gui.farmWindow.showWindow(x, y, (FarmZone)z, gui.game);
-						break;
-					case HOME:
-						gui.homeWindow.showWindow(x, y, (HomeZone)z, gui.game);
-						break;
-					default:
-						break;
-					}
-					break;
 				case "item":
 					gui.itemWindow.showWindow(x, y, i);
 					break;
@@ -112,8 +93,8 @@ public class RightClickMenu {
 		
 		hideMenu();
 	}
-	public void showMenu(float x, float y, Vector2 mapClicked, LayerGroup currentGroup){
-		setupMenu(mapClicked, currentGroup);
+	public void showMenu(float x, float y, Vector2 mapClicked, Map map){
+		setupMenu(mapClicked, map);
 		if(root.getChildren().size==0)return;
 		
 		root.setPosition(x, y);

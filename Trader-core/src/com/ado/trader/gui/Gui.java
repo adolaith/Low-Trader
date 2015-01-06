@@ -19,18 +19,14 @@ public class Gui {
 	ControlArea controlArea;
 	BuildMenu buildMenu;
 	ToolTip toolTip;
-	ZoneDialog zoneDialog;
 	CreateNpcWindow entityCustom;
 	RightClickMenu rightClickMenu;
 	
 	InformationWindow infoWindow;
 	NewsWindow newsWindow;
-	FarmWindow farmWindow;
-	HomeWindow homeWindow;
 	ItemWindow itemWindow;
 	NpcInfoWindow npcWindow;
 	ContainerWindow containerWindow;
-	WorkZoneWindow workWindow;
 	
 	public Gui(GameScreen game) {
 		this.game = game;
@@ -42,19 +38,15 @@ public class Gui {
 		buildMenu = new BuildMenu(this);
 		controlArea = new ControlArea(this);
 
-		zoneDialog = new ZoneDialog(this);
 		entityCustom = new CreateNpcWindow(this);
 		toolTip = new ToolTip(this);
 		
 		rightClickMenu = new RightClickMenu(this);
 		infoWindow = new InformationWindow(this);
 		newsWindow = new NewsWindow(this);
-		farmWindow = new FarmWindow(this);
-		homeWindow = new HomeWindow(this);
 		itemWindow = new ItemWindow(this);
 		npcWindow = new NpcInfoWindow(this);
 		containerWindow = new ContainerWindow(this);
-		workWindow = new WorkZoneWindow(this);
 	}
 	public void update(float x, float y){
 		toolTip.updateToolTip();
@@ -66,14 +58,11 @@ public class Gui {
 	}
 	public boolean rightClickAction(){
 		if(buildMenu.getBuildMenu().get("mainmenu").isVisible()){buildMenu.rightClickVis(false);}	//hides build menu
-		rightClickMenu.showMenu(game.getInput().getIsoClicked().x, game.getInput().getIsoClicked().y, game.getInput().getMapClicked(), game.getMap().getCurrentLayerGroup());
+		rightClickMenu.showMenu(game.getInput().getIsoClicked().x, game.getInput().getIsoClicked().y, game.getInput().getMapClicked(), game.getMap());
 		return false;
 	}
 	public void resize(int width, int height){
 		stage.getViewport().update(width, height);
-	}
-	public ZoneDialog getZoneDialog() {
-		return zoneDialog;
 	}
 	public Stage getStage() {
 		return stage;
@@ -92,9 +81,6 @@ public class Gui {
 	}
 	public ContainerWindow getContainerWindow() {
 		return containerWindow;
-	}
-	public WorkZoneWindow getWorkWindow() {
-		return workWindow;
 	}
 	public Skin getSkin(){
 		return skin;

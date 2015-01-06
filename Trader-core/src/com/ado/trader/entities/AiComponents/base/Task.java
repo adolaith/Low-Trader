@@ -1,8 +1,8 @@
 package com.ado.trader.entities.AiComponents.base;
 
 import com.ado.trader.GameMain;
+import com.ado.trader.input.InputHandler;
 import com.ado.trader.systems.AiSystem;
-import com.ado.trader.utils.InputHandler;
 import com.badlogic.gdx.Gdx;
 
 /*
