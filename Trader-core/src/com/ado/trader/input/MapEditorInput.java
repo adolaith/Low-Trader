@@ -1,34 +1,36 @@
 package com.ado.trader.input;
 
 import com.ado.trader.GameMain;
-import com.ado.trader.gui.GameGui;
-import com.ado.trader.gui.GameServices;
-import com.ado.trader.map.Map;
 import com.ado.trader.placement.PlacementManager;
 import com.ado.trader.screens.GameScreen;
-import com.ado.trader.systems.SaveSystem;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Input.Keys;
-import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
-public class GameInput extends InputHandler {
+public class MapEditorInput extends InputHandler{
+	PlacementManager plManager;
 
-	public GameInput() {
+	public MapEditorInput(PlacementManager plManager) {
 		super();
+		this.plManager = plManager;
 	}
 	
 	public boolean leftClick(int button){
 		if(!super.leftClick(button)){
-			return false;
+			
 		}
 		
 		return false;
 	}
 	public boolean rightClick(int button){
 		if(!super.rightClick(button)){
-//			if(gui.rightClickAction()) return true;
+			if(plManager.getPlacementSelection()!=null){
+				plManager.resetSelection();
+				return true;
+			}
+			if(plManager.handleClick(mapClicked, this)){
+				return true;
+			}
 		}
 		
 		return false;
@@ -55,6 +57,7 @@ public class GameInput extends InputHandler {
 				GameScreen.getVelocity().x = 0;}
 			break;
 		case Keys.R:
+			plManager.rotateSelection();
 			break;
 		case Keys.MINUS:
 			String saveDir = "testSaveDERP";
@@ -66,6 +69,7 @@ public class GameInput extends InputHandler {
 			DEBUG = !DEBUG;
 			break;
 		case Keys.F3:
+			plManager.setEditMode(!plManager.isEditMode());
 			break;
 		default:
 			break;
@@ -92,5 +96,9 @@ public class GameInput extends InputHandler {
 			break;
 		}
 		return true;
+	}
+	public void render(SpriteBatch batch){
+		render(batch);
+		plManager.render(batch);
 	}
 }

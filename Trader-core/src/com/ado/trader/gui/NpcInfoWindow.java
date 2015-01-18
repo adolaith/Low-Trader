@@ -17,10 +17,10 @@ public class NpcInfoWindow extends BasicWindow {
 	BitmapFont font;
 	Skin skin;
 
-	public NpcInfoWindow(Gui gui) {
-		super("Npc Info", 265, 165, gui);
-		font = gui.font;
-		skin = gui.skin;
+	public NpcInfoWindow(GameServices guiRes) {
+		super("Npc Info", 265, 165, guiRes.font, guiRes.skin, guiRes.stage);
+		font = guiRes.font;
+		skin = guiRes.skin;
 	}
 	
 	public void showWindow(float x, float y, Entity e){

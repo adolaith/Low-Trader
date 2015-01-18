@@ -9,28 +9,26 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.ArrayMap;
 
 public class MaskingSystem {
 	ArrayMap<String, Sprite> maskSprites;
-	InputHandler input;
 	Map map;
 	
-	public MaskingSystem(TextureAtlas atlas, Map map, InputHandler input){
+	public MaskingSystem(Skin skin, Map map){
 		this.map = map;
-		this.input = input;
 		maskSprites = new ArrayMap<String, Sprite>();
-		Sprite s = atlas.createSprite("wallMask_se");
+		Sprite s = new Sprite(skin.getSprite("wallMask_se"));
 		s.scale(1f);
 		loadMask("wallMask_se", s);
-		s = atlas.createSprite("wallMask_sw");
+		s = new Sprite(skin.getSprite("wallMask_sw"));
 		s.scale(1f);
 		loadMask("wallMask_sw", s);
 	}
 	public void drawMask(SpriteBatch batch, String wallDir, Vector2 vec, float height, Position p, Mask mask){
-		Vector2 tmp = IsoUtils.getColRow((int)input.getMousePos().x, (int)input.getMousePos().y, map.getTileWidth(), map.getTileHeight());
+		Vector2 tmp = IsoUtils.getColRow((int)InputHandler.getMousePos().x, (int)InputHandler.getMousePos().y, map.getTileWidth(), map.getTileHeight());
 		//wall is within 6 tiles of x,y
 		if(Math.abs((int)p.getX() - (int)tmp.x) < 6 &&  Math.abs((int)p.getY() - (int)tmp.y) < 4){
 			if(height > 64){

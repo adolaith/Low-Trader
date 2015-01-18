@@ -15,7 +15,6 @@ import com.ado.trader.systems.StatusIconSystem.StatusIcon;
 import com.ado.trader.utils.IsoUtils;
 import com.artemis.ComponentMapper;
 import com.artemis.Entity;
-import com.artemis.World;
 import com.artemis.annotations.Wire;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -39,17 +38,14 @@ public class EntityRenderSystem{
 	ComponentMapper<Mask> maskm;
 	ComponentMapper<Animation> animMapper;
 	
-//	GameScreen game;
-	World world;
 	Map map;
 	SkeletonRenderer skeletonRenderer;
 	SkeletonRendererDebug debugRenderer;
 	ArrayMap<Integer, Sprite> staticSprites;
 	MaskingSystem masks;
 
-	public EntityRenderSystem(Map map, World world, MaskingSystem masks) {
+	public EntityRenderSystem(Map map, MaskingSystem masks) {
 		this.map = map;
-		this.world = world;
 		this.masks = masks;
 		skeletonRenderer = new SkeletonRenderer();
 		debugRenderer = new SkeletonRendererDebug();
@@ -86,7 +82,7 @@ public class EntityRenderSystem{
 						}
 						
 						if(map.getEntityLayer().isOccupied(x, y, map.currentLayer)){
-							Entity e = world.getEntity(map.getEntityLayer().map[x][y][map.currentLayer]);
+							Entity e = map.getWorld().getEntity(map.getEntityLayer().map[x][y][map.currentLayer]);
 
 							if(sm.has(e)){		//RENDER STATIC ENTITY
 								drawSprite(e,batch);
@@ -95,7 +91,7 @@ public class EntityRenderSystem{
 								skeletonRenderer.draw(batch,skel);
 								
 								//render status icons
-								ComponentMapper<Status> statusMapper = world.getMapper(Status.class);
+								ComponentMapper<Status> statusMapper = map.getWorld().getMapper(Status.class);
 								if(statusMapper.has(e)){
 									StatusIcon icon = statusMapper.get(e).getStatusIcon();
 									Vector2 iconPos = new Vector2(skel.getX(), skel.getY());
@@ -114,8 +110,8 @@ public class EntityRenderSystem{
 	}
 	private boolean drawWideEntity(SpriteBatch batch){
 		if(map.getEntityLayer().isOccupied(x, y, map.currentLayer)){
-			Entity e = world.getEntity(map.getEntityLayer().map[x][y][map.currentLayer]);
-			ComponentMapper<Area> areaM = world.getMapper(Area.class);
+			Entity e = map.getWorld().getEntity(map.getEntityLayer().map[x][y][map.currentLayer]);
+			ComponentMapper<Area> areaM = map.getWorld().getMapper(Area.class);
 			Position p = pm.get(e);
 			if(areaM.has(e)){
 				if(x==p.getX()&&y==p.getY()){
@@ -124,7 +120,7 @@ public class EntityRenderSystem{
 					Sprite tmp = s.mainSprite;
 					if(tmp.isFlipX()){		//render next entity
 						if(map.getEntityLayer().isOccupied(x+1, y-1, map.currentLayer)){
-							Entity next = world.getEntity(map.getEntityLayer().map[x+1][y-1][map.currentLayer]);
+							Entity next = map.getWorld().getEntity(map.getEntityLayer().map[x+1][y-1][map.currentLayer]);
 							drawSprite(next, batch);
 							this.x--;
 							this.y--;
@@ -157,7 +153,7 @@ public class EntityRenderSystem{
 		return false;
 	}
 	private void drawFeature(Entity e,float x, float y, SpriteBatch batch){
-		ComponentMapper<Feature> fMapper = world.getMapper(Feature.class); 
+		ComponentMapper<Feature> fMapper = map.getWorld().getMapper(Feature.class); 
 		if(!fMapper.has(e))return;
 		Feature f = fMapper.get(e);
 		batch.draw(f.sprite, x, y, f.sprite.getWidth()*f.sprite.getScaleX(), f.sprite.getHeight()*f.sprite.getScaleY());
@@ -183,7 +179,7 @@ public class EntityRenderSystem{
 	}
 	private void renderNorthernWall(int x, int y, SpriteBatch batch){
 		if(!map.getWallLayer().isOccupied(x, y, map.currentLayer)) return;
-		Entity e = world.getEntity(map.getWallLayer().map[x][y][map.currentLayer]);
+		Entity e = map.getWorld().getEntity(map.getWallLayer().map[x][y][map.currentLayer]);
 		Wall w = wm.get(e);
 		if(!(w.firstSprite==Direction.NE||w.firstSprite==Direction.NW)&&!
 				(w.secondSprite==Direction.NE||w.secondSprite==Direction.NW))return;
@@ -199,7 +195,7 @@ public class EntityRenderSystem{
 	}
 	private void renderSouthernWall(int x, int y, SpriteBatch batch){
 		if(!map.getWallLayer().isOccupied(x, y, map.currentLayer)) return;
-		Entity e = world.getEntity(map.getWallLayer().map[x][y][map.currentLayer]);
+		Entity e = map.getWorld().getEntity(map.getWallLayer().map[x][y][map.currentLayer]);
 		Wall w = wm.get(e);
 		if(!(w.firstSprite==Direction.SE||w.firstSprite==Direction.SW)&&!
 				(w.secondSprite==Direction.SE||w.secondSprite==Direction.SW))return;

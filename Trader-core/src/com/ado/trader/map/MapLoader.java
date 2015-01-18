@@ -2,7 +2,7 @@ package com.ado.trader.map;
 
 import com.ado.trader.GameMain;
 import com.ado.trader.items.Item;
-import com.ado.trader.items.ItemCollection;
+import com.ado.trader.items.ItemFactory;
 import com.ado.trader.items.ItemPosition;
 import com.ado.trader.systems.GameTime;
 import com.ado.trader.utils.FileParser;
@@ -13,13 +13,11 @@ import com.badlogic.gdx.utils.ArrayMap;
 public class MapLoader {
 	Map map;
 	FileParser parser;
-	GameTime time;
-	ItemCollection items;
+	ItemFactory items;
 	
-	public MapLoader(Map map, ItemCollection items, FileParser parser, GameTime time) {
+	public MapLoader(Map map, ItemFactory items, FileParser parser) {
 		this.map = map;
 		this.parser = parser;
-		this.time = time;
 		this.items = items;
 	}
 	public void loadMap(String dirName){
@@ -28,6 +26,7 @@ public class MapLoader {
 		Array<ArrayMap<String, String>> data = parser.readFile();
 		
 		ArrayMap<String, String> timeData = data.removeIndex(0);
+		GameTime time = map.getWorld().getSystem(GameTime.class);
 		time.loadSettings(Integer.valueOf(timeData.get("days")), GameTime.Time.valueOf(timeData.get("ToD")), Integer.valueOf(timeData.get("time")));
 		map.currentLayer = Integer.valueOf(data.removeIndex(0).get("layer"));
 		
@@ -86,6 +85,7 @@ public class MapLoader {
 	public void saveMap(String dir){
 		StringBuilder tileString= new StringBuilder();
 		StringBuilder itemString= new StringBuilder();
+		GameTime time = map.getWorld().getSystem(GameTime.class);
 		
 		parser.string = tileString;
 		parser.addElement("ToD", String.valueOf(time.getTimeOfDay()));

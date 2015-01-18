@@ -20,10 +20,14 @@ public class BasicWindow {
 	Table bgTable, functionTable, root;
 	int width, height;
 	Label title;
+	BitmapFont font;
+	Skin skin;
 	
 	public BasicWindow(String title, int width, int height, BitmapFont font, Skin skin, Stage stage){
 		this.width = width;
 		this.height = height;
+		this.font = font;
+		this.skin = skin;
 		LabelStyle ls = new LabelStyle(font, Color.WHITE);
 		this.title = new Label(title, ls);
 		init(skin, stage);
@@ -53,7 +57,7 @@ public class BasicWindow {
 		});
 		functionTable.add(title).padLeft(6).padTop(6).padBottom(6).width(width-36).fill();
 		
-		ImageButton closeButton = new ImageButton(GuiUtils.setImgButtonStyle(skin.getDrawable("gui/delete"), null, skin.getDrawable("gui/button"), null));
+		ImageButton closeButton = new ImageButton(GameGui.setImgButtonStyle(skin.getDrawable("gui/delete"), null, skin.getDrawable("gui/button"), null));
 		closeButton.addListener(new ChangeListener() {
 			public void changed(ChangeEvent event, Actor actor) {
 				hideWindow();

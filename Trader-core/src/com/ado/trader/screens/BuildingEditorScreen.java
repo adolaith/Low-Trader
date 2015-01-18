@@ -2,10 +2,10 @@ package com.ado.trader.screens;
 
 import com.ado.trader.GameMain;
 import com.ado.trader.buildings.BuildingCollection;
-import com.ado.trader.entities.EntityCollection;
-import com.ado.trader.gui.Gui;
+import com.ado.trader.entities.EntityFactory;
+import com.ado.trader.gui.GameGui;
 import com.ado.trader.input.InputHandler;
-import com.ado.trader.items.ItemCollection;
+import com.ado.trader.items.ItemFactory;
 import com.ado.trader.map.Map;
 import com.ado.trader.placement.PlacementManager;
 import com.ado.trader.rendering.WorldRenderer;
@@ -32,8 +32,8 @@ public class BuildingEditorScreen implements Screen {
 	Map map;
 	World world;
 	
-	EntityCollection entities;
-	ItemCollection items;
+	EntityFactory entities;
+	ItemFactory items;
 	BuildingCollection buildings;
 	PlacementManager placement;
 	
@@ -50,13 +50,13 @@ public class BuildingEditorScreen implements Screen {
 		world.setManager(new GroupManager());
 		world.setSystem(new SaveSystem(this), true);
 		world.initialize();
-		entities = new EntityCollection(this);
+		entities = new EntityFactory(this);
 		
 		map = new Map(this);
 		placement = new PlacementManager(this);
 		
 		buildings = new BuildingCollection(this);
-		items = new ItemCollection("data/ItemProfiles", this);
+		items = new ItemFactory("data/ItemProfiles", this);
 		
 		input = new InputHandler(this);
 		

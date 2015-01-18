@@ -2,121 +2,78 @@ package com.ado.trader.screens;
 
 import com.ado.trader.GameMain;
 import com.ado.trader.buildings.BuildingCollection;
-import com.ado.trader.entities.EntityCollection;
-import com.ado.trader.gui.Gui;
-import com.ado.trader.input.InputHandler;
-import com.ado.trader.items.ItemCollection;
-import com.ado.trader.map.Map;
-import com.ado.trader.pathfinding.AStarPathFinder;
-import com.ado.trader.placement.PlacementManager;
-import com.ado.trader.rendering.WorldRenderer;
+import com.ado.trader.entities.EntityLoader;
+import com.ado.trader.gui.GameGui;
+import com.ado.trader.gui.GameServices;
+import com.ado.trader.input.GameInput;
 import com.ado.trader.systems.AiSystem;
 import com.ado.trader.systems.AnimationSystem;
-import com.ado.trader.systems.FarmSystem;
 import com.ado.trader.systems.GameTime;
 import com.ado.trader.systems.MovementSystem;
 import com.ado.trader.systems.SaveSystem;
 import com.ado.trader.systems.StatusIconSystem;
-import com.ado.trader.utils.FileParser;
-import com.ado.trader.utils.IsoUtils;
-import com.artemis.Entity;
 import com.artemis.World;
 import com.artemis.managers.GroupManager;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.TimeUtils;
 
 //Main game class
 public class GameScreen implements Screen{
-	
 	GameMain game;
-	WorldRenderer renderer;
-	InputHandler input;
-	FileParser parser;
 	
-	TextureAtlas atlas;
-	Map map;
-	Gui gui;
-	World world;
+	GameServices gameServices;
+	GameGui gui;
 	
-	EntityCollection entities;
-	ItemCollection items;
 	BuildingCollection buildings;
-	AStarPathFinder pathfinder;
-	PlacementManager placement;
 	
 	static Vector2 velocity = new Vector2(); //camera velocity
 	
 	//initialize
 	public GameScreen(GameMain game) {
 		this.game = game;
-		world = new World();
-		parser = new FileParser();
-		atlas = new TextureAtlas("img/master.pack");
-		renderer = new WorldRenderer(this);
-		initWorld();
-		map = new Map(this);
-		placement = new PlacementManager(this);
-		
-		buildings = new BuildingCollection(this);
-		items = new ItemCollection("data/ItemProfiles", this);
-		
-		gui = new Gui(this);
-		input = new InputHandler(this);
-		
-		//centre camera on map
-		Vector2 tmp = IsoUtils.getIsoXY(map.getWidthInTiles()/2, map.getHeightInTiles()/2, map.getTileWidth(), map.getTileHeight());
-		renderer.getCamera().position.x = tmp.x;
-		renderer.getCamera().position.y = tmp.y;
-		
-		pathfinder = new AStarPathFinder(map, 500, false);
+		init(null);
 	}
 	
 	//loads saved states from save dir files
 	public GameScreen(GameMain game, String dirName){
-		if(Gdx.files.external("saves/"+dirName).exists() && Gdx.files.external("saves/"+dirName).isDirectory()){
+		try{
 			this.game = game;
-			world = new World();
-			parser = new FileParser();
-			atlas = new TextureAtlas("img/master.pack");
-			renderer = new WorldRenderer(this);
-			initWorld();
-			items = new ItemCollection("data/ItemProfiles", this);
-			placement = new PlacementManager(this);
-			map = new Map(this,"testSaveDERP");
-			
-			entities.getLoader().loadSavedEntities("testSaveDERP", this, entities);
-			
-			gui = new Gui(this);
-			input = new InputHandler(this);
-			
-			//centre camera on map
-			Vector2 tmp = IsoUtils.getIsoXY(map.getWidthInTiles()/2, map.getHeightInTiles()/2, map.getTileWidth(), map.getTileHeight());
-			renderer.getCamera().position.x = tmp.x;
-			renderer.getCamera().position.y = tmp.y;
-			
-			pathfinder = new AStarPathFinder(map, 500, false);
-		}else{
-			Gdx.app.log("CRITICAL ERROR: ", "Loading game failed. File not found");
+			init(dirName);
+		}catch(Exception ex){
+			Gdx.app.log("CRITICAL ERROR: ", "Loading game failed. Exception: "+ ex);
 			Gdx.app.exit();
 		}
 	}
+	private void init(String loadDir){
+		
+		gameServices = new GameServices(1280, 720, new GameInput(), loadDir);
+				
+		initWorld();
+		
+		gui = new GameGui(gameServices);
+		
+		if(loadDir != null){
+			EntityLoader loader = gameServices.getEntities().getLoader();
+			loader.loadSavedEntities("testSaveDERP", gameServices);
+		}
+		
+	}
 	private void initWorld(){
+		World world = gameServices.getWorld();
 		world.setManager(new GroupManager());
-		world.setSystem(new AnimationSystem(this));
-		world.setSystem(new AiSystem(this));
-		world.setSystem(new MovementSystem(this));
-		world.setSystem(new SaveSystem(this), true);
-		world.setSystem(new FarmSystem(this), true);
+		world.setSystem(new AnimationSystem());
+		world.setSystem(new AiSystem(gameServices));
+		world.setSystem(new MovementSystem(gameServices));
+		world.setSystem(new SaveSystem(gameServices), true);
+//		world.setSystem(new FarmSystem(this), true);
 		world.setSystem(new GameTime(1.0f));
-		world.setSystem(new StatusIconSystem(0.7f, atlas));
+		world.setSystem(new StatusIconSystem(0.7f, gameServices.getAtlas()));
 		world.initialize();
-		entities = new EntityCollection(this);
 	}
 	
-	public void setSpeed(float modifier){
+	public static void setSpeed(float modifier){
 		if(modifier == 0){
 			speed = 1;
 			return;
@@ -130,10 +87,10 @@ public class GameScreen implements Screen{
 	}
 	
 	//updates game logic
-	public long updateTime;
-	public int speed = 0;
+	public static long updateTime;
+	public static int speed = 0;
 	
-	public void update(float delta){
+	public void updateLogic(float delta){
 		if(speed > 1){
 			delta *= speed;
 		}else if(speed == -1){
@@ -144,61 +101,35 @@ public class GameScreen implements Screen{
 			delta *= 0.6f;
 		}
 		long start = TimeUtils.nanoTime();
-		world.setDelta(delta);
-		world.process();
-		updateTime = TimeUtils.nanosToMillis(TimeUtils.timeSinceNanos(start));//debug code
+		
+		gameServices.getWorld().setDelta(delta);
+		gameServices.getWorld().process();
+		
+		updateTime = TimeUtils.nanosToMillis(TimeUtils.timeSinceNanos(start));
 //		Gdx.app.log(GameMain.LOG, "===========END-LOOP==========");
 	}
 	
 	//updates logic and renderer
 	@Override
 	public void render(float delta) {
-		update(delta);
-		renderer.getCamera().translate(velocity.x, velocity.y);
-		gui.getStage().act(delta);
-		gui.update(velocity.x, velocity.y);
-		renderer.render(delta);
+		updateLogic(delta);
+		
+		gameServices.getCam().translate(velocity.x, velocity.y);
+		
+		gameServices.getStage().act(delta);
+		gui.update();
+		
+		gameServices.getRenderer().render(delta);
 	}
 	
 	public BuildingCollection getBuildingCollection() {
 		return buildings;
 	}
-
-	public FileParser getParser() {
-		return parser;
-	}
-	public TextureAtlas getAtlas() {
-		return atlas;
-	}
 	public static Vector2 getVelocity() {
 		return velocity;
 	}
-	public WorldRenderer getRenderer() {
-		return renderer;
-	}
-	public InputHandler getInput() {
-		return input;
-	}
-	public Map getMap() {
-		return map;
-	}
-	public Gui getGui() {
+	public GameGui getGui() {
 		return gui;
-	}
-	public EntityCollection getEntities() {
-		return entities;
-	}
-	public AStarPathFinder getPathfinder() {
-		return pathfinder;
-	}	
-	public World getWorld() {
-		return world;
-	}
-	public PlacementManager getPlaceManager(){
-		return placement;
-	}
-	public ItemCollection getItems(){
-		return items;
 	}
 	@Override
 	public void resize(int width, int height) {
@@ -220,8 +151,6 @@ public class GameScreen implements Screen{
 
 	@Override
 	public void dispose() {
-		renderer.dispose();
-		gui.dispose();
-		atlas.dispose();
+		gameServices.dispose();
 	}
 }

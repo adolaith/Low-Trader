@@ -16,7 +16,7 @@ import com.ado.trader.entities.components.AiProfile;
 import com.ado.trader.entities.components.Inventory;
 import com.ado.trader.entities.components.Movement;
 import com.ado.trader.entities.components.Position;
-import com.ado.trader.screens.GameScreen;
+import com.ado.trader.gui.GameServices;
 import com.artemis.Aspect;
 import com.artemis.ComponentMapper;
 import com.artemis.Entity;
@@ -37,14 +37,14 @@ public class AiSystem extends EntityProcessingSystem{
 	ComponentMapper<AiProfile> aim;
 	ArrayMap<String, String[]> profiles;
 
-	public GameScreen game;
 	public Entity currentEntity;
+	public GameServices gameRes;
 
 	@SuppressWarnings("unchecked")
-	public AiSystem(GameScreen game) {
+	public AiSystem(GameServices gameRes) {
 		super(Aspect.getAspectForAll(AiProfile.class));
-		this.game = game;
 		
+		this.gameRes = gameRes;
 		loadAiProfiles();
 	}
 

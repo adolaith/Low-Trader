@@ -1,51 +1,74 @@
 package com.ado.trader.input;
 
 import com.ado.trader.map.Map;
+import com.ado.trader.map.Tile;
 import com.ado.trader.utils.IsoUtils;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 
 public class InputHandler implements InputProcessor{
-	
+	int velocity = 25;
 	public static boolean DEBUG = false;
 	Vector3 vec3Clicked,mousePosVec3;
-	public Vector2 mapClicked;
-	Vector2 isoClicked;
-	Vector2 mousePosVec2;
+	public static Vector2 mapClicked;
+	static Vector2 isoClicked;
+	static Vector2 mousePosVec2;
+	Sprite highlight;
+	
 	InputMultiplexer inputSystem;
-	int velocity = 25;
 	
 	Stage stage;
 	Map map;
 	OrthographicCamera camera;
 
-	public InputHandler(Stage stage, Map map, OrthographicCamera camera){
-		this.stage = stage;
-		this.map = map;
-		this.camera = camera;
-		
+	//Map, stage, camera and tileHighlight must be added using builder methods provided before the first render call
+	public InputHandler(){
 		vec3Clicked = new Vector3();
 		isoClicked= new Vector2();
 		mapClicked= new Vector2();
 		mousePosVec3 = new Vector3();
 		mousePosVec2 = new Vector2(0,0);
-		setInputSystems(stage,this);
 	}
 
 	public boolean leftClick(int button){
+		if(button == Buttons.LEFT){
+			return true;
+		}
 		
 		return false;
 	}
 	public boolean rightClick(int button){
-		
+		if(button == Buttons.RIGHT){
+			
 			return true;
+		}
+		return false;
 	}
-
+	public void render(SpriteBatch batch){
+		try{
+			renderTileHighlight(batch);
+		}catch(Exception ex){
+			Gdx.app.log("Game - InputHandler: ", "RENDER FAIL!");
+		}
+	}
+	public void renderTileHighlight(SpriteBatch batch){
+		Vector2 mapPos = IsoUtils.getColRow((int)mousePosVec2.x, (int)mousePosVec2.y, map.getTileWidth(), map.getTileHeight());
+		if(mapPos.x<0||mapPos.y<0||mapPos.x>=map.getWidthInTiles()||mapPos.y>=map.getHeightInTiles()){return;}
+		
+		Tile t = map.getTileLayer().map[(int)mapPos.x][(int)mapPos.y][map.currentLayer];
+		mapPos = IsoUtils.getIsoXY((int)t.getX(), (int)t.getY(), map.getTileWidth(), map.getTileHeight());
+		batch.begin();
+		batch.draw(highlight, (int)mapPos.x, (int)mapPos.y,highlight.getWidth()*highlight.getScaleX(),highlight.getHeight()*highlight.getScaleY());	
+		batch.end();
+	}
 	@Override
 	public boolean keyDown(int keycode) {
 		return false;
@@ -74,6 +97,8 @@ public class InputHandler implements InputProcessor{
 		if(mapClicked.x < 0 || mapClicked.y < 0 || mapClicked.x > map.getWidthInTiles() || mapClicked.y > map.getHeightInTiles()){return true;}
 		
 		stage.setKeyboardFocus(null);
+		leftClick(button);
+		rightClick(button);
 		
 		return false;
 	}
@@ -104,16 +129,34 @@ public class InputHandler implements InputProcessor{
 		inputSystem = new InputMultiplexer(processors);
 		Gdx.input.setInputProcessor(inputSystem);
 	}
-	public Vector2 getIsoClicked() {
+	public InputHandler addMap(Map map){
+		this.map = map;
+		return this;
+	}
+	public InputHandler addStage(Stage stage){
+		this.stage = stage;
+		setInputSystems(stage, this);
+		return this;
+	}
+	public InputHandler addCamera(OrthographicCamera cam){
+		this.camera = cam;
+		return this;
+	}
+	public InputHandler addTileHighlight(Sprite tileHighlight){
+		highlight = tileHighlight;
+		highlight.setScale(2);
+		return this;
+	}
+	public static Vector2 getIsoClicked() {
 		return isoClicked;
 	}
-	public Vector2 getMapClicked() {
+	public static Vector2 getMapClicked() {
 		return mapClicked;
 	}
 	public Vector3 getVec3Clicked() {
 		return vec3Clicked;
 	}
-	public Vector2 getMousePos() {
+	public static Vector2 getMousePos() {
 		return mousePosVec2;
 	}
 }

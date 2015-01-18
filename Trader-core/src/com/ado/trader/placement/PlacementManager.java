@@ -1,33 +1,44 @@
 package com.ado.trader.placement;
 
+import com.ado.trader.entities.EntityFactory;
+import com.ado.trader.gui.GameServices;
 import com.ado.trader.input.InputHandler;
+import com.ado.trader.items.ItemFactory;
+import com.ado.trader.map.Map;
+import com.ado.trader.rendering.EntityRenderSystem;
 import com.ado.trader.rendering.EntityRenderSystem.Direction;
-import com.ado.trader.screens.GameScreen;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 
 public class PlacementManager {
-	GameScreen game;
 	Placeable placementSelection;
 	EntityPlaceable entityPl;
 	TilePlaceable tilePl;
 	WallPlaceable wallPl;
 	FeaturePlaceable featurePl;
 	ItemPlaceable itemPl;
+	
 	boolean editMode;
+	InputHandler input;
+	EntityRenderSystem entityRenderer;
+	EntityFactory entities;
 
-	public PlacementManager(GameScreen game) {
-		this.game = game;
+	public PlacementManager(InputHandler input, Map map, GameServices gui, EntityFactory entities, ItemFactory items, EntityRenderSystem entityRenderer) {
 		editMode = true;
 		placementSelection=null;
 		editMode = true;
-		entityPl = new EntityPlaceable(game);
-		tilePl = new TilePlaceable(game);
-		wallPl = new WallPlaceable(game);
-		featurePl = new FeaturePlaceable(game);
-		itemPl = new ItemPlaceable(game);
+		
+		this.input = input;
+		this.entityRenderer = entityRenderer;
+		this.entities = entities;
+		
+		entityPl = new EntityPlaceable(map, input, gui, entities);
+		tilePl = new TilePlaceable(map, input);
+		wallPl = new WallPlaceable(map, entities, entityRenderer);
+		featurePl = new FeaturePlaceable(input, map, entities);
+		itemPl = new ItemPlaceable(map, items);
 	}
 	
 	public boolean handleClick(Vector2 mapUp, InputHandler input){
@@ -36,11 +47,11 @@ public class PlacementManager {
 		//mouse was dragged
 		if(mapUp.x!=input.mapClicked.x&&mapUp.y!=input.mapClicked.y){
 			//get smallest x,y
-			Vector2 start = new Vector2(Math.min((int)mapUp.x, (int)game.getInput().getMapClicked().x), 
-					Math.min((int)mapUp.y, (int)game.getInput().getMapClicked().y));
+			Vector2 start = new Vector2(Math.min((int)mapUp.x, (int)input.getMapClicked().x), 
+					Math.min((int)mapUp.y, (int)input.getMapClicked().y));
 			//get largest x,y
-			Vector2 widthHeight = new Vector2(Math.max((int)mapUp.x, (int)game.getInput().getMapClicked().x), 
-					Math.max((int)mapUp.y, (int)game.getInput().getMapClicked().y));
+			Vector2 widthHeight = new Vector2(Math.max((int)mapUp.x, (int)input.getMapClicked().x), 
+					Math.max((int)mapUp.y, (int)input.getMapClicked().y));
 			
 			//delete area
 			if(placementSelection.delete){
@@ -71,13 +82,7 @@ public class PlacementManager {
 	}
 	
 	public void rotateSelection(){
-		if(placementSelection == entityPl){
-			entityPl.rotateSelection();
-		}else if(placementSelection == wallPl){
-			wallPl.rotateSelection();
-		}else if(placementSelection == featurePl){
-			featurePl.rotateSelection();
-		}
+		placementSelection.rotateSelection(entityRenderer);
 	}
 	
 	public void setPlacementSelection(String type, String name){
@@ -85,8 +90,8 @@ public class PlacementManager {
 		case "feature":
 			placementSelection = featurePl;
 			featurePl.featureId = name;
-			featurePl.spriteId = Integer.valueOf(game.getEntities().getFeatures().getFeature(name).get("sprite").split(",")[0]);
-			featurePl.sprite = game.getRenderer().getRenderEntitySystem().getStaticSprites().get(featurePl.spriteId);
+			featurePl.spriteId = Integer.valueOf(entities.getFeatures().getFeature(name).get("sprite").split(",")[0]);
+			featurePl.sprite = entityRenderer.getStaticSprites().get(featurePl.spriteId);
 			break;
 		case "item":
 			placementSelection = itemPl;
@@ -106,8 +111,8 @@ public class PlacementManager {
 				break;
 			}
 			entityPl.entityTypeID = id;
-			entityPl.spriteId = Integer.valueOf(game.getEntities().getEntities().get(id).get("sprite").split(",")[0]);
-			entityPl.sprite = game.getRenderer().getRenderEntitySystem().getStaticSprites().get(entityPl.spriteId);
+			entityPl.spriteId = Integer.valueOf(entities.getEntities().get(id).get("sprite").split(",")[0]);
+			entityPl.sprite = entityRenderer.getStaticSprites().get(entityPl.spriteId);
 			break;
 		case "tile":
 			placementSelection = tilePl;
@@ -122,8 +127,8 @@ public class PlacementManager {
 				wallPl.first = null;
 				break;
 			}
-			wallPl.firstId = Integer.valueOf(game.getEntities().getEntities().get(id).get("sprite").split(",")[0]);
-			wallPl.firstSprite = game.getRenderer().getRenderEntitySystem().getStaticSprites().get(wallPl.firstId);
+			wallPl.firstId = Integer.valueOf(entities.getEntities().get(id).get("sprite").split(",")[0]);
+			wallPl.firstSprite = entityRenderer.getStaticSprites().get(wallPl.firstId);
 			wallPl.first = Direction.SW;
 			break;
 		}

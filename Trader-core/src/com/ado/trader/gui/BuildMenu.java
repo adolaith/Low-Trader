@@ -20,37 +20,37 @@ import com.badlogic.gdx.utils.ArrayMap;
 public class BuildMenu{
 	ArrayMap<String, Table> buildMenu;
 
-	public BuildMenu(Gui root){
+	public BuildMenu(GameServices guiRes){
 		super();
-		rightClickMenu(root);
+		rightClickMenu(guiRes);
 	}
 
 	//Right click menu
-	private void rightClickMenu(final Gui root) {
+	private void rightClickMenu(GameServices guiRes) {
 		buildMenu = new ArrayMap<String, Table>();
 		
 		//Terrain table
-		Table terrainMenu = terrainMenu(root);
+		Table terrainMenu = terrainMenu(guiRes);
 		terrainMenu.setVisible(false);
-		root.stage.addActor(terrainMenu);
+		guiRes.stage.addActor(terrainMenu);
 		buildMenu.put("terrainmenu", terrainMenu);
 
 		//Wall table
-		Table wallMenu = createWallTable(root);
+		Table wallMenu = createWallTable(guiRes);
 		wallMenu.setVisible(false);
-		root.stage.addActor(wallMenu);
+		guiRes.stage.addActor(wallMenu);
 		buildMenu.put("wallmenu", wallMenu);
 		
 		//entity menu table
-		Table entityMenu = entityMenu(root);
+		Table entityMenu = entityMenu(guiRes);
 		entityMenu.setVisible(false);
-		root.stage.addActor(entityMenu);
+		guiRes.stage.addActor(entityMenu);
 		buildMenu.put("entitymenu", entityMenu);
 		
 		//items menu
-		Table itemsMenu = itemsMenu(root);
+		Table itemsMenu = itemsMenu(guiRes);
 		itemsMenu.setVisible(false);
-		root.stage.addActor(itemsMenu);
+		guiRes.stage.addActor(itemsMenu);
 		buildMenu.put("itemsmenu", itemsMenu);
 
 		//Main rightclick menu
@@ -60,9 +60,9 @@ public class BuildMenu{
 		mainMenu.setFillParent(false);
 
 		// Make a bunch of filler buttons
-		LabelStyle lStyle = new LabelStyle(root.font, Color.BLACK);
+		LabelStyle lStyle = new LabelStyle(guiRes.font, Color.BLACK);
 		for (int i = 0; i < 2; i++) {
-			Button b = new Button(GuiUtils.setButtonStyle(root.skin.getDrawable("gui/button"),null));
+			Button b = new Button(GameServices.setButtonStyle(guiRes.skin.getDrawable("gui/button"),null));
 			b.add(new Label("[EMPTY]",lStyle));
 			b.addListener(new ChangeListener() {
 				public void changed(ChangeEvent event, Actor actor) {
@@ -72,21 +72,21 @@ public class BuildMenu{
 			mainMenu.add(b).row();
 		}
 		
-		mainMenu.add(createNpcButton(root, root.font, root.skin)).width(80).height(44).row();
-		mainMenu.add(createWallButton(root.font, root.skin)).row();
-		mainMenu.add(createEntityButton(root.font, root.skin)).row();
-		mainMenu.add(createItemsButton(root.font, root.skin)).row();
-		mainMenu.add(createTerrainButton(root.font, root.skin)).row();
+		mainMenu.add(createNpcButton(guiRes)).width(80).height(44).row();
+		mainMenu.add(createWallButton(guiRes)).row();
+		mainMenu.add(createEntityButton(guiRes)).row();
+		mainMenu.add(createItemsButton(guiRes)).row();
+		mainMenu.add(createTerrainButton(guiRes)).row();
 
 		mainMenu.setVisible(false);
-		root.stage.addActor(mainMenu);
+		guiRes.stage.addActor(mainMenu);
 		buildMenu.put("mainmenu", mainMenu);
 	}
 	
-	private Button createEntityButton(BitmapFont font, Skin skin){
-		LabelStyle lStyle = new LabelStyle(font, Color.BLACK);
+	private Button createEntityButton(GameServices guiRes){
+		LabelStyle lStyle = new LabelStyle(guiRes.font, Color.BLACK);
 		
-		Button b = new Button(GuiUtils.setButtonStyle(skin.getDrawable("gui/button"),null));
+		Button b = new Button(GameServices.setButtonStyle(guiRes.skin.getDrawable("gui/button"),null));
 		b.add(new Label("Entities",lStyle));
 		b.addListener(new ChangeListener() {
 			public void changed(ChangeEvent event, Actor actor) {
@@ -102,10 +102,10 @@ public class BuildMenu{
 		return b;
 	}
 	
-	private Button createItemsButton(BitmapFont font, Skin skin){
-		LabelStyle lStyle = new LabelStyle(font, Color.BLACK);
+	private Button createItemsButton(GameServices guiRes){
+		LabelStyle lStyle = new LabelStyle(guiRes.font, Color.BLACK);
 
-		Button b = new Button(GuiUtils.setButtonStyle(skin.getDrawable("gui/button"),null));
+		Button b = new Button(GameServices.setButtonStyle(guiRes.skin.getDrawable("gui/button"),null));
 		b.add(new Label("Items",lStyle));
 		b.addListener(new ChangeListener() {
 			public void changed(ChangeEvent event, Actor actor) {
@@ -121,10 +121,10 @@ public class BuildMenu{
 		return b;
 	}
 	
-	private Button createWallButton(BitmapFont font, Skin skin){
-		LabelStyle lStyle = new LabelStyle(font, Color.BLACK);
+	private Button createWallButton(GameServices guiRes){
+		LabelStyle lStyle = new LabelStyle(guiRes.font, Color.BLACK);
 		
-		Button b = new Button(GuiUtils.setButtonStyle(skin.getDrawable("gui/button"),null));
+		Button b = new Button(GameServices.setButtonStyle(guiRes.skin.getDrawable("gui/button"),null));
 		b.add(new Label("Walls",lStyle));
 		b.addListener(new ChangeListener() {
 			public void changed(ChangeEvent event, Actor actor) {
@@ -140,10 +140,10 @@ public class BuildMenu{
 		return b;
 	}
 	
-	private Button createNpcButton(final Gui root, BitmapFont font, Skin skin){
-		LabelStyle lStyle = new LabelStyle(font, Color.BLACK);
+	private Button createNpcButton(GameServices guiRes){
+		LabelStyle lStyle = new LabelStyle(guiRes.font, Color.BLACK);
 		
-		Button b = new Button(GuiUtils.setButtonStyle(skin.getDrawable("gui/button"),null));
+		Button b = new Button(GameServices.setButtonStyle(guiRes.skin.getDrawable("gui/button"),null));
 		Label l = new Label("Create\nNpc",lStyle);
 		l.setAlignment(Align.center);
 		b.add(l);
@@ -155,10 +155,10 @@ public class BuildMenu{
 		return b;
 	}
 	
-	private Button createTerrainButton(BitmapFont font, Skin skin){
-		LabelStyle lStyle = new LabelStyle(font, Color.BLACK);
+	private Button createTerrainButton(GameServices guiRes){
+		LabelStyle lStyle = new LabelStyle(guiRes.font, Color.BLACK);
 		
-		Button b = new Button(GuiUtils.setButtonStyle(skin.getDrawable("gui/button"),null));
+		Button b = new Button(GameServices.setButtonStyle(guiRes.skin.getDrawable("gui/button"),null));
 		b.add(new Label("Terrain",lStyle));
 		b.addListener(new ChangeListener() {
 			public void changed(ChangeEvent event, Actor actor) {
@@ -175,7 +175,7 @@ public class BuildMenu{
 	}
 	
 	//terrain tile menu
-	private Table terrainMenu(final Gui root){
+	private Table terrainMenu(GameServices guiRes){
 		Table terrainMenu = new Table();
 		terrainMenu.setFillParent(false);
 		
@@ -183,7 +183,7 @@ public class BuildMenu{
 		
 		for(int x=0;x<root.game.getMap().getTilePool().getTileProfiles().size; x++){
 			final int i = x;
-			ImageButton imgb = new ImageButton(GuiUtils.setImgButtonStyle(new SpriteDrawable(root.game.getMap().getTileSprites().get(i)), null, root.skin.getDrawable("gui/button"), null));
+			ImageButton imgb = new ImageButton(GameServices.setImgButtonStyle(new SpriteDrawable(root.game.getMap().getTileSprites().get(i)), null, root.skin.getDrawable("gui/button"), null));
 			imgb.addListener(new ChangeListener() {
 				public void changed(ChangeEvent event, Actor actor) {
 					root.game.getPlaceManager().setPlacementSelection("tile", i);
@@ -195,10 +195,10 @@ public class BuildMenu{
 		return terrainMenu;
 	}
 
-	private Table entityMenu(final Gui root){
+	private Table entityMenu(GameServices guiRes){
 		Table entityMenu = new Table();
 		entityMenu.setFillParent(false);
-		Sprite bg = new Sprite(root.skin.getSprite("gui/button"));
+		Sprite bg = new Sprite(guiRes.skin.getSprite("gui/button"));
 		entityMenu.defaults().size(bg.getWidth()*1.2f);
 		
 		//static entity buttons (tables, containers, signs etc)
@@ -215,10 +215,10 @@ public class BuildMenu{
 			Sprite tmp = new Sprite(root.game.getRenderer().getRenderEntitySystem().getStaticSprites().get(Integer.valueOf(str[0])));
 			tmp.setScale(1f);
 
-			Button butt = new ImageButton(GuiUtils.setImgButtonStyle(new SpriteDrawable(tmp), null, root.skin.getDrawable("gui/button"), null));
+			Button butt = new ImageButton(GameServices.setImgButtonStyle(new SpriteDrawable(tmp), null, guiRes.skin.getDrawable("gui/button"), null));
 			butt.addListener(new ChangeListener() {
 				public void changed(ChangeEvent event, Actor actor) {
-					root.game.getPlaceManager().setPlacementSelection("entity",root.game.getEntities().getEntities().getKeyAt(i));	
+					root.game.getPlaceManager().setPlacementSelection("entity", root.game.getEntities().getEntities().getKeyAt(i));	
 				}
 			});
 			addToTable(butt, entityMenu);
@@ -231,7 +231,7 @@ public class BuildMenu{
 			Sprite tmp = new Sprite(root.game.getRenderer().getRenderEntitySystem().getStaticSprites().get(Integer.valueOf(str[0])));
 			tmp.setScale(1f);
 
-			Button butt = new ImageButton(GuiUtils.setImgButtonStyle(new SpriteDrawable(tmp), null, root.skin.getDrawable("gui/button"), null));
+			Button butt = new ImageButton(GameServices.setImgButtonStyle(new SpriteDrawable(tmp), null, guiRes.skin.getDrawable("gui/button"), null));
 			butt.addListener(new ChangeListener() {
 				public void changed(ChangeEvent event, Actor actor) {
 					root.game.getPlaceManager().setPlacementSelection("feature", f.get("id"));						
@@ -241,7 +241,7 @@ public class BuildMenu{
 		}
 		
 		//delete button
-		ImageButton deleteModeButton = new ImageButton(GuiUtils.setImgButtonStyle(root.skin.getDrawable("gui/delete"), null, root.skin.getDrawable("gui/button"), null));
+		ImageButton deleteModeButton = new ImageButton(GameServices.setImgButtonStyle(guiRes.skin.getDrawable("gui/delete"), null, guiRes.skin.getDrawable("gui/button"), null));
 		deleteModeButton.addListener(new ChangeListener() {
 			public void changed(ChangeEvent event, Actor actor) {
 				root.game.getPlaceManager().setPlacementSelection("entity", 0);
@@ -252,10 +252,10 @@ public class BuildMenu{
 		entityMenu.add(deleteModeButton).width(56).height(56);
 		return entityMenu;
 	}
-	private Table createWallTable(final Gui root){
+	private Table createWallTable(GameServices guiRes){
 		Table wallMenu = new Table();
 		wallMenu.setFillParent(false);
-		Sprite bg = new Sprite(root.skin.getSprite("gui/button"));
+		Sprite bg = new Sprite(guiRes.skin.getSprite("gui/button"));
 		wallMenu.defaults().size(bg.getWidth()*1.2f);
 		
 		ArrayMap<Integer, Sprite> spriteList = root.game.getRenderer().getRenderEntitySystem().getStaticSprites();
@@ -271,7 +271,7 @@ public class BuildMenu{
 			Sprite tmp = new Sprite(spriteList.get(Integer.valueOf(str[0])));
 			tmp.setScale(1f);
 
-			Button butt = new ImageButton(GuiUtils.setImgButtonStyle(new SpriteDrawable(tmp), null, root.skin.getDrawable("gui/button"), null));
+			Button butt = new ImageButton(GameServices.setImgButtonStyle(new SpriteDrawable(tmp), null, guiRes.skin.getDrawable("gui/button"), null));
 			butt.addListener(new ChangeListener() {
 				public void changed(ChangeEvent event, Actor actor) {
 					root.game.getPlaceManager().setPlacementSelection("wall",root.game.getEntities().getEntities().getKeyAt(i));
@@ -280,7 +280,7 @@ public class BuildMenu{
 			addToTable(butt, wallMenu);
 		}
 		
-		ImageButton deleteModeButton = new ImageButton(GuiUtils.setImgButtonStyle(root.skin.getDrawable("gui/delete"), null, root.skin.getDrawable("gui/button"), null));
+		ImageButton deleteModeButton = new ImageButton(GameServices.setImgButtonStyle(guiRes.skin.getDrawable("gui/delete"), null, guiRes.skin.getDrawable("gui/button"), null));
 		deleteModeButton.addListener(new ChangeListener() {
 			public void changed(ChangeEvent event, Actor actor) {
 				root.game.getPlaceManager().setPlacementSelection("wall", 0);
@@ -292,10 +292,10 @@ public class BuildMenu{
 		return wallMenu;
 	}
 	
-	private Table itemsMenu(final Gui root){
+	private Table itemsMenu(GameServices guiRes){
 		Table itemsMenu = new Table();
 		itemsMenu.setFillParent(false);
-		Sprite bg = new Sprite(root.skin.getSprite("gui/button"));
+		Sprite bg = new Sprite(guiRes.skin.getSprite("gui/button"));
 		itemsMenu.defaults().size(bg.getWidth()*1.2f);
 		
 		ArrayMap<Integer, Sprite> spriteList = root.game.getItems().getItemSprites();
@@ -307,7 +307,7 @@ public class BuildMenu{
 			Sprite tmp = new Sprite(spriteList.get(Integer.valueOf(profile.get("sprite"))));
 			tmp.setScale(1f);
 
-			Button butt = new ImageButton(GuiUtils.setImgButtonStyle(new SpriteDrawable(tmp), null, root.skin.getDrawable("gui/button"), null));
+			Button butt = new ImageButton(GameServices.setImgButtonStyle(new SpriteDrawable(tmp), null, guiRes.skin.getDrawable("gui/button"), null));
 			butt.addListener(new ChangeListener() {
 				public void changed(ChangeEvent event, Actor actor) {
 					root.game.getPlaceManager().setPlacementSelection("item",id);
@@ -316,7 +316,7 @@ public class BuildMenu{
 			addToTable(butt, itemsMenu);
 		}
 		
-		ImageButton deleteModeButton = new ImageButton(GuiUtils.setImgButtonStyle(root.skin.getDrawable("gui/delete"), null, root.skin.getDrawable("gui/button"), null));
+		ImageButton deleteModeButton = new ImageButton(GameServices.setImgButtonStyle(guiRes.skin.getDrawable("gui/delete"), null, guiRes.skin.getDrawable("gui/button"), null));
 		deleteModeButton.addListener(new InputListener() {
 			public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
 				root.game.getPlaceManager().setPlacementSelection("item", "");

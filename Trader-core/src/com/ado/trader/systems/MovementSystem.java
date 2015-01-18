@@ -4,10 +4,10 @@ import com.ado.trader.entities.components.Animation;
 import com.ado.trader.entities.components.Health;
 import com.ado.trader.entities.components.Movement;
 import com.ado.trader.entities.components.Position;
+import com.ado.trader.gui.GameServices;
 import com.ado.trader.map.Map;
 import com.ado.trader.map.Tile;
 import com.ado.trader.pathfinding.Path.Step;
-import com.ado.trader.screens.GameScreen;
 import com.ado.trader.utils.IsoUtils;
 import com.artemis.Aspect;
 import com.artemis.ComponentMapper;
@@ -24,19 +24,18 @@ public class MovementSystem  extends EntityProcessingSystem {
 	ComponentMapper<Movement> mm;
 	ComponentMapper<Animation> am;
 
-	GameScreen game;
+	Map map;
 
 	@SuppressWarnings("unchecked")
-	public MovementSystem(GameScreen game) {
+	public MovementSystem(GameServices gameRes) {
 		super(Aspect.getAspectForAll(Movement.class));
-		this.game = game;
+		map = gameRes.getMap();
 	}
 
 	@Override
 	protected void process(Entity e) {
 		if(mm.has(e)){
 			if(mm.get(e).getPath()!=null){
-				Map map = game.getMap();
 				Position p = pm.get(e);
 				Movement m = mm.get(e);
 				Vector2 tmp = new Vector2();
@@ -44,24 +43,24 @@ public class MovementSystem  extends EntityProcessingSystem {
 				
 				//move entity +x
 				if(currentStep.x>p.getIsoPosition().x){
-					tmp.x = (float) (p.getIsoPosition().x+m.getVelocity()*Math.ceil(Gdx.graphics.getRawDeltaTime()*2)/2);
-					if(tmp.x>currentStep.x){tmp.x=currentStep.x;}
+					tmp.x = (float) (p.getIsoPosition().x + m.getVelocity() * Math.ceil(Gdx.graphics.getRawDeltaTime() * 2) / 2);
+					if(tmp.x > currentStep.x) {tmp.x = currentStep.x; }
 					p.getIsoPosition().x = tmp.x;
 				//move entity -x
-				}else if(currentStep.x<p.getIsoPosition().x){
-					tmp.x = (float) (p.getIsoPosition().x-m.getVelocity()*Math.ceil(Gdx.graphics.getRawDeltaTime()*2)/2);
-					if(tmp.x<currentStep.x){tmp.x=currentStep.x;}
+				}else if(currentStep.x < p.getIsoPosition().x){
+					tmp.x = (float) (p.getIsoPosition().x - m.getVelocity() * Math.ceil(Gdx.graphics.getRawDeltaTime() * 2) / 2);
+					if(tmp.x < currentStep.x) {tmp.x = currentStep.x; }
 					p.getIsoPosition().x = tmp.x;
 				}
 				//move entity +y
-				if(currentStep.y>p.getIsoPosition().y){
-					tmp.y = (float) (p.getIsoPosition().y+(m.getVelocity()/2f)*Math.ceil(Gdx.graphics.getRawDeltaTime()*2)/2);
-					if(tmp.y>currentStep.y){tmp.y=currentStep.y;}
+				if(currentStep.y > p.getIsoPosition().y){
+					tmp.y = (float) (p.getIsoPosition().y + (m.getVelocity() / 2f) * Math.ceil(Gdx.graphics.getRawDeltaTime() * 2) / 2);
+					if(tmp.y > currentStep.y) {tmp.y = currentStep.y; }
 					p.getIsoPosition().y = tmp.y;
 				//move entity -y
-				}else if(currentStep.y<p.getIsoPosition().y){
-					tmp.y = (float) (p.getIsoPosition().y-(m.getVelocity()/2f)*Math.ceil(Gdx.graphics.getRawDeltaTime()*2)/2);
-					if(tmp.y<currentStep.y){tmp.y=currentStep.y;}
+				}else if(currentStep.y < p.getIsoPosition().y){
+					tmp.y = (float) (p.getIsoPosition().y - (m.getVelocity() / 2f) * Math.ceil(Gdx.graphics.getRawDeltaTime() * 2) / 2);
+					if(tmp.y < currentStep.y) {tmp.y = currentStep.y; }
 					p.getIsoPosition().y = tmp.y;
 				}
 
@@ -71,7 +70,7 @@ public class MovementSystem  extends EntityProcessingSystem {
 				if(tmp.x==0&&tmp.y==0){
 					//moves entity in collision grid
 					map.getEntityLayer().deleteFromMap(p.getX(), p.getY(), p.getHeightLayer());
-					map.getEntityLayer().addToMap(e.getId(), (int)(newTile.x+1),(int)newTile.y, map.currentLayer);		
+					map.getEntityLayer().addToMap(e.getId(), (int)(newTile.x + 1),(int)newTile.y, map.currentLayer);		
 					p.setPosition((int)m.getPath().getX(m.getStep()), (int)m.getPath().getY(m.getStep()), map.currentLayer);
 					
 					//check for damage from tile

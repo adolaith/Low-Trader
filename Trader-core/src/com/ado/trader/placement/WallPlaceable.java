@@ -1,6 +1,6 @@
 package com.ado.trader.placement;
 
-import com.ado.trader.entities.EntityCollection;
+import com.ado.trader.entities.EntityFactory;
 import com.ado.trader.entities.components.Position;
 import com.ado.trader.entities.components.SpriteComp;
 import com.ado.trader.entities.components.Wall;
@@ -21,10 +21,9 @@ public class WallPlaceable extends Placeable{
 	Sprite firstSprite, secondSprite;
 	Direction first, second;
 	EntityRenderSystem entityRenderer;
-	EntityCollection entities;
+	EntityFactory entities;
 	
-	
-	public WallPlaceable(Map map, EntityCollection entities, EntityRenderSystem entityRenderer) {
+	public WallPlaceable(Map map, EntityFactory entities, EntityRenderSystem entityRenderer) {
 		super(map);
 		this.entities = entities;
 		this.entityRenderer = entityRenderer;
@@ -69,7 +68,7 @@ public class WallPlaceable extends Placeable{
 	}
 	private void changeExistingSprite(int x, int y){
 		ArrayMap<Integer, Sprite> spriteList = entityRenderer.getStaticSprites();
-		Entity e = game.getWorld().getEntity(map.getWallLayer().map[x][y][map.currentLayer]);
+		Entity e = map.getWorld().getEntity(map.getWallLayer().map[x][y][map.currentLayer]);
 		SpriteComp s = e.getComponent(SpriteComp.class);
 		Wall w = e.getComponent(Wall.class);
 		if(s.secondarySprite==null){
@@ -137,7 +136,7 @@ public class WallPlaceable extends Placeable{
 			first = Direction.NE;
 		}
 	}
-	public void rotateSelection(){
+	public void rotateSelection(EntityRenderSystem entityRenderer){
 		String[] tmp = entities.getEntities().get(entityTypeID).get("sprite").split(",");
 		ArrayMap<Integer, Sprite> spriteList = entityRenderer.getStaticSprites();
 		if(tmp[1].isEmpty())return;

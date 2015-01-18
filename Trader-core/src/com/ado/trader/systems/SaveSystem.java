@@ -1,26 +1,23 @@
 package com.ado.trader.systems;
 
 import com.ado.trader.GameMain;
-import com.ado.trader.buildings.Building;
 import com.ado.trader.entities.components.Animation;
 import com.ado.trader.entities.components.Area;
 import com.ado.trader.entities.components.Feature;
 import com.ado.trader.entities.components.Health;
 import com.ado.trader.entities.components.Hunger;
 import com.ado.trader.entities.components.Inventory;
-import com.ado.trader.entities.components.Locations;
 import com.ado.trader.entities.components.Mask;
 import com.ado.trader.entities.components.Money;
 import com.ado.trader.entities.components.Position;
 import com.ado.trader.entities.components.SpriteComp;
 import com.ado.trader.entities.components.Type;
 import com.ado.trader.entities.components.Wall;
+import com.ado.trader.gui.GameServices;
 import com.ado.trader.items.Item;
 import com.ado.trader.rendering.MaskingSystem;
-import com.ado.trader.screens.GameScreen;
 import com.ado.trader.utils.FileParser;
 import com.artemis.Aspect;
-import com.artemis.ComponentMapper;
 import com.artemis.Entity;
 import com.artemis.systems.EntityProcessingSystem;
 import com.badlogic.gdx.Gdx;
@@ -29,13 +26,14 @@ import com.badlogic.gdx.utils.Array;
 
 public class SaveSystem extends EntityProcessingSystem {
 	FileParser parser;
-	GameScreen game;
+	GameServices gameRes;
 	String saveDir;
 
 	@SuppressWarnings("unchecked")
-	public SaveSystem(GameScreen game) {
+	public SaveSystem(GameServices gameRes) {
 		super(Aspect.getAspectForAll(Type.class));
-		this.game = game;
+		this.gameRes = gameRes;
+		parser = gameRes.getParser();
 	}
 	public void setPassive(boolean passive){
 		super.setPassive(passive);
@@ -46,7 +44,6 @@ public class SaveSystem extends EntityProcessingSystem {
 	}
 	@Override
 	protected void begin(){
-		parser = game.getParser();
 		parser.initParser("saves/"+saveDir+"/entities.sav", true, true);
 	}
 
@@ -108,19 +105,19 @@ public class SaveSystem extends EntityProcessingSystem {
 			parser.addElement("inventory", i.max+","+s);
 		}
 		
-		if(world.getMapper(Locations.class).has(e)){	//locations
-			ComponentMapper<Locations> loc = world.getMapper(Locations.class);
-			
-			WorkArea w = loc.get(e).getWork();
-			if(w != null){
-				parser.addElement("work", ""+w.getId() + ","+w.getParentId());
-			}
-			
-			Building b = loc.get(e).getHome(); 
-			if(b != null){
-				parser.addElement("home", ""+b.getBuildingId());
-			}
-		}
+//		if(world.getMapper(Locations.class).has(e)){	//locations
+//			ComponentMapper<Locations> loc = world.getMapper(Locations.class);
+//			
+//			WorkArea w = loc.get(e).getWork();
+//			if(w != null){
+//				parser.addElement("work", ""+w.getId() + ","+w.getParentId());
+//			}
+//			
+//			Building b = loc.get(e).getHome(); 
+//			if(b != null){
+//				parser.addElement("home", ""+b.getBuildingId());
+//			}
+//		}
 		
 		if(world.getMapper(Wall.class).has(e)){			//wall props
 			Wall w = world.getMapper(Wall.class).get(e);
@@ -132,7 +129,7 @@ public class SaveSystem extends EntityProcessingSystem {
 		}
 		
 		if(world.getMapper(Mask.class).has(e)){			//mask props
-			MaskingSystem mS = game.getRenderer().getRenderEntitySystem().getMasks();
+			MaskingSystem mS = gameRes.getRenderer().getRenderEntitySystem().getMasks();
 			String id = mS.getAllMasks().getKey(world.getMapper(Mask.class).get(e).mask, false);
 			parser.addElement("mask", id);
 		}

@@ -1,6 +1,10 @@
 package com.ado.trader.placement;
 
-import com.ado.trader.screens.GameScreen;
+import com.ado.trader.entities.EntityFactory;
+import com.ado.trader.entities.EntityFeatures;
+import com.ado.trader.gui.GameServices;
+import com.ado.trader.input.InputHandler;
+import com.ado.trader.rendering.EntityRenderSystem;
 import com.ado.trader.utils.IsoUtils;
 import com.artemis.Entity;
 import com.badlogic.gdx.Gdx;
@@ -13,21 +17,24 @@ public class FeaturePlaceable extends Placeable {
 	public String featureId;
 	public int spriteId;
 	Sprite sprite;
+	
+	EntityFeatures features;
 
-	protected FeaturePlaceable(GameScreen game) {
-		super(game);
+	protected FeaturePlaceable(GameServices gameRes) {
+		super(gameRes.getMap());
+		features = new EntityFeatures(gameRes.getAtlas(), gameRes.getParser(), gameRes.getRenderer().getRenderEntitySystem());
 	}
 	
 	@Override
 	void place(int x, int y) {
-		switch(game.getEntities().getFeatures().getFeature(featureId).get("deco")){
+		switch(features.getFeature(featureId).get("deco")){
 		case "wall":
-			if(!game.getMap().getWallLayer().isOccupied(x, y, game.getMap().currentLayer)){
-				game.getGui().getNewsWindow().newMessage("Invalid placement. Wall decoration only");
+			if(!map.getWallLayer().isOccupied(x, y, map.currentLayer)){
+				//Invalid placement. Wall decoration only
 				return;
 			}
-			Entity w = game.getWorld().getEntity(game.getMap().getWallLayer().map[x][y][game.getMap().currentLayer]);
-			game.getEntities().getFeatures().applyFeature(w, featureId, spriteId, new Sprite(sprite));
+			Entity w = map.getWorld().getEntity(map.getWallLayer().map[x][y][map.currentLayer]);
+			features.applyFeature(w, featureId, spriteId, new Sprite(sprite));
 			break;
 		}
 		if(sprite.isFlipX()){
@@ -38,15 +45,15 @@ public class FeaturePlaceable extends Placeable {
 	@Override
 	void remove(int x, int y) {
 		if(!delete){return;}
-		if(game.getMap().getWallLayer().isOccupied(x, y, game.getMap().currentLayer)){
-			game.getEntities().deleteEntity(x,y, game.getMap().currentLayer, game.getMap().getWallLayer());
+		if(map.getWallLayer().isOccupied(x, y, map.currentLayer)){
+			EntityFactory.deleteEntity(x,y, map.currentLayer, map.getWallLayer());
 		}
 		if(!Gdx.input.isKeyPressed(Keys.SHIFT_LEFT)){
 			delete^=delete;
 		}
 	}
-	public void rotateSelection(){
-		String[] tmp = game.getEntities().getFeatures().getFeature(featureId).get("sprite").split(",");
+	public void rotateSelection(EntityRenderSystem entityRenderer){
+		String[] tmp = features.getFeature(featureId).get("sprite").split(",");
 		if(tmp.length==1){
 			sprite.flip(true, false);
 			return;
@@ -57,7 +64,7 @@ public class FeaturePlaceable extends Placeable {
 				int i = Integer.valueOf(s);
 				if(i==spriteId)continue;
 				spriteId = i;
-				sprite = game.getRenderer().getRenderEntitySystem().getStaticSprites().get(i);
+				sprite = entityRenderer.getStaticSprites().get(i);
 				break;
 			}
 		}else{
@@ -66,10 +73,10 @@ public class FeaturePlaceable extends Placeable {
 	}
 	public void renderPreview(SpriteBatch batch){
 		if(delete)return;
-		Vector2 mousePos = IsoUtils.getColRow((int)game.getInput().getMousePos().x, (int)game.getInput().getMousePos().y, 
-				game.getMap().getTileWidth(), game.getMap().getTileHeight());
+		Vector2 mousePos = IsoUtils.getColRow((int)InputHandler.getMousePos().x, (int)InputHandler.getMousePos().y, 
+				map.getTileWidth(), map.getTileHeight());
 		mousePos = IsoUtils.getIsoXY((int)mousePos.x, (int)mousePos.y, 
-				game.getMap().getTileWidth(), game.getMap().getTileHeight());
+				map.getTileWidth(), map.getTileHeight());
 		batch.begin();
 		
 		batch.draw(sprite, mousePos.x, mousePos.y, 

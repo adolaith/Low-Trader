@@ -1,11 +1,12 @@
 package com.ado.trader.map;
 
 import com.ado.trader.entities.components.Wall;
-import com.ado.trader.items.ItemCollection;
+import com.ado.trader.gui.GameServices;
+import com.ado.trader.items.ItemFactory;
 import com.ado.trader.pathfinding.Mover;
 import com.ado.trader.pathfinding.TileBasedMap;
 import com.ado.trader.rendering.EntityRenderSystem.Direction;
-import com.ado.trader.systems.GameTime;
+import com.ado.trader.systems.SaveSystem;
 import com.ado.trader.utils.FileParser;
 import com.ado.trader.utils.IsoUtils;
 import com.artemis.Entity;
@@ -40,21 +41,21 @@ public class Map implements TileBasedMap{
 	WallLayer wallLayer;
 	World world;
 	
-	public Map(TextureAtlas atlas, FileParser parser, World world, ItemCollection items) {
-		init(atlas, parser, world, items);
+	public Map(GameServices gameRes) {
+		init(gameRes.getAtlas(), gameRes.getParser(), gameRes.getWorld(), gameRes.getItems());
 		createMap();
 	}
 	
-	public Map(String loadName, TextureAtlas atlas, FileParser parser, World world, ItemCollection items) {
-		init(atlas, parser, world, items);
+	public Map(String loadName, GameServices gameRes) {
+		init(gameRes.getAtlas(), gameRes.getParser(), gameRes.getWorld(), gameRes.getItems());
 		loader.loadMap(loadName);
 		
 		currentLayer = 0;
 	}
-	private void init(TextureAtlas atlas, FileParser parser, World world, ItemCollection items){
+	private void init(TextureAtlas atlas, FileParser parser, World world, ItemFactory items){
 		this.world = world;
 		
-		loader = new MapLoader(this, items, parser, world.getSystem(GameTime.class));
+		loader = new MapLoader(this, items, parser);
 		
 		currentLayer = 0;
 		tileLayer = new TileLayer(worldWidth, worldHeight);
@@ -80,7 +81,10 @@ public class Map implements TileBasedMap{
 		}
 	}
 	
-	
+	public void saveGameState(String dirName){
+		loader.saveMap(dirName);
+		world.getSystem(SaveSystem.class).saveEntities(dirName);
+	}
 	
 	//draws tile backgrounds
 	public void draw(SpriteBatch batch){
@@ -228,5 +232,8 @@ public class Map implements TileBasedMap{
 	}
 	public MapLoader getMapLoader(){
 		return loader;
+	}
+	public World getWorld(){
+		return world;
 	}
 }

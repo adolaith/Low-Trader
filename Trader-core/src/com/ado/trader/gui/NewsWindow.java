@@ -1,5 +1,6 @@
 package com.ado.trader.gui;
 
+import com.ado.trader.screens.GameScreen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
@@ -11,15 +12,15 @@ import com.badlogic.gdx.utils.Array;
 public class NewsWindow extends BasicWindow {
 	Array<Label> labels;
 
-	public NewsWindow(Gui gui) {
-		super("News window", 600, 150, gui);
+	public NewsWindow(GameServices guiRes) {
+		super("News window", 600, 150, guiRes.font, guiRes.skin, guiRes.stage);
 		labels = new Array<Label>();
 		
 		Table t = new Table();
 		t.setWidth(root.getWidth());
 		t.setHeight(root.getHeight());
 		t.left();
-		LabelStyle ls = new LabelStyle(gui.font, Color.WHITE);
+		LabelStyle ls = new LabelStyle(guiRes.font, Color.WHITE);
 		for(int i=0;i<=15;i++){
 			Label l = new Label("", ls);
 			labels.add(l);
@@ -27,8 +28,8 @@ public class NewsWindow extends BasicWindow {
 		}
 		
 		ScrollPaneStyle spS = new ScrollPaneStyle();
-		spS.vScroll = gui.skin.getDrawable("gui/scrollBar");
-		spS.vScrollKnob = gui.skin.getDrawable("gui/scrollBar");
+		spS.vScroll = guiRes.skin.getDrawable("gui/scrollBar");
+		spS.vScrollKnob = guiRes.skin.getDrawable("gui/scrollBar");
 		
 		ScrollPane sP = new ScrollPane(t, spS);
 		sP.setScrollingDisabled(true, false);
@@ -51,5 +52,9 @@ public class NewsWindow extends BasicWindow {
 			}
 		}
 	}
-
+	public void update(){
+		if(!GameScreen.getVelocity().isZero()){
+			updatePosition(GameScreen.getVelocity().x, GameScreen.getVelocity().y);
+		}
+	}
 }

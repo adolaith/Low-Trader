@@ -9,7 +9,7 @@ public class ItemLayer implements Layer {
 	public Item[][][] map;
 
 	public ItemLayer(int w, int h) {
-		map = new Item[w][h][];
+		map = new Item[w][h][8];
 	}
 	public void addToMap(Item i, int x, int y, int h) {
 		map[x][y][h] = i;
@@ -25,7 +25,7 @@ public class ItemLayer implements Layer {
 				if(i==x&&j==y){
 					continue;
 				}
-				if(map[i][j]!=null){
+				if(map[i][j][h]!=null){
 					if(map[i][j][h].hasDataType(type)){
 						neighbours.add(map[i][j][h]);
 					}
@@ -92,7 +92,7 @@ public class ItemLayer implements Layer {
 
 		for(int x=0; x<map.length; x++){
 			for(int y=0; y<map[x].length; y++){
-				if(map[x][y]==null)continue;
+				if(map[x][y][h]==null)continue;
 				Item i = map[x][y][h];
 				p.addElement("id", i.getId());
 				p.addElement("pos", x+","+y);

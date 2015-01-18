@@ -1,7 +1,9 @@
 package com.ado.trader.gui;
 
+import com.ado.trader.rendering.WorldRenderer;
 import com.ado.trader.screens.GameScreen;
 import com.ado.trader.systems.GameTime;
+import com.artemis.World;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -18,15 +20,15 @@ public class InformationWindow extends BasicWindow {
 	Table buttonTable, devInfo;
 	Cell<?> bodyCell;
 	
-	public InformationWindow(final Gui gui) {
-		super("Information Overview", 320, 200, gui);
+	public InformationWindow(GameServices guiRes) {
+		super("Information Overview", 320, 200, guiRes.font, guiRes.skin, guiRes.stage);
 		
 		buttonTable = new Table();
 		buttonTable.setWidth(28);
 		buttonTable.setHeight(root.getHeight());
 		buttonTable.top().defaults().padBottom(2).padRight(2);
 		
-		ImageButton firstButton = new ImageButton(GuiUtils.setImgButtonStyle(gui.skin.getDrawable("gui/statsIcon"), null, gui.skin.getDrawable("gui/button"), null));
+		ImageButton firstButton = new ImageButton(GameGui.setImgButtonStyle(guiRes.skin.getDrawable("gui/statsIcon"), null, guiRes.skin.getDrawable("gui/button"), null));
 		firstButton.addListener(new ChangeListener() {
 			public void changed(ChangeEvent event, Actor actor) {
 				bodyCell.setActor(devInfo);
@@ -37,31 +39,34 @@ public class InformationWindow extends BasicWindow {
 		
 		root.add(buttonTable).top();
 		
-		initDevTable(gui);
+		initDevTable(guiRes.font);
 		
 		bodyCell = root.add(devInfo).fill().expand();
 	}
 	
-	private void initDevTable(Gui gui){
+	private void initDevTable(BitmapFont font){
 		devInfo = new Table();
-		devInfo.top();
-		addLabelPair("Fps: ","fps", gui.font);
-		addLabelPair("Delta: ","delta", gui.font);
-		addLabelPair("Game time: ","time", gui.font);
-		addLabelPair("Time mod: ","timeMod", gui.font);
-		addLabelPair("Active entities: ","active", gui.font);
-		addLabelPair("Logic time: ", "logic", gui.font);
-		addLabelPair("Render time: ", "render", gui.font);
+		devInfo.top().defaults().fill().expand();
+		addLabelPair("Fps: ","fps", font);
+		addLabelPair("Delta: ","delta", font);
+		addLabelPair("Game time: ","time", font);
+		addLabelPair("Time mod: ","timeMod", font);
+		addLabelPair("Active entities: ","active", font);
+		addLabelPair("Logic time: ", "logic", font);
+		addLabelPair("Render time: ", "render", font);
 	}
-	public void update(GameScreen game){
+	public void update(World world){
+		if(!GameScreen.getVelocity().isZero()){
+			updatePosition(GameScreen.getVelocity().x, GameScreen.getVelocity().y);
+		}
 		if(!functionTable.isVisible())return;
 		((Label)devInfo.findActor("fps")).setText(""+Gdx.graphics.getFramesPerSecond());
 		((Label)devInfo.findActor("delta")).setText(""+Gdx.graphics.getRawDeltaTime());
-		((Label)devInfo.findActor("time")).setText(""+game.getWorld().getSystem(GameTime.class).getTime());
-		((Label)devInfo.findActor("timeMod")).setText(""+game.speed);
-		((Label)devInfo.findActor("active")).setText(""+game.getWorld().getEntityManager().getActiveEntityCount());
-		((Label)devInfo.findActor("logic")).setText(""+game.updateTime);
-		((Label)devInfo.findActor("render")).setText(""+game.getRenderer().renderTime);
+		((Label)devInfo.findActor("time")).setText(""+world.getSystem(GameTime.class).getTime());
+		((Label)devInfo.findActor("timeMod")).setText(""+GameScreen.speed);
+		((Label)devInfo.findActor("active")).setText(""+world.getEntityManager().getActiveEntityCount());
+		((Label)devInfo.findActor("logic")).setText(""+GameScreen.updateTime);
+		((Label)devInfo.findActor("render")).setText(""+ WorldRenderer.renderTime);
 	}
 	protected void addLabelPair(String text,String valueName, BitmapFont font){
 		LabelStyle ls = new LabelStyle(font, Color.WHITE);

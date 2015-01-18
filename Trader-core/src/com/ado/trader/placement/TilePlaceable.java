@@ -4,6 +4,7 @@ import com.ado.trader.input.InputHandler;
 import com.ado.trader.map.Map;
 import com.ado.trader.map.Tile;
 import com.ado.trader.map.TileOverlay.Mask;
+import com.ado.trader.rendering.EntityRenderSystem;
 import com.ado.trader.utils.IsoUtils;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
@@ -94,5 +95,10 @@ public class TilePlaceable extends Placeable {
 		}
 	}
 	public void remove(int x, int y) {
+	}
+	@Override
+	void rotateSelection(EntityRenderSystem entityRenderer) {
+		// TODO Auto-generated method stub
+		
 	}
 }

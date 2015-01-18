@@ -1,12 +1,11 @@
 package com.ado.trader.placement;
 
-import com.ado.trader.entities.EntityCollection;
+import com.ado.trader.entities.EntityFactory;
 import com.ado.trader.entities.components.Area;
 import com.ado.trader.entities.components.Position;
 import com.ado.trader.gui.CreateNpcWindow;
+import com.ado.trader.gui.GameServices;
 import com.ado.trader.input.InputHandler;
-import com.ado.trader.map.IntMapLayer;
-import com.ado.trader.map.Map;
 import com.ado.trader.rendering.EntityRenderSystem;
 import com.ado.trader.utils.IsoUtils;
 import com.artemis.ComponentMapper;
@@ -20,33 +19,29 @@ import com.badlogic.gdx.math.Vector2;
 public class EntityPlaceable extends Placeable {
 	public int entityTypeID, spriteId;
 	Sprite sprite;
-	InputHandler input;
-	EntityCollection entities;
 	ComponentMapper<Area> areaMapper;
-	EntityRenderSystem entityRenderer;
 	CreateNpcWindow createNpcWindow;
+	EntityFactory entities;
 	
-	public EntityPlaceable(Map map, InputHandler input, CreateNpcWindow createNpcWindow, EntityCollection entities, EntityRenderSystem entityRenderer) {
-		super(map);
-		this.input = input;
-		this.entities = entities;
-		this.entityRenderer = entityRenderer;
-		this.createNpcWindow = createNpcWindow;
+	public EntityPlaceable(GameServices gameRes) {
+		super(gameRes.getMap());
+		this.entities = gameRes.getEntities();
+		this.createNpcWindow = new CreateNpcWindow(gameRes);
 	}
 	
 	public void place(int x,int y){
 		if(entityTypeID == 0 && createNpcWindow != null){
-			createNpcWindow.showWindow((int)input.getIsoClicked().x, (int)input.getIsoClicked().y);
+			createNpcWindow.showWindow((int)InputHandler.getIsoClicked().x, (int)InputHandler.getIsoClicked().y);
 			return;
 		}
 		Sprite s = new Sprite(sprite);
-		Entity e = entities.createEntity(entityTypeID,spriteId , s);
+		Entity e = EntityFactory.createEntity(entityTypeID,spriteId , s);
 		e.getComponent(Position.class).setPosition(x, y, map.currentLayer);
 
 		rotateArea(e);
 		
 		map.getEntityLayer().addToMap(e.getId(), x, y, map.currentLayer);
-		markAreaOccupied(x, y, map.currentLayer, e, map.getEntityLayer());
+		map.getEntityLayer().markAreaOccupied(x, y, map.currentLayer, e, map.getEntityLayer());
 		
 		if(sprite.isFlipX()){
 			sprite.flip(true, false);
@@ -55,18 +50,10 @@ public class EntityPlaceable extends Placeable {
 	
 	public void remove(int x, int y){
 		if(map.getEntityLayer().isOccupied(x, y, map.currentLayer)){
-			entities.deleteEntity(x,y, map.currentLayer, map.getEntityLayer());
+			EntityFactory.deleteEntity(x,y, map.currentLayer, map.getEntityLayer());
 		}
 	}
 	
-	public void markAreaOccupied(int x, int y, int h, Entity e, IntMapLayer layer){
-		if (!areaMapper.has(e)) return;
-		
-		Area a = areaMapper.get(e);
-		for(Vector2 vec: a.area){
-			layer.addToMap(e.getId(), (int)(x+vec.x), (int)(y+vec.y), h);
-		}
-	}
 	private void rotateArea(Entity e){
 		if (areaMapper.has(e)) {
 			if (sprite.isFlipX()) {
@@ -79,7 +66,7 @@ public class EntityPlaceable extends Placeable {
 	public void renderPreview(SpriteBatch batch){
 		if(delete || entityTypeID == 0)return;
 		
-		Vector2 mousePos = IsoUtils.getColRow((int)input.getMousePos().x, (int)input.getMousePos().y,
+		Vector2 mousePos = IsoUtils.getColRow((int)InputHandler.getMousePos().x, (int)InputHandler.getMousePos().y,
 				map.getTileWidth(), map.getTileHeight());
 		
 		mousePos = IsoUtils.getIsoXY((int)mousePos.x, (int)mousePos.y, 
@@ -102,7 +89,7 @@ public class EntityPlaceable extends Placeable {
 		batch.end();
 	}
 	
-	public void rotateSelection(){
+	public void rotateSelection(EntityRenderSystem entityRenderer){
 		String[] tmp = entities.getEntities().get(entityTypeID).get("sprite").split(",");
 		if(tmp.length==1){
 			sprite.flip(true, false);

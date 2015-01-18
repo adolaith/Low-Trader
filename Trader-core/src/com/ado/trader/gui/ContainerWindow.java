@@ -11,10 +11,10 @@ public class ContainerWindow extends BasicWindow {
 	BitmapFont font;
 	Skin skin;
 
-	public ContainerWindow(Gui gui) {
-		super("Container", 192, 3 * 26, gui);
-		font = gui.font;
-		skin = gui.skin;
+	public ContainerWindow(GameServices guiRes) {
+		super("Container", 192, 3 * 26, guiRes.font, guiRes.skin, guiRes.stage);
+		font = guiRes.font;
+		skin = guiRes.skin;
 		root.left();
 	}
 	public void showWindow(float x, float y, Inventory i){

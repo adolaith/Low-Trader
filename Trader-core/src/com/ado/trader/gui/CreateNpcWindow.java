@@ -1,10 +1,12 @@
 package com.ado.trader.gui;
 
+import com.ado.trader.entities.EntityFactory;
 import com.ado.trader.entities.components.Animation;
 import com.ado.trader.entities.components.Health;
 import com.ado.trader.entities.components.Hunger;
 import com.ado.trader.entities.components.Money;
 import com.ado.trader.entities.components.Position;
+import com.ado.trader.map.Map;
 import com.ado.trader.utils.IsoUtils;
 import com.artemis.Entity;
 import com.badlogic.gdx.graphics.Color;
@@ -30,11 +32,13 @@ import com.badlogic.gdx.utils.ArrayMap;
 public class CreateNpcWindow extends BasicWindow{
 	float x,y;
 	int type;
-	Gui gui;
+	Map map;
+	EntityFactory entities;
 
-	public CreateNpcWindow(final Gui gui) {
-		super("New Npc", 270, 34 * 2, gui);
-		this.gui = gui;
+	public CreateNpcWindow(GameServices gameRes) {
+		super("New Npc", 270, 34 * 2, gameRes.getFont(), gameRes.getSkin(), gameRes.getStage());
+		this.entities = gameRes.getEntities();
+		this.map = gameRes.getMap();
 		Cell<Table> c = functionTable.getCell(root);
 		c.width(width - 10);
 	}
@@ -42,27 +46,27 @@ public class CreateNpcWindow extends BasicWindow{
 		this.x = x;
 		this.y = y;
 		
-		LabelStyle ls = new LabelStyle(gui.font, Color.WHITE);
+		LabelStyle ls = new LabelStyle(font, Color.WHITE);
 		Label l = new Label("Select npc: ", ls);
 		root.add(l).left();
 		
 		//select box for npc type goes here
 		ScrollPaneStyle styleScroll = new ScrollPaneStyle();
-		styleScroll.vScroll = gui.skin.getDrawable("gui/scrollBar");
-		styleScroll.vScrollKnob = gui.skin.getDrawable("gui/scrollBar");
+		styleScroll.vScroll = skin.getDrawable("gui/scrollBar");
+		styleScroll.vScrollKnob = skin.getDrawable("gui/scrollBar");
 		
-		ListStyle styleList = new ListStyle(gui.font, Color.YELLOW, Color.GRAY, 
-				gui.skin.getDrawable("gui/guiBG"));
-		styleList.background = gui.skin.getDrawable("gui/guiBG");
+		ListStyle styleList = new ListStyle(font, Color.YELLOW, Color.GRAY, 
+				skin.getDrawable("gui/guiBG"));
+		styleList.background = skin.getDrawable("gui/guiBG");
 		
-		SelectBoxStyle styleSelect = new SelectBoxStyle(gui.font, Color.BLACK,
-				gui.skin.getDrawable("gui/guiBG"), styleScroll, styleList);
+		SelectBoxStyle styleSelect = new SelectBoxStyle(font, Color.BLACK,
+				skin.getDrawable("gui/guiBG"), styleScroll, styleList);
 		
 		final SelectBox<String> box = new SelectBox<String>(styleSelect);
 		root.add(box).height(25).right().row();
 		
 		Array<String> list = new Array<String>();
-		ArrayMap<Integer, ArrayMap<String, String>> npcs = gui.game.getEntities().getNpcs();
+		ArrayMap<Integer, ArrayMap<String, String>> npcs = entities.getNpcs();
 		//selectbox list
 		for(Integer npcId: npcs.keys()){
 			String s = npcId + ":" + npcs.get(npcId).get("tags"); 
@@ -81,21 +85,21 @@ public class CreateNpcWindow extends BasicWindow{
 				String[] selected = box.getSelected().split(":");
 				type = Integer.valueOf(selected[0]);
 				if(selected[1].matches("human")){
-					selectedHuman(body, gui);
+					selectedHuman(body);
 					updateSize(270, 28 * (body.getRows() + 2));
 				}else{
 					TextButtonStyle bStyle = new TextButtonStyle();
-					bStyle.font = gui.font;
-					bStyle.up = gui.skin.getDrawable("gui/button");
+					bStyle.font = font;
+					bStyle.up = skin.getDrawable("gui/button");
 					TextButton b = new TextButton("Create " + selected[1] + " NPC", bStyle);
 					b.addListener(new ChangeListener() {
 						public void changed(ChangeEvent event, Actor actor) {
-							Entity e = gui.game.getEntities().createEntity(type);
+							Entity e = EntityFactory.createEntity(type);
 							
-							Vector2 tmp = IsoUtils.getColRow((int)x, (int)y, gui.game.getMap().getTileWidth(), gui.game.getMap().getTileHeight());
+							Vector2 tmp = IsoUtils.getColRow((int)x, (int)y, map.getTileWidth(), map.getTileHeight());
 							
-							e.getComponent(Position.class).setPosition((int)tmp.x, (int)tmp.y, gui.game.getMap().currentLayer);
-							gui.game.getMap().getEntityLayer().addToMap(e.getId(), (int)tmp.x, (int)tmp.y, gui.game.getMap().currentLayer);
+							e.getComponent(Position.class).setPosition((int)tmp.x, (int)tmp.y, map.currentLayer);
+							map.getEntityLayer().addToMap(e.getId(), (int)tmp.x, (int)tmp.y, map.currentLayer);
 							
 							hideWindow();
 						}
@@ -116,17 +120,17 @@ public class CreateNpcWindow extends BasicWindow{
 	protected void updateSize(int width, int height){
 		super.updateSize(width, height);
 	}
-	private void selectedHuman(Table body, final Gui gui){
-		addInputpair("Head #:", "head", true, body, gui);
-		addInputpair("Shirt colour:", "skin", false, body, gui);
-		addInputpair("Role:", "role", false, body, gui);
-		addInputpair("Health:", "health", true, body, gui);
-		addInputpair("Hunger", "hunger", true, body, gui);
-		addInputpair("Money:", "money", true, body, gui);
+	private void selectedHuman(Table body){
+		addInputpair("Head #:", "head", true, body);
+		addInputpair("Shirt colour:", "skin", false, body);
+		addInputpair("Role:", "role", false, body);
+		addInputpair("Health:", "health", true, body);
+		addInputpair("Hunger", "hunger", true, body);
+		addInputpair("Money:", "money", true, body);
 		
 		TextButtonStyle bStyle = new TextButtonStyle();
-		bStyle.font = gui.font;
-		bStyle.up = gui.skin.getDrawable("gui/button");
+		bStyle.font = font;
+		bStyle.up = skin.getDrawable("gui/button");
 		TextButton b = new TextButton("Test NPC", bStyle);
 		b.addListener(new ChangeListener() {
 			public void changed(ChangeEvent event, Actor actor) {
@@ -153,15 +157,15 @@ public class CreateNpcWindow extends BasicWindow{
 		});
 		body.add(b).right();
 	}
-	private void addInputpair(String key, String value, boolean digitsOnly, Table body, Gui gui){
-		LabelStyle ls = new LabelStyle(gui.font, Color.WHITE);
+	private void addInputpair(String key, String value, boolean digitsOnly, Table body){
+		LabelStyle ls = new LabelStyle(font, Color.WHITE);
 		Label l = new Label(key, ls);
 		float w = (body.getWidth() / 2);
 		body.add(l).left().width(w).padBottom(2);
 		
 		TextFieldStyle fieldStyle = new TextFieldStyle();
-		fieldStyle.background = gui.skin.getDrawable("gui/bGround");
-		fieldStyle.font = gui.font;
+		fieldStyle.background = skin.getDrawable("gui/bGround");
+		fieldStyle.font = font;
 		fieldStyle.fontColor = Color.YELLOW;
 		
 		TextField field = new TextField("", fieldStyle);
@@ -174,16 +178,16 @@ public class CreateNpcWindow extends BasicWindow{
 		body.add(field).width(w).right().padBottom(2).row();
 	}
 	public void createCustomEntity(int health, int hunger, int money, String role, String outfit, int head){
-		Entity e = gui.game.getEntities().createEntity(type);
+		Entity e = EntityFactory.createEntity(type);
 		e.getComponent(Animation.class).getSkeleton().setSkin("m"+outfit+"_Front");
 		e.getComponent(Animation.class).getSkeleton().setAttachment("head", "human/guyF_head"+head);
 		e.getComponent(Health.class).setMax(health);
 		e.getComponent(Hunger.class).setMax(hunger);
 		e.getComponent(Money.class).value = money;
 		
-		Vector2 tmp = IsoUtils.getColRow((int)x, (int)y, gui.game.getMap().getTileWidth(), gui.game.getMap().getTileHeight());
+		Vector2 tmp = IsoUtils.getColRow((int)x, (int)y, map.getTileWidth(), map.getTileHeight());
 		
-		e.getComponent(Position.class).setPosition((int)tmp.x, (int)tmp.y, gui.game.getMap().currentLayer);
-		gui.game.getMap().getEntityLayer().addToMap(e.getId(), (int)tmp.x, (int)tmp.y, gui.game.getMap().currentLayer);
+		e.getComponent(Position.class).setPosition((int)tmp.x, (int)tmp.y, map.currentLayer);
+		map.getEntityLayer().addToMap(e.getId(), (int)tmp.x, (int)tmp.y, map.currentLayer);
 	}
 }

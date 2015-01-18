@@ -4,13 +4,14 @@ import com.ado.trader.GameMain;
 import com.ado.trader.entities.components.Feature;
 import com.ado.trader.entities.components.Mask;
 import com.ado.trader.entities.components.Wall;
-import com.ado.trader.rendering.MaskingSystem;
+import com.ado.trader.rendering.EntityRenderSystem;
 import com.ado.trader.rendering.EntityRenderSystem.Direction;
-import com.ado.trader.screens.GameScreen;
+import com.ado.trader.rendering.MaskingSystem;
 import com.ado.trader.utils.FileParser;
 import com.artemis.Entity;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ArrayMap;
 
@@ -18,9 +19,9 @@ public class EntityFeatures {
 	ArrayMap<String, ArrayMap<String, String>> featuresList;
 	MaskingSystem maskSys;
 	
-	public EntityFeatures(GameScreen game){
-		featuresList = loadEntityProfiles("data/Features", game);
-		maskSys = game.getRenderer().getRenderEntitySystem().getMasks();
+	public EntityFeatures(TextureAtlas atlas, FileParser p, EntityRenderSystem entityRenderer){
+		featuresList = loadEntityProfiles("data/Features", atlas, p, entityRenderer);
+		maskSys = entityRenderer.getMasks();
 	}
 	public void applyFeature(Entity e, String featureName, int spriteId, Sprite sprite){
 		ArrayMap<String, String> feature = featuresList.get(featureName);
@@ -46,9 +47,8 @@ public class EntityFeatures {
 		}
 		e.edit().add(m);
 	}
-	private ArrayMap<String, ArrayMap<String,String>> loadEntityProfiles(String fileName, GameScreen game) {
+	private ArrayMap<String, ArrayMap<String,String>> loadEntityProfiles(String fileName, TextureAtlas atlas, FileParser p, EntityRenderSystem entityRenderer) {
 		ArrayMap<String, ArrayMap<String,String>> entities = new ArrayMap<String, ArrayMap<String,String>>();
-		FileParser p = game.getParser(); 
 		p.initParser(fileName, false, false);
 		ArrayMap<Integer, Sprite> sprites = new ArrayMap<Integer, Sprite>();
 
@@ -65,16 +65,16 @@ public class EntityFeatures {
 						String[] element = s.split("'");
 						idList+=element[0]+",";
 					}
-					createSprite(sprites, template.get(key), game);
+					createSprite(sprites, template.get(key), atlas);
 					entity.put(key, idList);
 					break;
 				case "mask":
 					String[] lst = template.get(key).split(",");
 					for(String s:lst){
 						if(s.isEmpty()){continue;}
-						Sprite msk = game.getAtlas().createSprite(s);
+						Sprite msk = atlas.createSprite(s);
 						msk.scale(1f);
-						game.getRenderer().getRenderEntitySystem().getMasks().loadMask(s, msk);
+						entityRenderer.getMasks().loadMask(s, msk);
 					}
 					entity.put(key, template.get(key));
 					break;
@@ -85,16 +85,16 @@ public class EntityFeatures {
 			}
 			entities.put(template.get("id"), entity);
 		}
-		game.getRenderer().getRenderEntitySystem().getStaticSprites().putAll(sprites);
+		entityRenderer.getStaticSprites().putAll(sprites);
 		return entities;
 	}
-	private void createSprite(ArrayMap<Integer, Sprite> sprites, String list, GameScreen game){
+	private void createSprite(ArrayMap<Integer, Sprite> sprites, String list, TextureAtlas atlas){
 		String[] tmp = list.split(",");
 		try{
 			for(String s:tmp){
 				if(s.isEmpty()){continue;}
 				String[] element = s.split("'");
-				Sprite sprite = game.getAtlas().createSprite(element[1]);
+				Sprite sprite = atlas.createSprite(element[1]);
 				sprite.scale(1f);
 				sprites.put(Integer.valueOf(element[0]), sprite);
 			}

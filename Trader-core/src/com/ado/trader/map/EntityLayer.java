@@ -1,12 +1,17 @@
 package com.ado.trader.map;
 
+import com.ado.trader.entities.components.Area;
+import com.artemis.ComponentMapper;
 import com.artemis.Entity;
 import com.artemis.World;
+import com.artemis.annotations.Wire;
 import com.artemis.managers.GroupManager;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 
+@Wire
 public class EntityLayer extends IntMapLayer {
+	ComponentMapper<Area> areaMapper;
 
 	public EntityLayer(int w, int h) {
 		super(w, h);
@@ -17,7 +22,14 @@ public class EntityLayer extends IntMapLayer {
 	public void deleteFromMap(int x, int y, int h) {
 		map[x][y][h] = null;
 	}
-	
+	public void markAreaOccupied(int x, int y, int h, Entity e, IntMapLayer layer){
+		if (!areaMapper.has(e)) return;
+		
+		Area a = areaMapper.get(e);
+		for(Vector2 vec: a.area){
+			layer.addToMap(e.getId(), (int)(x+vec.x), (int)(y+vec.y), h);
+		}
+	}
 	//finds neighbours of x,y to a depth of n with the desired tag.
 	public Array<Integer> getNeighborEntitys(int x, int y, int h, int n, String tag, World world) {
 		Array<Integer> neighbours = new Array<Integer>();
@@ -27,7 +39,7 @@ public class EntityLayer extends IntMapLayer {
 				if((i==x && j==y) || i < 0 || j < 0 || i >= map.length || j >= map[i].length){
 					continue;
 				}
-				if(map[i][j]!=null){
+				if(map[i][j][h]!=null){
 					Entity e = world.getEntity(map[i][j][h]);
 					if(gm.isInGroup(e, tag)){
 						neighbours.add(map[i][j][h]);
@@ -47,7 +59,7 @@ public class EntityLayer extends IntMapLayer {
 				continue;
 			}
 			
-			if(map[i][j]!=null){
+			if(map[i][j][h]!=null){
 				Entity e = world.getEntity(map[i][j][h]);
 				if(gm.isInGroup(e, tag)){
 					return e;
@@ -59,7 +71,7 @@ public class EntityLayer extends IntMapLayer {
 				if(outOfMap(i, j, h)){
 					continue;
 				}
-				if(map[i][j]!=null){
+				if(map[i][j][h]!=null){
 					Entity e = world.getEntity(map[i][j][h]);
 					if(gm.isInGroup(e, tag)){
 						return e;
@@ -71,7 +83,7 @@ public class EntityLayer extends IntMapLayer {
 				if(outOfMap(i, j, h)){
 					continue;
 				}
-				if(map[i][j]!=null){
+				if(map[i][j][h]!=null){
 					Entity e = world.getEntity(map[i][j][h]);
 					if(gm.isInGroup(e, tag)){
 						return e;
@@ -83,7 +95,7 @@ public class EntityLayer extends IntMapLayer {
 				if(outOfMap(i, j, h)){
 					continue;
 				}
-				if(map[i][j]!=null){
+				if(map[i][j][h]!=null){
 					Entity e = world.getEntity(map[i][j][h]);
 					if(gm.isInGroup(e, tag)){
 						return e;
@@ -95,7 +107,7 @@ public class EntityLayer extends IntMapLayer {
 				if(outOfMap(i, j, h)){
 					continue;
 				}
-				if(map[i][j]!=null){
+				if(map[i][j][h]!=null){
 					Entity e = world.getEntity(map[i][j][h]);
 					if(gm.isInGroup(e, tag)){
 						return e;
@@ -116,7 +128,7 @@ public class EntityLayer extends IntMapLayer {
 	public Integer getFirstEntity(Vector2 origin, Vector2 widthHeight, int h){
 		for(int x=(int)origin.x; x<=(int)widthHeight.x; x++){
 			for(int y=(int)origin.y; y<=(int)widthHeight.y; y++){
-				if(map[x][y]!=null){
+				if(map[x][y][h]!=null){
 					return map[x][y][h];
 				}
 			}
