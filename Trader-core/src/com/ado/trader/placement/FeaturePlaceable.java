@@ -86,4 +86,7 @@ public class FeaturePlaceable extends Placeable {
 	@Override
 	void dragPlace(Vector2 start, Vector2 widthHeight) {
 	}
+	public EntityFeatures getFeatures(){
+		return features;
+	}
 }

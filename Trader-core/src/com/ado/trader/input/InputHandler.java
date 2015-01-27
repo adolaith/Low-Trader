@@ -5,6 +5,7 @@ import com.ado.trader.map.Tile;
 import com.ado.trader.utils.IsoUtils;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
+import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -16,7 +17,9 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 
 public class InputHandler implements InputProcessor{
 	int velocity = 25;
+	static Vector2 currentVelocity = new Vector2(); //camera velocity
 	public static boolean DEBUG = false;
+	
 	Vector3 vec3Clicked,mousePosVec3;
 	public static Vector2 mapClicked;
 	static Vector2 isoClicked;
@@ -52,31 +55,49 @@ public class InputHandler implements InputProcessor{
 		}
 		return false;
 	}
-	public void render(SpriteBatch batch){
-		try{
-			renderTileHighlight(batch);
-		}catch(Exception ex){
-			Gdx.app.log("Game - InputHandler: ", "RENDER FAIL!");
-		}
-	}
-	public void renderTileHighlight(SpriteBatch batch){
-		Vector2 mapPos = IsoUtils.getColRow((int)mousePosVec2.x, (int)mousePosVec2.y, map.getTileWidth(), map.getTileHeight());
-		if(mapPos.x<0||mapPos.y<0||mapPos.x>=map.getWidthInTiles()||mapPos.y>=map.getHeightInTiles()){return;}
-		
-		Tile t = map.getTileLayer().map[(int)mapPos.x][(int)mapPos.y][map.currentLayer];
-		mapPos = IsoUtils.getIsoXY((int)t.getX(), (int)t.getY(), map.getTileWidth(), map.getTileHeight());
-		batch.begin();
-		batch.draw(highlight, (int)mapPos.x, (int)mapPos.y,highlight.getWidth()*highlight.getScaleX(),highlight.getHeight()*highlight.getScaleY());	
-		batch.end();
-	}
 	@Override
 	public boolean keyDown(int keycode) {
-		return false;
-	}
+		switch(keycode){
+		case Keys.W:
+			currentVelocity.y = velocity;
+			break;
+		case Keys.S:
+			currentVelocity.y = -(velocity);
+			break;
+		case Keys.A:
+			currentVelocity.x = -(velocity);
+			break;
+		case Keys.D:
+			currentVelocity.x = velocity;
+			break;
 
+		default:
+			break;
+		}
+		return true;
+	}
 	@Override
 	public boolean keyUp(int keycode) {
-		return false;
+		switch(keycode){
+		case Keys.W:
+			if(currentVelocity.y == velocity){
+				currentVelocity.y = 0;}
+			break;
+		case Keys.S:
+			if(currentVelocity.y == -velocity){
+				currentVelocity.y = 0;}
+			break;
+		case Keys.A:
+			if(currentVelocity.x == -velocity){
+				currentVelocity.x = 0;}
+			break;
+		case Keys.D:
+			if(currentVelocity.x == velocity){
+				currentVelocity.x = 0;}
+			break;
+		}
+		
+		return true;
 	}
 
 	@Override
@@ -125,6 +146,23 @@ public class InputHandler implements InputProcessor{
 	public boolean scrolled(int amount) {
 		return false;
 	}
+	public void render(SpriteBatch batch){
+		try{
+			renderTileHighlight(batch);
+		}catch(Exception ex){
+			Gdx.app.log("Game - InputHandler: ", "RENDER FAIL!");
+		}
+	}
+	public void renderTileHighlight(SpriteBatch batch){
+		Vector2 mapPos = IsoUtils.getColRow((int)mousePosVec2.x, (int)mousePosVec2.y, map.getTileWidth(), map.getTileHeight());
+		if(mapPos.x<0||mapPos.y<0||mapPos.x>=map.getWidthInTiles()||mapPos.y>=map.getHeightInTiles()){return;}
+		
+		Tile t = map.getTileLayer().map[(int)mapPos.x][(int)mapPos.y][map.currentLayer];
+		mapPos = IsoUtils.getIsoXY((int)t.getX(), (int)t.getY(), map.getTileWidth(), map.getTileHeight());
+		batch.begin();
+		batch.draw(highlight, (int)mapPos.x, (int)mapPos.y,highlight.getWidth()*highlight.getScaleX(),highlight.getHeight()*highlight.getScaleY());	
+		batch.end();
+	}
 	public void setInputSystems(InputProcessor... processors) {
 		inputSystem = new InputMultiplexer(processors);
 		Gdx.input.setInputProcessor(inputSystem);
@@ -146,6 +184,9 @@ public class InputHandler implements InputProcessor{
 		highlight = tileHighlight;
 		highlight.setScale(2);
 		return this;
+	}
+	public static Vector2 getVelocity(){
+		return currentVelocity;
 	}
 	public static Vector2 getIsoClicked() {
 		return isoClicked;

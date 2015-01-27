@@ -15,11 +15,9 @@ import com.badlogic.gdx.utils.ArrayMap;
 
 public class TilePlaceable extends Placeable {
 	Integer tileId;
-	InputHandler input;
 	
-	public TilePlaceable(Map map, InputHandler input) {
+	public TilePlaceable(Map map) {
 		super(map);
-		this.input = input;
 	}
 	public void place(int x, int y) {
 		Tile[][][] tileMap = map.getTileLayer().map;
@@ -44,9 +42,9 @@ public class TilePlaceable extends Placeable {
 	}
 	public void renderPreview(SpriteBatch batch){
 		if(Gdx.input.isButtonPressed(Buttons.LEFT)){
-			Vector2 mousePos = IsoUtils.getColRow((int)input.getMousePos().x, (int)input.getMousePos().y, map.getTileWidth(), map.getTileHeight());
-			Vector2 start = new Vector2(Math.min((int)mousePos.x, (int)input.getMapClicked().x), Math.min((int)mousePos.y, (int)input.getMapClicked().y));
-			Vector2 widthHeight = new Vector2(Math.max((int)mousePos.x, (int)input.getMapClicked().x), Math.max((int)mousePos.y, (int)input.getMapClicked().y));
+			Vector2 mousePos = IsoUtils.getColRow((int)InputHandler.getMousePos().x, (int)InputHandler.getMousePos().y, map.getTileWidth(), map.getTileHeight());
+			Vector2 start = new Vector2(Math.min((int)mousePos.x, (int)InputHandler.getMapClicked().x), Math.min((int)mousePos.y, (int)InputHandler.getMapClicked().y));
+			Vector2 widthHeight = new Vector2(Math.max((int)mousePos.x, (int)InputHandler.getMapClicked().x), Math.max((int)mousePos.y, (int)InputHandler.getMapClicked().y));
 			batch.begin();
 			for(int x=(int)start.x;x<=widthHeight.x;x++){
 				for(int y=(int)start.y;y<=widthHeight.y;y++){

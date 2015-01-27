@@ -1,5 +1,6 @@
 package com.ado.trader.gui;
 
+import com.ado.trader.input.InputHandler;
 import com.ado.trader.rendering.WorldRenderer;
 import com.ado.trader.screens.GameScreen;
 import com.ado.trader.systems.GameTime;
@@ -28,7 +29,7 @@ public class InformationWindow extends BasicWindow {
 		buttonTable.setHeight(root.getHeight());
 		buttonTable.top().defaults().padBottom(2).padRight(2);
 		
-		ImageButton firstButton = new ImageButton(GameGui.setImgButtonStyle(guiRes.skin.getDrawable("gui/statsIcon"), null, guiRes.skin.getDrawable("gui/button"), null));
+		ImageButton firstButton = GuiUtils.createImageButton("gui/statsIcon", null, "gui/button", null, skin);
 		firstButton.addListener(new ChangeListener() {
 			public void changed(ChangeEvent event, Actor actor) {
 				bodyCell.setActor(devInfo);
@@ -56,8 +57,8 @@ public class InformationWindow extends BasicWindow {
 		addLabelPair("Render time: ", "render", font);
 	}
 	public void update(World world){
-		if(!GameScreen.getVelocity().isZero()){
-			updatePosition(GameScreen.getVelocity().x, GameScreen.getVelocity().y);
+		if(!InputHandler.getVelocity().isZero()){
+			updatePosition(InputHandler.getVelocity().x, InputHandler.getVelocity().y);
 		}
 		if(!functionTable.isVisible())return;
 		((Label)devInfo.findActor("fps")).setText(""+Gdx.graphics.getFramesPerSecond());

@@ -3,9 +3,12 @@ package com.ado.trader.screens;
 import com.ado.trader.GameMain;
 import com.ado.trader.buildings.BuildingCollection;
 import com.ado.trader.entities.EntityLoader;
-import com.ado.trader.gui.GameGui;
+import com.ado.trader.gui.ControlArea;
 import com.ado.trader.gui.GameServices;
+import com.ado.trader.gui.RightClickMenu;
+import com.ado.trader.gui.ToolTip;
 import com.ado.trader.input.GameInput;
+import com.ado.trader.input.InputHandler;
 import com.ado.trader.systems.AiSystem;
 import com.ado.trader.systems.AnimationSystem;
 import com.ado.trader.systems.GameTime;
@@ -16,7 +19,6 @@ import com.artemis.World;
 import com.artemis.managers.GroupManager;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.TimeUtils;
 
 //Main game class
@@ -24,11 +26,8 @@ public class GameScreen implements Screen{
 	GameMain game;
 	
 	GameServices gameServices;
-	GameGui gui;
 	
 	BuildingCollection buildings;
-	
-	static Vector2 velocity = new Vector2(); //camera velocity
 	
 	//initialize
 	public GameScreen(GameMain game) {
@@ -52,7 +51,9 @@ public class GameScreen implements Screen{
 				
 		initWorld();
 		
-		gui = new GameGui(gameServices);
+		new ToolTip(gameServices);
+		new ControlArea(gameServices);
+		new RightClickMenu(gameServices);
 		
 		if(loadDir != null){
 			EntityLoader loader = gameServices.getEntities().getLoader();
@@ -114,10 +115,9 @@ public class GameScreen implements Screen{
 	public void render(float delta) {
 		updateLogic(delta);
 		
-		gameServices.getCam().translate(velocity.x, velocity.y);
+		gameServices.getCam().translate(InputHandler.getVelocity().x, InputHandler.getVelocity().y);
 		
 		gameServices.getStage().act(delta);
-		gui.update();
 		
 		gameServices.getRenderer().render(delta);
 	}
@@ -125,15 +125,9 @@ public class GameScreen implements Screen{
 	public BuildingCollection getBuildingCollection() {
 		return buildings;
 	}
-	public static Vector2 getVelocity() {
-		return velocity;
-	}
-	public GameGui getGui() {
-		return gui;
-	}
 	@Override
 	public void resize(int width, int height) {
-		gui.resize(width, height);
+		gameServices.getStage().getViewport().update(width, height);
 	}
 	@Override
 	public void show() {

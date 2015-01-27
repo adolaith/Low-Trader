@@ -21,7 +21,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.ArrayMap;
 
-public class RightClickMenu {
+public class RightClickMenu extends Actor{
 	Table root;
 	Circle bounds;
 	Button viewEntity, viewZone, viewItem;
@@ -35,13 +35,14 @@ public class RightClickMenu {
 	NpcInfoWindow npcWin;
 	ContainerWindow containerWin;
 	
-	public RightClickMenu(GameServices guiRes){
+	public RightClickMenu(GameServices gameRes){
+		setName("rightClickMenu");
 		int width = 180;
-		font = guiRes.font;
-		skin = guiRes.skin;
-		itemWin = new ItemWindow(guiRes);
-		npcWin = new NpcInfoWindow(guiRes);
-		containerWin = new ContainerWindow(guiRes);
+		font = gameRes.font;
+		skin = gameRes.skin;
+		itemWin = new ItemWindow(gameRes);
+		npcWin = new NpcInfoWindow(gameRes);
+		containerWin = new ContainerWindow(gameRes);
 		
 		entities = new ArrayMap<String, Entity>();
 		root = new Table();
@@ -50,7 +51,8 @@ public class RightClickMenu {
 		
 		bounds = new Circle();
 		
-		guiRes.stage.addActor(root);
+		gameRes.stage.addActor(root);
+		gameRes.stage.addActor(this);
 	}
 	
 	public void setupMenu(float x, float y, Vector2 mapClicked, Map map){
@@ -86,7 +88,7 @@ public class RightClickMenu {
 	
 	private Button createButton(final float x, final float y, String text, final String key){
 		LabelStyle lStyle = new LabelStyle(font, Color.WHITE);
-		Button b = new Button(GameGui.setButtonStyle(skin.getDrawable("gui/button"),null));
+		Button b = GuiUtils.createButton("gui/button", null, skin);
 		b.add(new Label("View "+text,lStyle));
 		b.addListener(new ChangeListener() {
 			public void changed(ChangeEvent event, Actor actor) {

@@ -1,47 +1,98 @@
 package com.ado.trader.gui;
 
 import com.ado.trader.input.InputHandler;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
+import com.badlogic.gdx.scenes.scene2d.utils.Align;
 
-public class ToolTip {
-	Label l;
-	String content;
-	final int TEXTHEIGHT;
+public class ToolTip extends Actor{
+	final int delay = 1; //sec
+	float count; 
+	boolean started;
+	Label label;
 
 	public ToolTip(GameServices gameRes) {
-		TEXTHEIGHT = 18;
+		setName("tooltip");
+		label = new Label("", new LabelStyle(gameRes.font, Color.BLACK));
+		label.debug();
+		label.setAlignment(Align.topLeft);
+		label.getStyle().background = gameRes.skin.getDrawable("gui/guiBG");
 		
-		LabelStyle lStyle = new LabelStyle();
-		lStyle.background = gameRes.skin.getDrawable("gui/guiBG");
-		lStyle.font = gameRes.font;
+		label.setWidth(185);
+		label.setWrap(true);
+		label.setVisible(false);
 		
-		l = new Label("", lStyle);
-		l.setWidth(115);
-		l.setVisible(false);
-		gameRes.stage.addActor(l);
+		count = -1;
+		
+		gameRes.stage.addActor(label);
+		
+		gameRes.stage.addActor(this);
 	}
-	
-	public void updateToolTip(){
-		if(content==null){return;}
-		if(!l.isVisible()){
-			l.setText(content);
-			l.setPosition(InputHandler.getMousePos().x, InputHandler.getMousePos().y);
-			l.setVisible(true);
+	public void show(String content){
+		//if quickly moving between actors using TT, hide TT
+		if(label.isVisible() && label.getColor().a < 1){
+			label.setVisible(false);
+			label.clearActions();
+		}
+		if(started == true) return;
+		started = true;
+		count = 0;
+		
+		label.setText(content);
+	}
+	@Override
+	public void act(float delta){
+		super.act(delta);
+		
+		if(label.isVisible() && (InputHandler.getVelocity().x != 0 || InputHandler.getVelocity().y != 0)){
+			label.moveBy(InputHandler.getVelocity().x, InputHandler.getVelocity().y);
+		}
+		if(started == false) return;
+		
+		count += Gdx.graphics.getRawDeltaTime();
+		if(count >= delay){
+			autoSize();
+			autoPosition();
+			label.toFront();
+			label.setVisible(true);
+			
+			started = false;
+			count = -1;
 		}
 	}
-	public void setContent(String content){
-		this.content = content;
-		int h = content.split("/n").length;
-		l.setHeight(TEXTHEIGHT*h+1);
+	public void autoSize(){
+		int maxLength = 12;
+		int textHeight = 24;
+		if(label.getText().length <= maxLength){
+			label.setHeight(textHeight);
+		}else if(label.getText().length <= maxLength * 2){
+			label.setHeight(textHeight * 2);
+		}else if(label.getText().length <= maxLength * 3){
+			label.setHeight(textHeight * 3);
+		}
 	}
-
-	public Label getLabel() {
-		return l;
+	//default tooltip position = top right of parent actor
+	private void autoPosition(){
+		float x = InputHandler.getMousePos().x + 4;
+		float y = InputHandler.getMousePos().y;
+		//tooltip trying to display offscreen width ways
+		if(x + label.getWidth() > label.getStage().getWidth() / 2){
+			x = InputHandler.getMousePos().x - label.getWidth() - 4;	
+		}
+		label.setPosition(x, y);
 	}
-	public void exitParent(){
-		content = null;
-		l.setVisible(false);
+	public void hide(){
+		//timer started but not finished
+		if(started == true && count < delay){
+			started = false;
+		//tooltip visible
+		}else if(started == false && label.isVisible()){
+			label.addAction(Actions.sequence(Actions.alpha(0.75f), Actions.delay(2), Actions.alpha(0, 1), Actions.visible(false), Actions.alpha(1)));
+		}
 	}
 }
 

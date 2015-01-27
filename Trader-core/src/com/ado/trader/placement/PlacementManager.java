@@ -3,8 +3,6 @@ package com.ado.trader.placement;
 import com.ado.trader.entities.EntityFactory;
 import com.ado.trader.gui.GameServices;
 import com.ado.trader.input.InputHandler;
-import com.ado.trader.items.ItemFactory;
-import com.ado.trader.map.Map;
 import com.ado.trader.rendering.EntityRenderSystem;
 import com.ado.trader.rendering.EntityRenderSystem.Direction;
 import com.badlogic.gdx.Gdx;
@@ -25,33 +23,32 @@ public class PlacementManager {
 	EntityRenderSystem entityRenderer;
 	EntityFactory entities;
 
-	public PlacementManager(InputHandler input, Map map, GameServices gui, EntityFactory entities, ItemFactory items, EntityRenderSystem entityRenderer) {
+	public PlacementManager(GameServices gameRes) {
 		editMode = true;
 		placementSelection=null;
 		editMode = true;
 		
-		this.input = input;
-		this.entityRenderer = entityRenderer;
-		this.entities = entities;
+		this.entityRenderer = gameRes.getRenderer().getRenderEntitySystem();
+		this.entities = gameRes.getEntities();
 		
-		entityPl = new EntityPlaceable(map, input, gui, entities);
-		tilePl = new TilePlaceable(map, input);
-		wallPl = new WallPlaceable(map, entities, entityRenderer);
-		featurePl = new FeaturePlaceable(input, map, entities);
-		itemPl = new ItemPlaceable(map, items);
+		entityPl = new EntityPlaceable(gameRes);
+		tilePl = new TilePlaceable(gameRes.getMap());
+		wallPl = new WallPlaceable(gameRes.getMap(), gameRes.getEntities(), gameRes.getRenderer().getRenderEntitySystem());
+		featurePl = new FeaturePlaceable(gameRes);
+		itemPl = new ItemPlaceable(gameRes.getMap(), gameRes.getItems());
 	}
 	
 	public boolean handleClick(Vector2 mapUp, InputHandler input){
 		if(placementSelection==null || !editMode){return false;}
 
 		//mouse was dragged
-		if(mapUp.x!=input.mapClicked.x&&mapUp.y!=input.mapClicked.y){
+		if(mapUp.x!=InputHandler.mapClicked.x&&mapUp.y!=InputHandler.mapClicked.y){
 			//get smallest x,y
-			Vector2 start = new Vector2(Math.min((int)mapUp.x, (int)input.getMapClicked().x), 
-					Math.min((int)mapUp.y, (int)input.getMapClicked().y));
+			Vector2 start = new Vector2(Math.min((int)mapUp.x, (int)InputHandler.getMapClicked().x), 
+					Math.min((int)mapUp.y, (int)InputHandler.getMapClicked().y));
 			//get largest x,y
-			Vector2 widthHeight = new Vector2(Math.max((int)mapUp.x, (int)input.getMapClicked().x), 
-					Math.max((int)mapUp.y, (int)input.getMapClicked().y));
+			Vector2 widthHeight = new Vector2(Math.max((int)mapUp.x, (int)InputHandler.getMapClicked().x), 
+					Math.max((int)mapUp.y, (int)InputHandler.getMapClicked().y));
 			
 			//delete area
 			if(placementSelection.delete){
@@ -90,7 +87,7 @@ public class PlacementManager {
 		case "feature":
 			placementSelection = featurePl;
 			featurePl.featureId = name;
-			featurePl.spriteId = Integer.valueOf(entities.getFeatures().getFeature(name).get("sprite").split(",")[0]);
+			featurePl.spriteId = Integer.valueOf(featurePl.features.getFeature(name).get("sprite").split(",")[0]);
 			featurePl.sprite = entityRenderer.getStaticSprites().get(featurePl.spriteId);
 			break;
 		case "item":
@@ -149,6 +146,9 @@ public class PlacementManager {
 	}
 	public ItemPlaceable getItemPl() {
 		return itemPl;
+	}
+	public FeaturePlaceable getFeaturePl() {
+		return featurePl;
 	}
 	public void resetSelection(){
 		placementSelection = null;

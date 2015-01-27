@@ -76,9 +76,8 @@ public class MainMenu implements Screen {
 		
 		setStyle("gui/panelButton", "gui/panelButton2", white);
 		
+		//Start a new game
 		TextButton play = new TextButton("New Game", style);
-		
-		//handles button action on pressed down/up
 		play.addListener(new InputListener(){
 			public boolean touchDown(InputEvent e, float x, float y, int pointer, int button){
 				return true;
@@ -90,9 +89,8 @@ public class MainMenu implements Screen {
 			}
 		});
 		
+		//load a saved game
 		TextButton load = new TextButton("Load Game", style);
-		
-		//handles button action on pressed down/up
 		load.addListener(new InputListener(){
 			public boolean touchDown(InputEvent e, float x, float y, int pointer, int button){
 				return true;
@@ -103,22 +101,20 @@ public class MainMenu implements Screen {
 			}
 		});
 		
-		TextButton buildingEditor = new TextButton("Building Editor", style);
-		
-		//handles button action on pressed down/up
-		buildingEditor.addListener(new InputListener(){
+		//start up the map editor
+		TextButton mapEditor = new TextButton("Map Editor", style);
+		mapEditor.addListener(new InputListener(){
 			public boolean touchDown(InputEvent e, float x, float y, int pointer, int button){
 				return true;
 			}
 			public void touchUp(InputEvent e, float x, float y, int pointer, int button){
-				System.out.println("Starting Building Editor...");
-
+				System.out.println("Starting Map Editor...");
+				game.setScreen(new MapEditorScreen(game));
 			}
 		});
 		
+		//change game options
 		TextButton optionsButton = new TextButton("Options", style);
-		
-		//handles button action on pressed down/up
 		optionsButton.addListener(new InputListener(){
 			public boolean touchDown(InputEvent e, float x, float y, int pointer, int button){
 				return true;
@@ -129,9 +125,8 @@ public class MainMenu implements Screen {
 			}
 		});
 		
+		//Quit game to desktop
 		TextButton quit = new TextButton("Quit", style);
-		
-		//handles button action on pressed down/up
 		quit.addListener(new InputListener(){
 			public boolean touchDown(InputEvent e, float x, float y, int pointer, int button){
 				return true;
@@ -149,7 +144,7 @@ public class MainMenu implements Screen {
 		root.add(label).row();
 		root.add(play).row();
 		root.add(load).row();
-		root.add(buildingEditor).row();
+		root.add(mapEditor).row();
 		root.add(optionsButton).row();
 		root.add(quit);
 		root.setX(Gdx.graphics.getWidth() / 2);
