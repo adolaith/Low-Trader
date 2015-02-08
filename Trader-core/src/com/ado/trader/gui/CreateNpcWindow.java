@@ -7,6 +7,7 @@ import com.ado.trader.entities.components.Hunger;
 import com.ado.trader.entities.components.Money;
 import com.ado.trader.entities.components.Position;
 import com.ado.trader.map.Map;
+import com.ado.trader.utils.GameServices;
 import com.ado.trader.utils.IsoUtils;
 import com.artemis.Entity;
 import com.badlogic.gdx.graphics.Color;

@@ -14,10 +14,10 @@ import com.ado.trader.entities.components.SpriteComp;
 import com.ado.trader.entities.components.Target;
 import com.ado.trader.entities.components.Type;
 import com.ado.trader.entities.components.Wall;
-import com.ado.trader.gui.GameServices;
 import com.ado.trader.map.IntMapLayer;
 import com.ado.trader.map.Map;
 import com.ado.trader.systems.AiSystem;
+import com.ado.trader.utils.GameServices;
 import com.artemis.ComponentMapper;
 import com.artemis.Entity;
 import com.artemis.managers.GroupManager;
@@ -72,6 +72,11 @@ public class EntityFactory{
 				for(String s:tags){
 					if(s.isEmpty())break;
 					gm.add(entity, s);
+					
+					//entity is a wall?
+					if(s.matches("wall")){
+						entity.edit().add(new Wall());
+					}
 				}
 				break;
 			case "animation":
@@ -92,9 +97,6 @@ public class EntityFactory{
 				AiSystem aiSys = map.getWorld().getSystem(AiSystem.class);
 				entity.edit().add(new AiProfile(aiSys.getAiProfile(profile.get(key))));
 				entity.edit().add(new Locations());
-				break;
-			case "wall":
-				entity.edit().add(new Wall());
 				break;
 			case "area":
 				Area areaComp = new Area();

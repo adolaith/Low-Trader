@@ -4,17 +4,16 @@ import com.ado.trader.entities.components.Area;
 import com.artemis.ComponentMapper;
 import com.artemis.Entity;
 import com.artemis.World;
-import com.artemis.annotations.Wire;
 import com.artemis.managers.GroupManager;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 
-@Wire
 public class EntityLayer extends IntMapLayer {
 	ComponentMapper<Area> areaMapper;
 
-	public EntityLayer(int w, int h) {
+	public EntityLayer(int w, int h, World world) {
 		super(w, h);
+		areaMapper = world.getMapper(Area.class);
 	}
 	public void addToMap(Integer id, int x, int y, int h) {
 		map[x][y][h] = id;

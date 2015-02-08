@@ -33,10 +33,11 @@ public class WallPlaceable extends Placeable{
 		WallLayer wLayer = map.getWallLayer();
 		if(!wLayer.isOccupied(x, y, map.currentLayer)){
 			Sprite s = new Sprite(firstSprite);
-			Entity e = entities.createEntity(entityTypeID,firstId, s);
+			Entity e = EntityFactory.createEntity(entityTypeID,firstId, s);
 			Wall w = e.getComponent(Wall.class);
 			
 			w.firstSprite = first;
+			
 			if(secondSprite!=null){
 				s = new Sprite(secondSprite);
 				e.getComponent(SpriteComp.class).secondId = secondId;
@@ -163,7 +164,7 @@ public class WallPlaceable extends Placeable{
 	public void remove(int x, int y) {
 		if(!delete){return;}
 		if(map.getWallLayer().isOccupied(x, y, map.currentLayer)){
-			entities.deleteEntity(x,y, map.currentLayer, map.getWallLayer());
+			EntityFactory.deleteEntity(x,y, map.currentLayer, map.getWallLayer());
 		}
 		if(!Gdx.input.isKeyPressed(Keys.SHIFT_LEFT)){
 			delete^=delete;
@@ -175,5 +176,6 @@ public class WallPlaceable extends Placeable{
 		secondSprite = null;
 	}
 	public void renderPreview(SpriteBatch batch) {
+		
 	}
 }

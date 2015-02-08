@@ -2,23 +2,26 @@ package com.ado.trader.screens;
 
 import com.ado.trader.GameMain;
 import com.ado.trader.buildings.BuildingCollection;
-import com.ado.trader.gui.GameServices;
-import com.ado.trader.gui.MapEditorPanel;
+import com.ado.trader.entities.EntityLoader;
+import com.ado.trader.gui.CustomCursor;
 import com.ado.trader.gui.ToolTip;
+import com.ado.trader.gui.editor.MapEditorPanel;
 import com.ado.trader.input.InputHandler;
 import com.ado.trader.input.MapEditorInput;
 import com.ado.trader.placement.PlacementManager;
 import com.ado.trader.systems.AnimationSystem;
 import com.ado.trader.systems.GameTime;
 import com.ado.trader.systems.SaveSystem;
+import com.ado.trader.utils.GameServices;
 import com.artemis.Entity;
 import com.artemis.World;
 import com.artemis.managers.GroupManager;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.math.Vector2;
 
 public class MapEditorScreen implements Screen {
-	GameMain game;
+	static GameMain game;
 	GameServices gameServices;
 	BuildingCollection buildings;
 	
@@ -26,7 +29,7 @@ public class MapEditorScreen implements Screen {
 	Entity currentlySelected;
 
 	public MapEditorScreen(GameMain game) {
-		this.game = game;
+		MapEditorScreen.game = game;
 		MapEditorInput input = new MapEditorInput();
 		gameServices = new GameServices(1024, 768, input, null);
 		input.addPlacementManager(new PlacementManager(gameServices));
@@ -34,10 +37,33 @@ public class MapEditorScreen implements Screen {
 		initWorld();
 		
 		new ToolTip(gameServices);
+		new CustomCursor(gameServices);
 		new MapEditorPanel(gameServices);
 		
 		input.addPlacementManager(new PlacementManager(gameServices));
+		
+		runLogic = true;
 	}
+	public MapEditorScreen(GameMain game, String loadDir){
+		MapEditorScreen.game = game;
+		MapEditorInput input = new MapEditorInput();
+		gameServices = new GameServices(1024, 768, input, loadDir);
+		input.addPlacementManager(new PlacementManager(gameServices));
+		
+		initWorld();
+		
+		new ToolTip(gameServices);
+		new CustomCursor(gameServices);
+		new MapEditorPanel(gameServices);
+		
+		input.addPlacementManager(new PlacementManager(gameServices));
+		
+		EntityLoader loader = gameServices.getEntities().getLoader();
+		loader.loadSavedEntities(loadDir, gameServices);
+		
+		runLogic = true;
+	}
+	
 	private void initWorld(){
 		World world = gameServices.getWorld();
 		world.setManager(new GroupManager());
@@ -46,7 +72,6 @@ public class MapEditorScreen implements Screen {
 //		world.setSystem(new MovementSystem(gameServices));
 		world.setSystem(new SaveSystem(gameServices), true);
 //		world.setSystem(new FarmSystem(this), true);
-		world.setSystem(new GameTime(1.0f));
 //		world.setSystem(new StatusIconSystem(0.7f, gameServices.getAtlas()));
 		world.initialize();
 	}
@@ -55,11 +80,18 @@ public class MapEditorScreen implements Screen {
 		
 	}
 
+	public static boolean runLogic;
 	@Override
 	public void render(float delta) {
 		//LOGIC
-		gameServices.getWorld().setDelta(delta);
-		gameServices.getWorld().process();
+		if(runLogic){
+			gameServices.getWorld().setDelta(delta);
+			gameServices.getWorld().process();
+			
+		}else{
+			//dont move camera or gui :P
+			InputHandler.getVelocity().setZero();
+		}
 		
 		//RENDER
 		gameServices.getCam().translate(InputHandler.getVelocity().x, InputHandler.getVelocity().y);
@@ -67,6 +99,10 @@ public class MapEditorScreen implements Screen {
 		gameServices.getStage().act(delta);
 		
 		gameServices.getRenderer().render(delta);
+	}
+	
+	public static GameMain getGameMain(){
+		return game;
 	}
 
 	@Override

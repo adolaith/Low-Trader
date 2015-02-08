@@ -11,16 +11,10 @@ public class GameInput extends InputHandler {
 	}
 	
 	public boolean leftClick(int button){
-		if(!super.leftClick(button)){
-			return false;
-		}
-		
 		return false;
 	}
 	public boolean rightClick(int button){
-		if(!super.rightClick(button)){
 //			if(gui.rightClickAction()) return true;
-		}
 		
 		return false;
 	}

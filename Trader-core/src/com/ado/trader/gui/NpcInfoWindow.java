@@ -6,6 +6,7 @@ import com.ado.trader.entities.components.Inventory;
 import com.ado.trader.entities.components.Money;
 import com.ado.trader.items.Item;
 import com.ado.trader.items.ItemSprite;
+import com.ado.trader.utils.GameServices;
 import com.artemis.Entity;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
@@ -18,9 +19,9 @@ public class NpcInfoWindow extends BasicWindow {
 	Skin skin;
 
 	public NpcInfoWindow(GameServices guiRes) {
-		super("Npc Info", 265, 165, guiRes.font, guiRes.skin, guiRes.stage);
-		font = guiRes.font;
-		skin = guiRes.skin;
+		super("Npc Info", 265, 165, guiRes.getFont(), guiRes.getSkin(), guiRes.getStage());
+		font = guiRes.getFont();
+		skin = guiRes.getSkin();
 	}
 	
 	public void showWindow(float x, float y, Entity e){

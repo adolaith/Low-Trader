@@ -1,13 +1,14 @@
 package com.ado.trader.map;
 
 import com.ado.trader.entities.components.Wall;
-import com.ado.trader.gui.GameServices;
 import com.ado.trader.items.ItemFactory;
 import com.ado.trader.pathfinding.Mover;
 import com.ado.trader.pathfinding.TileBasedMap;
 import com.ado.trader.rendering.EntityRenderSystem.Direction;
+import com.ado.trader.systems.GameTime;
 import com.ado.trader.systems.SaveSystem;
 import com.ado.trader.utils.FileParser;
+import com.ado.trader.utils.GameServices;
 import com.ado.trader.utils.IsoUtils;
 import com.artemis.Entity;
 import com.artemis.World;
@@ -54,12 +55,14 @@ public class Map implements TileBasedMap{
 	}
 	private void init(TextureAtlas atlas, FileParser parser, World world, ItemFactory items){
 		this.world = world;
+		world.setSystem(new GameTime(1.0f));
+		world.initialize();
 		
 		loader = new MapLoader(this, items, parser);
 		
 		currentLayer = 0;
 		tileLayer = new TileLayer(worldWidth, worldHeight);
-		entityLayer = new EntityLayer(worldWidth, worldHeight);
+		entityLayer = new EntityLayer(worldWidth, worldHeight, world);
 		itemLayer = new ItemLayer(worldWidth, worldHeight);
 		wallLayer = new WallLayer(worldWidth, worldHeight);
 		

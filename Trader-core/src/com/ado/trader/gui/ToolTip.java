@@ -1,6 +1,7 @@
 package com.ado.trader.gui;
 
 import com.ado.trader.input.InputHandler;
+import com.ado.trader.utils.GameServices;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -17,10 +18,9 @@ public class ToolTip extends Actor{
 
 	public ToolTip(GameServices gameRes) {
 		setName("tooltip");
-		label = new Label("", new LabelStyle(gameRes.font, Color.BLACK));
-		label.debug();
+		label = new Label("", new LabelStyle(gameRes.getFont(), Color.BLACK));
 		label.setAlignment(Align.topLeft);
-		label.getStyle().background = gameRes.skin.getDrawable("gui/guiBG");
+		label.getStyle().background = gameRes.getSkin().getDrawable("gui/tooltip");
 		
 		label.setWidth(185);
 		label.setWrap(true);
@@ -28,9 +28,9 @@ public class ToolTip extends Actor{
 		
 		count = -1;
 		
-		gameRes.stage.addActor(label);
+		gameRes.getStage().addActor(label);
 		
-		gameRes.stage.addActor(this);
+		gameRes.getStage().addActor(this);
 	}
 	public void show(String content){
 		//if quickly moving between actors using TT, hide TT

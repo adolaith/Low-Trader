@@ -3,6 +3,7 @@ package com.ado.trader.gui;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Cell;
@@ -16,10 +17,12 @@ import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.DragListener;
 
-public class BasicWindow {
-	Table bgTable, functionTable, root;
+public class BasicWindow extends Group{
+	Table bgTable;
+	protected Table functionTable;
+	protected Table root;
 	int width, height;
-	Label title;
+	private Label title;
 	BitmapFont font;
 	Skin skin;
 	
@@ -29,7 +32,7 @@ public class BasicWindow {
 		this.font = font;
 		this.skin = skin;
 		LabelStyle ls = new LabelStyle(font, Color.WHITE);
-		this.title = new Label(title, ls);
+		this.setTitle(new Label(title, ls));
 		init(skin, stage);
 	}
 	private void init(Skin skin, Stage stage){
@@ -48,16 +51,16 @@ public class BasicWindow {
 		functionTable.setHeight(height);
 		functionTable.setWidth(width);
 		
-		title.addListener(new DragListener() {
+		getTitle().addListener(new DragListener() {
 			public void touchDragged(InputEvent event, float x, float y, int pointer){
 				float lenX = x-getTouchDownX();
 				float lenY = y-getTouchDownY();
 				updatePosition(lenX, lenY);
 			}
 		});
-		functionTable.add(title).padLeft(6).padTop(6).padBottom(6).width(width-36).fill();
+		functionTable.add(getTitle()).padLeft(6).padTop(6).padBottom(6).width(width-36).fill();
 		
-		ImageButton closeButton = GuiUtils.createImageButton("gui/delete", null, "gui/button", null, skin);
+		ImageButton closeButton = GuiUtils.createImageButton("gui/exitIcon", null, "gui/button", null, skin);
 		closeButton.addListener(new ClickListener() {
 			public void enter (InputEvent event, float x, float y, int pointer, Actor fromActor) {
 				ToolTip toolTip = (ToolTip)(bgTable.getStage().getRoot().findActor("tooltip"));
@@ -82,8 +85,9 @@ public class BasicWindow {
 		bgTable.setVisible(false);
 		functionTable.setVisible(false);
 		
-		stage.addActor(bgTable);
-		stage.addActor(functionTable);
+		addActor(bgTable);
+		addActor(functionTable);
+		stage.addActor(this);
 	}
 	protected void addLabelPair(String key, String value, BitmapFont font){
 		LabelStyle ls = new LabelStyle(font, Color.WHITE);
@@ -115,5 +119,20 @@ public class BasicWindow {
 	public void updatePosition(float x, float y){
 		bgTable.moveBy(x, y);
 		functionTable.moveBy(x, y);
+	}
+	public boolean isVisible(){
+		return bgTable.isVisible();
+	}
+	public float getWidth(){
+		return width;
+	}
+	public float getHeight(){
+		return height;
+	}
+	public Label getTitle() {
+		return title;
+	}
+	public void setTitle(Label title) {
+		this.title = title;
 	}
 }

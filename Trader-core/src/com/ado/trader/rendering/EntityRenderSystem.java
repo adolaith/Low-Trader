@@ -15,7 +15,6 @@ import com.ado.trader.systems.StatusIconSystem.StatusIcon;
 import com.ado.trader.utils.IsoUtils;
 import com.artemis.ComponentMapper;
 import com.artemis.Entity;
-import com.artemis.annotations.Wire;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -30,7 +29,6 @@ import com.esotericsoftware.spine.SkeletonRendererDebug;
 //Handles rendering of all active Entities. 
 //Renders next entity selected for placement at the mouses location.
 
-@Wire
 public class EntityRenderSystem{
 	ComponentMapper<Position> pm;
 	ComponentMapper<SpriteComp> sm;
@@ -47,6 +45,13 @@ public class EntityRenderSystem{
 	public EntityRenderSystem(Map map, MaskingSystem masks) {
 		this.map = map;
 		this.masks = masks;
+		
+		pm = map.getWorld().getMapper(Position.class);
+		sm = map.getWorld().getMapper(SpriteComp.class);
+		wm = map.getWorld().getMapper(Wall.class);
+		maskm = map.getWorld().getMapper(Mask.class);
+		animMapper = map.getWorld().getMapper(Animation.class);
+		
 		skeletonRenderer = new SkeletonRenderer();
 		debugRenderer = new SkeletonRendererDebug();
 		skeletonRenderer.setPremultipliedAlpha(true);

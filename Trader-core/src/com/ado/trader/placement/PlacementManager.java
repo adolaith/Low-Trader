@@ -1,10 +1,10 @@
 package com.ado.trader.placement;
 
 import com.ado.trader.entities.EntityFactory;
-import com.ado.trader.gui.GameServices;
 import com.ado.trader.input.InputHandler;
 import com.ado.trader.rendering.EntityRenderSystem;
 import com.ado.trader.rendering.EntityRenderSystem.Direction;
+import com.ado.trader.utils.GameServices;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -35,7 +35,7 @@ public class PlacementManager {
 		tilePl = new TilePlaceable(gameRes.getMap());
 		wallPl = new WallPlaceable(gameRes.getMap(), gameRes.getEntities(), gameRes.getRenderer().getRenderEntitySystem());
 		featurePl = new FeaturePlaceable(gameRes);
-		itemPl = new ItemPlaceable(gameRes.getMap(), gameRes.getItems());
+		itemPl = new ItemPlaceable(gameRes.getMap());
 	}
 	
 	public boolean handleClick(Vector2 mapUp, InputHandler input){
@@ -52,8 +52,8 @@ public class PlacementManager {
 			
 			//delete area
 			if(placementSelection.delete){
-				for(int x=(int)start.x;x<=widthHeight.x;x++){
-					for(int y=(int)start.y;y<=widthHeight.y;y++){
+				for(int x = (int) start.x; x <= widthHeight.x; x++){
+					for(int y = (int) start.y; y <= widthHeight.y; y++){
 						placementSelection.remove(x, y);
 					}
 				}

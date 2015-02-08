@@ -2,9 +2,9 @@ package com.ado.trader.placement;
 
 import com.ado.trader.entities.EntityFactory;
 import com.ado.trader.entities.EntityFeatures;
-import com.ado.trader.gui.GameServices;
 import com.ado.trader.input.InputHandler;
 import com.ado.trader.rendering.EntityRenderSystem;
+import com.ado.trader.utils.GameServices;
 import com.ado.trader.utils.IsoUtils;
 import com.artemis.Entity;
 import com.badlogic.gdx.Gdx;

@@ -1,8 +1,8 @@
 package com.ado.trader.items;
 
 import com.ado.trader.GameMain;
-import com.ado.trader.gui.GameServices;
 import com.ado.trader.utils.FileParser;
+import com.ado.trader.utils.GameServices;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;

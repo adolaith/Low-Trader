@@ -13,10 +13,10 @@ import com.ado.trader.entities.components.Position;
 import com.ado.trader.entities.components.SpriteComp;
 import com.ado.trader.entities.components.Type;
 import com.ado.trader.entities.components.Wall;
-import com.ado.trader.gui.GameServices;
 import com.ado.trader.items.Item;
 import com.ado.trader.rendering.MaskingSystem;
 import com.ado.trader.utils.FileParser;
+import com.ado.trader.utils.GameServices;
 import com.artemis.Aspect;
 import com.artemis.Entity;
 import com.artemis.systems.EntityProcessingSystem;
@@ -44,7 +44,7 @@ public class SaveSystem extends EntityProcessingSystem {
 	}
 	@Override
 	protected void begin(){
-		parser.initParser("saves/"+saveDir+"/entities.sav", true, true);
+		parser.initParser(saveDir+"/entities", true, true);
 	}
 
 	@Override

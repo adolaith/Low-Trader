@@ -15,6 +15,9 @@ public class TileLayer implements Layer{
 		for(int x=0; x<map.length; x++){
 			for(int y=0; y<map[x].length; y++){
 				Tile t = map[x][y][h];
+				if(h > 0 && t == null){
+					return;
+				}
 				p.addElement("id", String.valueOf(t.id));
 				p.newNode();
 			}

@@ -12,13 +12,13 @@ import com.ado.trader.entities.components.Money;
 import com.ado.trader.entities.components.Position;
 import com.ado.trader.entities.components.SpriteComp;
 import com.ado.trader.entities.components.Wall;
-import com.ado.trader.gui.GameServices;
 import com.ado.trader.items.Item;
 import com.ado.trader.items.ItemFactory;
 import com.ado.trader.map.EntityLayer;
 import com.ado.trader.rendering.EntityRenderSystem;
 import com.ado.trader.rendering.EntityRenderSystem.Direction;
 import com.ado.trader.utils.FileParser;
+import com.ado.trader.utils.GameServices;
 import com.ado.trader.utils.IsoUtils;
 import com.artemis.Entity;
 import com.artemis.World;
@@ -54,7 +54,7 @@ public class EntityLoader {
 				SkeletonData skelData = json.readSkeletonData(file);
 				skeletons.put(skelData.getName(), skelData);
 				
-				entities.animationPool.put(skelData.getName(), new AnimationStateData(skelData));
+				EntityFactory.animationPool.put(skelData.getName(), new AnimationStateData(skelData));
 			}
 		}
 		return skeletons;
@@ -62,8 +62,8 @@ public class EntityLoader {
 
 	//use after loading entity profiles. Loads level data
 	public void loadSavedEntities(String fileName, GameServices gameRes){
-		FileParser p = gameRes.getParser();  
-		p.initParser("saves/"+fileName+"/entities.sav", false, true);
+		FileParser p = gameRes.getParser();
+		p.initParser(fileName+"/entities", false, true);
 		if(!p.getFile().exists()){Gdx.app.log(GameMain.LOG, "Save file is empty"); return;}
 		Array<ArrayMap<String, String>> data = p.readFile();
 		for(ArrayMap<String, String> entityData: data){

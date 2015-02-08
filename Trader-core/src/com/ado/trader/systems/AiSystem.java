@@ -16,7 +16,7 @@ import com.ado.trader.entities.components.AiProfile;
 import com.ado.trader.entities.components.Inventory;
 import com.ado.trader.entities.components.Movement;
 import com.ado.trader.entities.components.Position;
-import com.ado.trader.gui.GameServices;
+import com.ado.trader.utils.GameServices;
 import com.artemis.Aspect;
 import com.artemis.ComponentMapper;
 import com.artemis.Entity;

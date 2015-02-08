@@ -22,7 +22,9 @@ public class InputHandler implements InputProcessor{
 	
 	Vector3 vec3Clicked,mousePosVec3;
 	public static Vector2 mapClicked;
+	public static Vector2 mapUp;
 	static Vector2 isoClicked;
+	static Vector2 isoUp;
 	static Vector2 mousePosVec2;
 	Sprite highlight;
 	
@@ -37,22 +39,16 @@ public class InputHandler implements InputProcessor{
 		vec3Clicked = new Vector3();
 		isoClicked= new Vector2();
 		mapClicked= new Vector2();
+		isoUp = new Vector2();
+		mapUp = new Vector2();
 		mousePosVec3 = new Vector3();
 		mousePosVec2 = new Vector2(0,0);
 	}
 
 	public boolean leftClick(int button){
-		if(button == Buttons.LEFT){
-			return true;
-		}
-		
 		return false;
 	}
 	public boolean rightClick(int button){
-		if(button == Buttons.RIGHT){
-			
-			return true;
-		}
 		return false;
 	}
 	@Override
@@ -107,28 +103,38 @@ public class InputHandler implements InputProcessor{
 	@Override
 	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
 		//converts and stores mouse coords to 2Dworld coords
-		setClickedVectors(screenX, screenY);
+		vec3Clicked.set(screenX, screenY, 0);
+		camera.unproject(vec3Clicked);
+		isoClicked.set(vec3Clicked.x, vec3Clicked.y);
+		
+		mapClicked = IsoUtils.getColRow((int)isoClicked.x, (int)isoClicked.y, map.getTileWidth(), map.getTileHeight());
+		
 		if(mapClicked.x < 0 || mapClicked.y < 0 || mapClicked.x > map.getWidthInTiles() || mapClicked.y > map.getHeightInTiles()){return true;}
 		
 		return false;
 	}
 	@Override
 	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-		setClickedVectors(screenX, screenY);
-		if(mapClicked.x < 0 || mapClicked.y < 0 || mapClicked.x > map.getWidthInTiles() || mapClicked.y > map.getHeightInTiles()){return true;}
-		
-		stage.setKeyboardFocus(null);
-		leftClick(button);
-		rightClick(button);
-		
-		return false;
-	}
-	private void setClickedVectors(int screenX, int screenY){
 		vec3Clicked.set(screenX, screenY, 0);
 		camera.unproject(vec3Clicked);
-		isoClicked.set(vec3Clicked.x, vec3Clicked.y);
+		isoUp.set(vec3Clicked.x, vec3Clicked.y);
 		
-		mapClicked = IsoUtils.getColRow((int)isoClicked.x, (int)isoClicked.y, map.getTileWidth(), map.getTileHeight());
+		mapUp = IsoUtils.getColRow((int)isoUp.x, (int)isoUp.y, map.getTileWidth(), map.getTileHeight());
+		
+		if(mapUp.x < 0 || mapUp.y < 0 || mapUp.x > map.getWidthInTiles() || mapUp.y > map.getHeightInTiles()){return true;}
+		
+		stage.setKeyboardFocus(null);
+		if(button == Buttons.LEFT){
+			return leftClick(button);
+		}else if(button == Buttons.RIGHT){
+			return rightClick(button);	
+		}
+		
+		
+		//clear vectors
+		mousePosVec2.setZero();
+		mapClicked.setZero();
+		return false;
 	}
 	public boolean touchDragged(int screenX, int screenY, int pointer) {
 		mousePosVec3.set(screenX, screenY, 0);

@@ -4,18 +4,16 @@ import com.ado.trader.entities.EntityFactory;
 import com.ado.trader.entities.components.Area;
 import com.ado.trader.entities.components.Position;
 import com.ado.trader.gui.CreateNpcWindow;
-import com.ado.trader.gui.GameServices;
 import com.ado.trader.input.InputHandler;
 import com.ado.trader.rendering.EntityRenderSystem;
+import com.ado.trader.utils.GameServices;
 import com.ado.trader.utils.IsoUtils;
 import com.artemis.ComponentMapper;
 import com.artemis.Entity;
-import com.artemis.annotations.Wire;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 
-@Wire
 public class EntityPlaceable extends Placeable {
 	public int entityTypeID, spriteId;
 	Sprite sprite;
@@ -27,6 +25,7 @@ public class EntityPlaceable extends Placeable {
 		super(gameRes.getMap());
 		this.entities = gameRes.getEntities();
 		this.createNpcWindow = new CreateNpcWindow(gameRes);
+		areaMapper = gameRes.getWorld().getMapper(Area.class);
 	}
 	
 	public void place(int x,int y){

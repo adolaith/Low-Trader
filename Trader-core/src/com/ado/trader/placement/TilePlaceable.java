@@ -41,7 +41,7 @@ public class TilePlaceable extends Placeable {
 		t.overlayId = overlay;
 	}
 	public void renderPreview(SpriteBatch batch){
-		if(Gdx.input.isButtonPressed(Buttons.LEFT)){
+		if(Gdx.input.isButtonPressed(Buttons.LEFT) && !InputHandler.getMapClicked().isZero() && !InputHandler.getMousePos().isZero()){
 			Vector2 mousePos = IsoUtils.getColRow((int)InputHandler.getMousePos().x, (int)InputHandler.getMousePos().y, map.getTileWidth(), map.getTileHeight());
 			Vector2 start = new Vector2(Math.min((int)mousePos.x, (int)InputHandler.getMapClicked().x), Math.min((int)mousePos.y, (int)InputHandler.getMapClicked().y));
 			Vector2 widthHeight = new Vector2(Math.max((int)mousePos.x, (int)InputHandler.getMapClicked().x), Math.max((int)mousePos.y, (int)InputHandler.getMapClicked().y));

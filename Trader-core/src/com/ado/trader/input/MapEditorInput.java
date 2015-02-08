@@ -14,23 +14,18 @@ public class MapEditorInput extends InputHandler{
 	}
 	
 	public boolean leftClick(int button){
-		if(!super.leftClick(button)){
-			
+		if(plManager.handleClick(mapUp, this)){
+			return true;
 		}
 		
 		return false;
 	}
 	public boolean rightClick(int button){
-		if(!super.rightClick(button)){
-			if(plManager.getPlacementSelection()!=null){
-				plManager.resetSelection();
-				return true;
-			}
-			if(plManager.handleClick(mapClicked, this)){
-				return true;
-			}
+		if(plManager.getPlacementSelection()!=null){
+			plManager.resetSelection();
+			return true;
 		}
-		
+
 		return false;
 	}
 

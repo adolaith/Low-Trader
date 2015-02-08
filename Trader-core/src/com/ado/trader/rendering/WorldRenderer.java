@@ -1,7 +1,7 @@
 package com.ado.trader.rendering;
 
-import com.ado.trader.gui.GameServices;
 import com.ado.trader.input.InputHandler;
+import com.ado.trader.utils.GameServices;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;

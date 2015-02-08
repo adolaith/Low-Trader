@@ -5,6 +5,7 @@ import com.ado.trader.entities.components.Inventory;
 import com.ado.trader.input.InputHandler;
 import com.ado.trader.items.Item;
 import com.ado.trader.map.Map;
+import com.ado.trader.utils.GameServices;
 import com.artemis.ComponentMapper;
 import com.artemis.Entity;
 import com.artemis.World;
@@ -38,8 +39,8 @@ public class RightClickMenu extends Actor{
 	public RightClickMenu(GameServices gameRes){
 		setName("rightClickMenu");
 		int width = 180;
-		font = gameRes.font;
-		skin = gameRes.skin;
+		font = gameRes.getFont();
+		skin = gameRes.getSkin();
 		itemWin = new ItemWindow(gameRes);
 		npcWin = new NpcInfoWindow(gameRes);
 		containerWin = new ContainerWindow(gameRes);
@@ -51,8 +52,8 @@ public class RightClickMenu extends Actor{
 		
 		bounds = new Circle();
 		
-		gameRes.stage.addActor(root);
-		gameRes.stage.addActor(this);
+		gameRes.getStage().addActor(root);
+		gameRes.getStage().addActor(this);
 	}
 	
 	public void setupMenu(float x, float y, Vector2 mapClicked, Map map){

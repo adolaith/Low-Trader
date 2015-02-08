@@ -3,10 +3,10 @@ package com.ado.trader.screens;
 import com.ado.trader.GameMain;
 import com.ado.trader.buildings.BuildingCollection;
 import com.ado.trader.entities.EntityLoader;
-import com.ado.trader.gui.ControlArea;
-import com.ado.trader.gui.GameServices;
+import com.ado.trader.gui.CustomCursor;
 import com.ado.trader.gui.RightClickMenu;
 import com.ado.trader.gui.ToolTip;
+import com.ado.trader.gui.game.ControlArea;
 import com.ado.trader.input.GameInput;
 import com.ado.trader.input.InputHandler;
 import com.ado.trader.systems.AiSystem;
@@ -15,6 +15,7 @@ import com.ado.trader.systems.GameTime;
 import com.ado.trader.systems.MovementSystem;
 import com.ado.trader.systems.SaveSystem;
 import com.ado.trader.systems.StatusIconSystem;
+import com.ado.trader.utils.GameServices;
 import com.artemis.World;
 import com.artemis.managers.GroupManager;
 import com.badlogic.gdx.Gdx;
@@ -52,6 +53,7 @@ public class GameScreen implements Screen{
 		initWorld();
 		
 		new ToolTip(gameServices);
+		new CustomCursor(gameServices);
 		new ControlArea(gameServices);
 		new RightClickMenu(gameServices);
 		
@@ -69,7 +71,6 @@ public class GameScreen implements Screen{
 		world.setSystem(new MovementSystem(gameServices));
 		world.setSystem(new SaveSystem(gameServices), true);
 //		world.setSystem(new FarmSystem(this), true);
-		world.setSystem(new GameTime(1.0f));
 		world.setSystem(new StatusIconSystem(0.7f, gameServices.getAtlas()));
 		world.initialize();
 	}

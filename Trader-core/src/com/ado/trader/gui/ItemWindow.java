@@ -4,14 +4,15 @@ import com.ado.trader.items.Item;
 import com.ado.trader.items.ItemData;
 import com.ado.trader.items.ItemPosition;
 import com.ado.trader.items.ItemSprite;
+import com.ado.trader.utils.GameServices;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 
 public class ItemWindow extends BasicWindow {
 	BitmapFont font;
 	
 	public ItemWindow(GameServices guiRes){
-		super("Item Info", 180, 100, guiRes.font, guiRes.skin, guiRes.stage);
-		font = guiRes.font;
+		super("Item Info", 180, 100, guiRes.getFont(), guiRes.getSkin(), guiRes.getStage());
+		font = guiRes.getFont();
 	}
 	public void showWindow(float x, float y, Item i){
 		super.showWindow(x, y);

@@ -92,8 +92,12 @@ public class ItemLayer implements Layer {
 
 		for(int x=0; x<map.length; x++){
 			for(int y=0; y<map[x].length; y++){
-				if(map[x][y][h]==null)continue;
 				Item i = map[x][y][h];
+				if(h > 0 && i == null){
+					return;
+				}else if(i == null){
+					continue;
+				}
 				p.addElement("id", i.getId());
 				p.addElement("pos", x+","+y);
 				p.newNode();

@@ -3,6 +3,7 @@ package com.ado.trader.gui;
 import com.ado.trader.entities.components.Inventory;
 import com.ado.trader.items.Item;
 import com.ado.trader.items.ItemSprite;
+import com.ado.trader.utils.GameServices;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -12,9 +13,9 @@ public class ContainerWindow extends BasicWindow {
 	Skin skin;
 
 	public ContainerWindow(GameServices guiRes) {
-		super("Container", 192, 3 * 26, guiRes.font, guiRes.skin, guiRes.stage);
-		font = guiRes.font;
-		skin = guiRes.skin;
+		super("Container", 192, 3 * 26, guiRes.getFont(), guiRes.getSkin(), guiRes.getStage());
+		font = guiRes.getFont();
+		skin = guiRes.getSkin();
 		root.left();
 	}
 	public void showWindow(float x, float y, Inventory i){

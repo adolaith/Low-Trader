@@ -11,11 +11,9 @@ import com.badlogic.gdx.math.Vector2;
 
 public class ItemPlaceable extends Placeable {
 	String itemId;
-	ItemFactory items;
 	
-	public ItemPlaceable(Map map, ItemFactory items) {
+	public ItemPlaceable(Map map) {
 		super(map);
-		this.items = items;
 	}
 
 	public void place(int x, int y) {
@@ -24,7 +22,7 @@ public class ItemPlaceable extends Placeable {
 			// Invalid placement
 			return;
 		}
-		Item i = items.createItem(itemId);
+		Item i = ItemFactory.createItem(itemId);
 		itemLayer.addToMap(i, x, y, map.currentLayer);
 		ItemPosition p = i.getData(ItemPosition.class);
 		p.position.set(x, y, map.currentLayer);
@@ -40,6 +38,7 @@ public class ItemPlaceable extends Placeable {
 		}
 	}
 	public void renderPreview(SpriteBatch batch) {
+		
 	}
 
 	@Override

@@ -21,7 +21,7 @@ public class MapLoader {
 		this.items = items;
 	}
 	public void loadMap(String dirName){
-		parser.initParser("saves/"+dirName+"/map.sav", false, true);
+		parser.initParser(dirName+"/map", false, true);
 		if(parser.getFile().readString().isEmpty()){Gdx.app.log(GameMain.LOG, "Save file is empty"); return;}
 		Array<ArrayMap<String, String>> data = parser.readFile();
 		
@@ -30,10 +30,7 @@ public class MapLoader {
 		time.loadSettings(Integer.valueOf(timeData.get("days")), GameTime.Time.valueOf(timeData.get("ToD")), Integer.valueOf(timeData.get("time")));
 		map.currentLayer = Integer.valueOf(data.removeIndex(0).get("layer"));
 		
-		parser.initParser("saves/"+dirName+"/zone.sav", false, true);
-		Array<ArrayMap<String, String>> zoneData = parser.readFile(); 
-		zoneData.removeIndex(0);
-		parser.initParser("saves/"+dirName+"/items.sav", false, true);
+		parser.initParser(dirName+"/items", false, true);
 		Array<ArrayMap<String, String>> itemsData = parser.readFile(); 
 		itemsData.removeIndex(0);
 		
@@ -46,7 +43,8 @@ public class MapLoader {
 	}
 	
 	private boolean loadTileLayer(Array<ArrayMap<String, String>> data){
-		Tile[][][] savedMap = new Tile[map.worldWidth][map.worldHeight][];
+		
+		Tile[][][] savedMap = new Tile[map.worldWidth][map.worldHeight][8];
 		
 		int count = 0;
 		for(int x=0; x<savedMap.length; x++){
@@ -74,7 +72,7 @@ public class MapLoader {
 				return;
 			}
 			String[] list = i.get("pos").split(",");
-			Item item = items.createItem(i.get("id"));
+			Item item = ItemFactory.createItem(i.get("id"));
 			ItemPosition pos = item.getData(ItemPosition.class);
 			pos.position.set(Integer.valueOf(list[0]), Integer.valueOf(list[1]), map.currentLayer);
 			map.itemLayer.addToMap(item, Integer.valueOf(list[0]), Integer.valueOf(list[1]), map.currentLayer);
@@ -103,7 +101,7 @@ public class MapLoader {
 		writeLayers(dir, "items", itemString);
 	}
 	private void writeLayers(String dir,String name, StringBuilder str){
-		parser.initParser("saves/"+dir+"/"+name+".sav", true, true);
+		parser.initParser(dir+"/"+name, true, true);
 		parser.string = str;
 		parser.writeToFile();
 	}
