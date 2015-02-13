@@ -21,16 +21,24 @@ public class MapLoader {
 		this.items = items;
 	}
 	public void loadMap(String dirName){
-		parser.initParser(dirName+"/map", false, true);
-		if(parser.getFile().readString().isEmpty()){Gdx.app.log(GameMain.LOG, "Save file is empty"); return;}
+		boolean external = !dirName.contains("bin");
+		
+		parser.initParser(dirName+"/map", false, external);
+		if(parser.getFile().readString().isEmpty()){
+			Gdx.app.log(GameMain.LOG, "Save file is empty");
+			return;
+		}
 		Array<ArrayMap<String, String>> data = parser.readFile();
 		
-		ArrayMap<String, String> timeData = data.removeIndex(0);
-		GameTime time = map.getWorld().getSystem(GameTime.class);
-		time.loadSettings(Integer.valueOf(timeData.get("days")), GameTime.Time.valueOf(timeData.get("ToD")), Integer.valueOf(timeData.get("time")));
+		if(data.first().containsKey("ToD")){
+			ArrayMap<String, String> timeData = data.removeIndex(0);
+			GameTime time = map.getWorld().getSystem(GameTime.class);
+			time.loadSettings(Integer.valueOf(timeData.get("days")), GameTime.Time.valueOf(timeData.get("ToD")), Integer.valueOf(timeData.get("time")));
+		}
+		//gets first layer data
 		map.currentLayer = Integer.valueOf(data.removeIndex(0).get("layer"));
 		
-		parser.initParser(dirName+"/items", false, true);
+		parser.initParser(dirName+"/items", false, external);
 		Array<ArrayMap<String, String>> itemsData = parser.readFile(); 
 		itemsData.removeIndex(0);
 		

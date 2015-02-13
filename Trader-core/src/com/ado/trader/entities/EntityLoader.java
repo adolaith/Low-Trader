@@ -23,7 +23,6 @@ import com.ado.trader.utils.IsoUtils;
 import com.artemis.Entity;
 import com.artemis.World;
 import com.artemis.managers.GroupManager;
-import com.artemis.utils.ImmutableBag;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -63,7 +62,9 @@ public class EntityLoader {
 	//use after loading entity profiles. Loads level data
 	public void loadSavedEntities(String fileName, GameServices gameRes){
 		FileParser p = gameRes.getParser();
-		p.initParser(fileName+"/entities", false, true);
+		boolean external = !fileName.contains("bin");
+		
+		p.initParser(fileName+"/entities", false, external);
 		if(!p.getFile().exists()){Gdx.app.log(GameMain.LOG, "Save file is empty"); return;}
 		Array<ArrayMap<String, String>> data = p.readFile();
 		for(ArrayMap<String, String> entityData: data){
@@ -74,7 +75,9 @@ public class EntityLoader {
 	private void loadEntity(GameServices gameRes, ArrayMap<String, String> entityData){
 		Entity e = EntityFactory.createEntity(Integer.valueOf(entityData.get("id")));
 		for(String key:entityData.keys()){
-			if(key=="id"){continue;}
+			if(key=="id"){
+				continue;
+			}
 			switch(key){
 			case "area":
 				String[] areaList=entityData.get(key).split("'");
@@ -91,15 +94,8 @@ public class EntityLoader {
 				Vector2 mapXY=IsoUtils.getColRow(Integer.valueOf(pos[0]), Integer.valueOf(pos[1]), gameRes.getMap().getTileWidth(), gameRes.getMap().getTileHeight());
 				mapXY.x+=0.5;
 				world.getMapper(Position.class).get(e).setPosition((int)mapXY.x, (int)mapXY.y, Integer.valueOf(pos[2]));
-				if(e.getWorld().getManager(GroupManager.class).isInAnyGroup(e)){
-					ImmutableBag<String> arr = e.getWorld().getManager(GroupManager.class).getGroups(e);
-					for(int i=0;i<arr.size();i++){
-						switch(arr.get(i)){
-						case "wall":
-							gameRes.getMap().getWallLayer().addToMap(e.getId(), (int)mapXY.x, (int)mapXY.y, Integer.valueOf(pos[2]));
-							break;
-						}
-					}
+				if(e.getWorld().getManager(GroupManager.class).isInGroup(e, "wall")){
+					gameRes.getMap().getWallLayer().addToMap(e.getId(), (int)mapXY.x, (int)mapXY.y, Integer.valueOf(pos[2]));
 				}else{
 					EntityLayer eLayer = gameRes.getMap().getEntityLayer();
 					eLayer.addToMap(e.getId(), (int)mapXY.x, (int)mapXY.y, Integer.valueOf(pos[2]));

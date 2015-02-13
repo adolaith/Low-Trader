@@ -3,7 +3,6 @@ package com.ado.trader.gui.game;
 import com.ado.trader.GameMain;
 import com.ado.trader.gui.GuiUtils;
 import com.ado.trader.gui.ToolTip;
-import com.ado.trader.input.InputHandler;
 import com.ado.trader.screens.GameScreen;
 import com.ado.trader.systems.GameTime;
 import com.ado.trader.utils.GameServices;
@@ -11,6 +10,7 @@ import com.artemis.World;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
@@ -20,11 +20,12 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.utils.viewport.Viewport;
 
 //Main control Gui element
 //Has menu buttons, time display and control, map height buttons and quit game button
 
-public class ControlArea extends Actor{
+public class ControlArea extends Group{
 	Table bgTable, functionTable;
 	int width = 184;
 	int height = 120;
@@ -40,6 +41,8 @@ public class ControlArea extends Actor{
 		world = gameRes.getWorld();
 		infoWindow = new InformationWindow(gameRes);
 		newsWindow = new NewsWindow(gameRes);
+		
+		new GameMenu(gameRes);
 		
 		bgTable = new Table();
 		bgTable.setHeight(height);
@@ -75,7 +78,8 @@ public class ControlArea extends Actor{
 			}
 			@Override
 			public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-				newsWindow.showWindow(gameRes.getCam().position.x, gameRes.getCam().position.y);
+				Viewport view = gameRes.getStage().getViewport();
+				newsWindow.showWindow(view.getScreenX() + 2, view.getScreenY() + 2);
 				return true;
 			}
 		});
@@ -103,7 +107,8 @@ public class ControlArea extends Actor{
 				toolTip.hide();
 			}
 			public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-				infoWindow.showWindow(gameRes.getCam().position.x, gameRes.getCam().position.y);
+				Viewport view = gameRes.getStage().getViewport();
+				infoWindow.showWindow(view.getScreenX() + view.getScreenWidth() - infoWindow.getWidth() - 2, view.getScreenY() + view.getScreenHeight() - infoWindow.getHeight() - 2);
 				return true;
 			}
 		});
@@ -187,7 +192,8 @@ public class ControlArea extends Actor{
 				toolTip.hide();
 			}
 			public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-				Gdx.app.exit();
+				GameMenu menu = (GameMenu) gameRes.getStage().getRoot().findActor("gameMenu");
+				menu.show();
 				return true;
 			}
 		});
@@ -247,14 +253,14 @@ public class ControlArea extends Actor{
 		});
 		functionTable.add(ffButton).padTop(6).padLeft(2).padRight(2).width(22).height(22);
 		
-		float x = gameRes.getCam().position.x + (Gdx.graphics.getWidth() / 2) - width - 2;
-		float y = gameRes.getCam().position.y - (Gdx.graphics.getHeight() / 2) + 2;
+		float x = gameRes.getStage().getViewport().getScreenX() + gameRes.getStage().getViewport().getScreenWidth() - (width + 2);
+		float y = gameRes.getStage().getViewport().getScreenY() + 2;
 		
 		bgTable.setPosition(x, y);
 		functionTable.setPosition(x, y);
 		
-		gameRes.getStage().addActor(bgTable);
-		gameRes.getStage().addActor(functionTable);
+		addActor(bgTable);
+		addActor(functionTable);
 		
 		gameRes.getStage().addActor(this);
 	}
@@ -262,7 +268,6 @@ public class ControlArea extends Actor{
 	public void act(float delta){
 		super.act(delta);
 		infoWindow.update();
-		newsWindow.update();
 		
 		//update time/date
 		GameTime time = world.getSystem(GameTime.class);
@@ -270,9 +275,9 @@ public class ControlArea extends Actor{
 		String s = String.format("%02d:%02d %s", time.getTime()/60, time.getTime()%60, time.getTimeOfDay());
 		timeLabel.setText(s);
 		
-		if(InputHandler.getVelocity().x != 0 || InputHandler.getVelocity().y != 0){
-			bgTable.moveBy(InputHandler.getVelocity().x, InputHandler.getVelocity().y);
-			functionTable.moveBy(InputHandler.getVelocity().x, InputHandler.getVelocity().y);
-		}
+//		if(InputHandler.getVelocity().x != 0 || InputHandler.getVelocity().y != 0){
+//			bgTable.moveBy(InputHandler.getVelocity().x, InputHandler.getVelocity().y);
+//			functionTable.moveBy(InputHandler.getVelocity().x, InputHandler.getVelocity().y);
+//		}
 	}
 }

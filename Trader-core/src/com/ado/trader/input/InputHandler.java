@@ -21,11 +21,13 @@ public class InputHandler implements InputProcessor{
 	public static boolean DEBUG = false;
 	
 	Vector3 vec3Clicked,mousePosVec3;
+	int mouseButton;
 	public static Vector2 mapClicked;
 	public static Vector2 mapUp;
 	static Vector2 isoClicked;
 	static Vector2 isoUp;
 	static Vector2 mousePosVec2;
+	static Vector2 dragDir;
 	Sprite highlight;
 	
 	InputMultiplexer inputSystem;
@@ -41,6 +43,7 @@ public class InputHandler implements InputProcessor{
 		mapClicked= new Vector2();
 		isoUp = new Vector2();
 		mapUp = new Vector2();
+		dragDir = new Vector2();
 		mousePosVec3 = new Vector3();
 		mousePosVec2 = new Vector2(0,0);
 	}
@@ -102,10 +105,14 @@ public class InputHandler implements InputProcessor{
 	}
 	@Override
 	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+		mouseButton = button;
 		//converts and stores mouse coords to 2Dworld coords
 		vec3Clicked.set(screenX, screenY, 0);
 		camera.unproject(vec3Clicked);
 		isoClicked.set(vec3Clicked.x, vec3Clicked.y);
+		
+		stage.setKeyboardFocus(null);
+		stage.setScrollFocus(null);
 		
 		mapClicked = IsoUtils.getColRow((int)isoClicked.x, (int)isoClicked.y, map.getTileWidth(), map.getTileHeight());
 		
@@ -123,34 +130,55 @@ public class InputHandler implements InputProcessor{
 		
 		if(mapUp.x < 0 || mapUp.y < 0 || mapUp.x > map.getWidthInTiles() || mapUp.y > map.getHeightInTiles()){return true;}
 		
-		stage.setKeyboardFocus(null);
 		if(button == Buttons.LEFT){
-			return leftClick(button);
+			leftClick(button);
 		}else if(button == Buttons.RIGHT){
-			return rightClick(button);	
+			rightClick(button);	
 		}
 		
-		
 		//clear vectors
+//		if(!dragDir.isZero()){
+//			dragDir.setZero();
+//			currentVelocity.setZero();
+//			Gdx.app.log("InputHandler(drag): ", "GOT HERE");
+//		}
 		mousePosVec2.setZero();
 		mapClicked.setZero();
-		return false;
+		return true;
 	}
+	
 	public boolean touchDragged(int screenX, int screenY, int pointer) {
 		mousePosVec3.set(screenX, screenY, 0);
 		camera.unproject(mousePosVec3);
 		mousePosVec2.set(mousePosVec3.x, mousePosVec3.y);
-		return false;
+		
+		
+//		if(mouseButton == Buttons.RIGHT && dragDir.x != screenX && dragDir.y != screenY){
+//			dragDir.x = mousePosVec3.x - vec3Clicked.x;
+//			dragDir.y = mousePosVec3.y - vec3Clicked.y;
+//			Gdx.app.log("InputHandler(drag): ", "drag direction: "+ dragDir);
+//			
+//			camera.translate( camera.position.x - dragDir.x, camera.position.y - dragDir.y);
+//			dragDir.set(screenX, screenY);
+//		}
+		
+		return true;
 	}
 	@Override
 	public boolean mouseMoved(int screenX, int screenY) {
 		mousePosVec3.set(screenX, screenY, 0);
 		camera.unproject(mousePosVec3);
 		mousePosVec2.set(mousePosVec3.x, mousePosVec3.y);
-		return false;
+		return true;
 	}
 	public boolean scrolled(int amount) {
-		return false;
+		if(amount < 0 && camera.zoom > 0.9f){
+			camera.zoom -= 0.01;
+		}else if(camera.zoom < 1.34f){
+			camera.zoom += 0.01;
+		}
+		
+		return true;
 	}
 	public void render(SpriteBatch batch){
 		try{

@@ -10,6 +10,7 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.utils.viewport.Viewport;
 
 public class MapEditorPanel extends Table{
 	ObjectMenu objectMenus;
@@ -27,7 +28,6 @@ public class MapEditorPanel extends Table{
 		
 		new DeleteMenu(gameRes);
 		
-		//test
 		new EditorMenu(gameRes);
 		
 		createButton("zoneTile", "Tile menu", "tileMenu", gameRes);
@@ -79,9 +79,10 @@ public class MapEditorPanel extends Table{
 		});
 		add(exitButton);
 		
-		stageWidth = (int) gameRes.getStage().getWidth();
-		float x = gameRes.getCam().position.x + (stageWidth / 2) - getWidth() - 2;
-		float y = gameRes.getCam().position.y - (gameRes.getStage().getHeight() /2) + 2;
+		Viewport view = gameRes.getStage().getViewport();
+		stageWidth = (int) view.getScreenWidth();
+		float x = view.getScreenX() + view.getScreenWidth() - getWidth() - 2;
+		float y = view.getScreenY() + 2;
 		
 		setPosition(x, y);
 		gameRes.getStage().addActor(this);
@@ -89,12 +90,6 @@ public class MapEditorPanel extends Table{
 	
 	//UPDATE
 	public void act(float delta){
-		objectMenus.update();
-		
-		//re-positions gui element if camera moved
-		if(InputHandler.getVelocity().x != 0 || InputHandler.getVelocity().y != 0){
-			moveBy(InputHandler.getVelocity().x, InputHandler.getVelocity().y);
-		}
 		//screen has been resized
 		if(getStage().getWidth() != stageWidth){
 			stageWidth = (int) getStage().getWidth();
@@ -105,8 +100,6 @@ public class MapEditorPanel extends Table{
 		}
 		super.act(delta);
 	}
-	
-	
 
 	private void createButton(String icon, final String tooltip, final String menuName, final GameServices gameRes){
 		final ImageButton b = GuiUtils.createImageButton("gui/" +icon, null, "gui/button", null, gameRes.getSkin());
@@ -132,7 +125,8 @@ public class MapEditorPanel extends Table{
 				}else{
 					objectMenus.setCurrentTable(t);
 					objectMenus.getTitle().setText(tooltip);
-					objectMenus.showWindow(gameRes.getCam().position.x + (gameRes.getStage().getWidth() / 2) - getWidth() - objectMenus.getWidth() - 2, getY());
+					Viewport view = gameRes.getStage().getViewport();
+					objectMenus.showWindow(view.getScreenX() + view.getScreenWidth() - getWidth() - objectMenus.getWidth() - 2, getY());
 				}
 				return true;
 			}

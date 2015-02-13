@@ -10,13 +10,11 @@ import com.ado.trader.input.InputHandler;
 import com.ado.trader.input.MapEditorInput;
 import com.ado.trader.placement.PlacementManager;
 import com.ado.trader.systems.AnimationSystem;
-import com.ado.trader.systems.GameTime;
 import com.ado.trader.systems.SaveSystem;
 import com.ado.trader.utils.GameServices;
 import com.artemis.Entity;
 import com.artemis.World;
 import com.artemis.managers.GroupManager;
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.math.Vector2;
 
@@ -31,12 +29,12 @@ public class MapEditorScreen implements Screen {
 	public MapEditorScreen(GameMain game) {
 		MapEditorScreen.game = game;
 		MapEditorInput input = new MapEditorInput();
-		gameServices = new GameServices(1024, 768, input, null);
+		gameServices = new GameServices(1280, 720, input, null);
 		input.addPlacementManager(new PlacementManager(gameServices));
 		
 		initWorld();
 		
-		new ToolTip(gameServices);
+		new ToolTip(gameServices.getFont(), gameServices.getSkin(), gameServices.getStage());
 		new CustomCursor(gameServices);
 		new MapEditorPanel(gameServices);
 		
@@ -47,12 +45,12 @@ public class MapEditorScreen implements Screen {
 	public MapEditorScreen(GameMain game, String loadDir){
 		MapEditorScreen.game = game;
 		MapEditorInput input = new MapEditorInput();
-		gameServices = new GameServices(1024, 768, input, loadDir);
+		gameServices = new GameServices(1280, 720, input, loadDir);
 		input.addPlacementManager(new PlacementManager(gameServices));
 		
 		initWorld();
 		
-		new ToolTip(gameServices);
+		new ToolTip(gameServices.getFont(), gameServices.getSkin(), gameServices.getStage());
 		new CustomCursor(gameServices);
 		new MapEditorPanel(gameServices);
 		

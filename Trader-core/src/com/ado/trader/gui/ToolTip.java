@@ -1,13 +1,15 @@
 package com.ado.trader.gui;
 
-import com.ado.trader.input.InputHandler;
-import com.ado.trader.utils.GameServices;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
 
 public class ToolTip extends Actor{
@@ -16,11 +18,11 @@ public class ToolTip extends Actor{
 	boolean started;
 	Label label;
 
-	public ToolTip(GameServices gameRes) {
+	public ToolTip(BitmapFont font, Skin skin, Stage stage) {
 		setName("tooltip");
-		label = new Label("", new LabelStyle(gameRes.getFont(), Color.BLACK));
+		label = new Label("", new LabelStyle(font , Color.BLACK));
 		label.setAlignment(Align.topLeft);
-		label.getStyle().background = gameRes.getSkin().getDrawable("gui/tooltip");
+		label.getStyle().background = skin.getDrawable("gui/tooltip");
 		
 		label.setWidth(185);
 		label.setWrap(true);
@@ -28,9 +30,9 @@ public class ToolTip extends Actor{
 		
 		count = -1;
 		
-		gameRes.getStage().addActor(label);
+		stage.addActor(label);
 		
-		gameRes.getStage().addActor(this);
+		stage.addActor(this);
 	}
 	public void show(String content){
 		//if quickly moving between actors using TT, hide TT
@@ -48,9 +50,6 @@ public class ToolTip extends Actor{
 	public void act(float delta){
 		super.act(delta);
 		
-		if(label.isVisible() && (InputHandler.getVelocity().x != 0 || InputHandler.getVelocity().y != 0)){
-			label.moveBy(InputHandler.getVelocity().x, InputHandler.getVelocity().y);
-		}
 		if(started == false) return;
 		
 		count += Gdx.graphics.getRawDeltaTime();
@@ -77,13 +76,14 @@ public class ToolTip extends Actor{
 	}
 	//default tooltip position = top right of parent actor
 	private void autoPosition(){
-		float x = InputHandler.getMousePos().x + 4;
-		float y = InputHandler.getMousePos().y;
+		float x = Gdx.input.getX() + 4;
+		float y = Gdx.input.getY();
 		//tooltip trying to display offscreen width ways
 		if(x + label.getWidth() > label.getStage().getWidth() / 2){
-			x = InputHandler.getMousePos().x - label.getWidth() - 4;	
+			x = Gdx.input.getX() - label.getWidth() - 4;	
 		}
-		label.setPosition(x, y);
+		Vector2 tmp = getStage().screenToStageCoordinates(new Vector2(x, y));
+		label.setPosition(tmp.x, tmp.y);
 	}
 	public void hide(){
 		//timer started but not finished

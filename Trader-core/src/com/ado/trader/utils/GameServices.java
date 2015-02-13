@@ -42,7 +42,7 @@ public class GameServices {
 		cam = new OrthographicCamera(camWidth, camHeight);
 		this.skin = new Skin(atlas);
 		
-		this.stage = new Stage(new ExtendViewport(Gdx.graphics.getWidth(),Gdx.graphics.getHeight(), cam));
+		this.stage = new Stage(new ExtendViewport(camWidth, camHeight));
 		
 		world = new World();
 		parser = new FileParser();

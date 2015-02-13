@@ -2,7 +2,6 @@ package com.ado.trader.gui.game;
 
 import com.ado.trader.gui.BasicWindow;
 import com.ado.trader.gui.GuiUtils;
-import com.ado.trader.input.InputHandler;
 import com.ado.trader.rendering.WorldRenderer;
 import com.ado.trader.screens.GameScreen;
 import com.ado.trader.systems.GameTime;
@@ -62,9 +61,6 @@ public class InformationWindow extends BasicWindow {
 		addLabelPair("Render time: ", "render", font);
 	}
 	public void update(){
-		if(!InputHandler.getVelocity().isZero()){
-			updatePosition(InputHandler.getVelocity().x, InputHandler.getVelocity().y);
-		}
 		if(!functionTable.isVisible())return;
 		((Label)devInfo.findActor("fps")).setText(""+Gdx.graphics.getFramesPerSecond());
 		((Label)devInfo.findActor("delta")).setText(""+Gdx.graphics.getRawDeltaTime());

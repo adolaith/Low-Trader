@@ -50,13 +50,6 @@ public class ObjectMenu extends BasicWindow {
 		
 	}
 
-	public void update(){
-		//if camera moved, move gui elements
-		if(InputHandler.getVelocity().x != 0 || InputHandler.getVelocity().y != 0){
-			updatePosition(InputHandler.getVelocity().x, InputHandler.getVelocity().y);
-		}
-	}
-	
 	private Table itemsMenu(final GameServices gameRes){
 		Table itemsMenu = new Table();
 		itemsMenu.setFillParent(false);

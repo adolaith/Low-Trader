@@ -7,7 +7,7 @@ public class WallLayer extends IntMapLayer {
 		super(w, h);
 	}
 	@Override
-	public void addToMap(Integer id, int x, int h, int y) {
+	public void addToMap(Integer id, int x, int y, int h) {
 		map[x][y][h] = id;
 	}
 	public void deleteFromMap(int x, int y, int h) {

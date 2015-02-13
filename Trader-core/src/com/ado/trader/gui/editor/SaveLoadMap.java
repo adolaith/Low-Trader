@@ -1,0 +1,95 @@
+package com.ado.trader.gui.editor;
+
+import com.ado.trader.gui.SaveLoadMenu;
+import com.ado.trader.gui.ToolTip;
+import com.ado.trader.screens.MapEditorScreen;
+import com.ado.trader.utils.GameServices;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.utils.Array;
+
+public class SaveLoadMap extends SaveLoadMenu {
+	
+	public SaveLoadMap(final GameServices gameRes) {
+		super(gameRes);
+		setName("saveMenu");
+		
+		filePath = "adoGame/maps/";
+
+		final ToolTip toolTip = (ToolTip)(gameRes.getStage().getRoot().findActor("tooltip"));
+
+		save.addListener(new ClickListener() {
+			public void enter (InputEvent event, float x, float y, int pointer, Actor fromActor) {
+				toolTip.show("Save game");
+			}
+			public void exit (InputEvent event, float x, float y, int pointer, Actor fromActor) {
+				toolTip.hide();
+			}
+			public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+				FileHandle file = Gdx.files.external(filePath + field.getText());
+				if(file.exists()){
+					//over write existing save?
+					OverwriteDialog dialog = (OverwriteDialog) gameRes.getStage().getRoot().findActor("overWrite");
+					dialog.showWindow(background.getX(), background.getY());
+					dialog.toFront();
+				}else{
+					gameRes.getMap().saveGameState(filePath+field.getText());
+					Gdx.app.log("SaveMap: ", "MAP SAVED!");
+				}
+				populateList();
+				return true;
+			}
+		});
+		
+		delete.addListener(new ClickListener() {
+			public void enter (InputEvent event, float x, float y, int pointer, Actor fromActor) {
+				toolTip.show("Delete save game");
+			}
+			public void exit (InputEvent event, float x, float y, int pointer, Actor fromActor) {
+				toolTip.hide();
+			}
+			public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+				if(folderList.getSelected() != null){
+					FileHandle file = Gdx.files.external(filePath + folderList.getSelected());
+					file.deleteDirectory();
+					populateList();
+				}
+				return true;
+			}
+		});
+
+		load.addListener(new ClickListener() {
+			public void enter (InputEvent event, float x, float y, int pointer, Actor fromActor) {
+				toolTip.show("Load map");
+			}
+			public void exit (InputEvent event, float x, float y, int pointer, Actor fromActor) {
+				toolTip.hide();
+			}
+			public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+				FileHandle file = Gdx.files.external(filePath + folderList.getSelected());
+				if(file.exists()){
+					MapEditorScreen.getGameMain().setScreen(new MapEditorScreen(MapEditorScreen.getGameMain(), filePath + folderList.getSelected()));
+				}
+				return true;
+			}
+		});
+	}
+	@Override
+	public void show(boolean loading){
+		super.show(loading);
+		populateList();
+	}
+	private void populateList(){
+		FileHandle file = Gdx.files.external(filePath);
+		if(file.exists() && file.isDirectory()){
+			Array<String> arr = new Array<String>();
+			for(FileHandle f: file.list()){
+				arr.add(f.name());
+			}
+			folderList.setItems(arr);
+		}
+	}
+}

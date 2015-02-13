@@ -2,6 +2,7 @@ package com.ado.trader.screens;
 
 import com.ado.trader.GameMain;
 import com.ado.trader.buildings.BuildingCollection;
+import com.ado.trader.entities.EntityFeatures;
 import com.ado.trader.entities.EntityLoader;
 import com.ado.trader.gui.CustomCursor;
 import com.ado.trader.gui.RightClickMenu;
@@ -11,7 +12,6 @@ import com.ado.trader.input.GameInput;
 import com.ado.trader.input.InputHandler;
 import com.ado.trader.systems.AiSystem;
 import com.ado.trader.systems.AnimationSystem;
-import com.ado.trader.systems.GameTime;
 import com.ado.trader.systems.MovementSystem;
 import com.ado.trader.systems.SaveSystem;
 import com.ado.trader.systems.StatusIconSystem;
@@ -24,22 +24,23 @@ import com.badlogic.gdx.utils.TimeUtils;
 
 //Main game class
 public class GameScreen implements Screen{
-	GameMain game;
+	static GameMain game;
 	
 	GameServices gameServices;
 	
 	BuildingCollection buildings;
+	public static boolean logicRunning;
 	
 	//initialize
 	public GameScreen(GameMain game) {
-		this.game = game;
+		GameScreen.game = game;
 		init(null);
 	}
 	
 	//loads saved states from save dir files
 	public GameScreen(GameMain game, String dirName){
 		try{
-			this.game = game;
+			GameScreen.game = game;
 			init(dirName);
 		}catch(Exception ex){
 			Gdx.app.log("CRITICAL ERROR: ", "Loading game failed. Exception: "+ ex);
@@ -47,19 +48,29 @@ public class GameScreen implements Screen{
 		}
 	}
 	private void init(String loadDir){
-		
+		logicRunning = true;
 		gameServices = new GameServices(1280, 720, new GameInput(), loadDir);
-				
+		
+		
+		//CAMERA ZOOM
+		gameServices.getCam().zoom = 1.2f;
+		
+		//loads feature sprites
+		new EntityFeatures(gameServices.getAtlas(), gameServices.getParser(), gameServices.getRenderer().getRenderEntitySystem());
+		
+		//start world sytems and managers
 		initWorld();
 		
-		new ToolTip(gameServices);
+		//GUI elements
+		new ToolTip(gameServices.getFont(), gameServices.getSkin(), gameServices.getStage());
 		new CustomCursor(gameServices);
 		new ControlArea(gameServices);
 		new RightClickMenu(gameServices);
 		
+		//load saved entities
 		if(loadDir != null){
 			EntityLoader loader = gameServices.getEntities().getLoader();
-			loader.loadSavedEntities("testSaveDERP", gameServices);
+			loader.loadSavedEntities(loadDir, gameServices);
 		}
 		
 	}
@@ -114,9 +125,11 @@ public class GameScreen implements Screen{
 	//updates logic and renderer
 	@Override
 	public void render(float delta) {
-		updateLogic(delta);
-		
-		gameServices.getCam().translate(InputHandler.getVelocity().x, InputHandler.getVelocity().y);
+		if(logicRunning){
+			updateLogic(delta);
+			
+			gameServices.getCam().translate(InputHandler.getVelocity().x, InputHandler.getVelocity().y);
+		}
 		
 		gameServices.getStage().act(delta);
 		
@@ -142,6 +155,9 @@ public class GameScreen implements Screen{
 	}
 	@Override
 	public void resume() {
+	}
+	public static GameMain getGame(){
+		return game;
 	}
 
 	@Override

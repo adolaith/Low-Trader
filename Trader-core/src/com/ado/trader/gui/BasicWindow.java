@@ -64,11 +64,15 @@ public class BasicWindow extends Group{
 		closeButton.addListener(new ClickListener() {
 			public void enter (InputEvent event, float x, float y, int pointer, Actor fromActor) {
 				ToolTip toolTip = (ToolTip)(bgTable.getStage().getRoot().findActor("tooltip"));
-				toolTip.show("Close window");
+				if(toolTip != null){
+					toolTip.show("Close window");
+				}
 			}
 			public void exit (InputEvent event, float x, float y, int pointer, Actor fromActor) {
 				ToolTip toolTip = (ToolTip)(bgTable.getStage().getRoot().findActor("tooltip"));
-				toolTip.hide();
+				if(toolTip != null){
+					toolTip.hide();
+				}
 			}
 			@Override
 			public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {

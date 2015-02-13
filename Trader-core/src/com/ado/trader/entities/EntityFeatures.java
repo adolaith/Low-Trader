@@ -20,7 +20,7 @@ public class EntityFeatures {
 	MaskingSystem maskSys;
 	
 	public EntityFeatures(TextureAtlas atlas, FileParser p, EntityRenderSystem entityRenderer){
-		featuresList = loadEntityProfiles("data/Features", atlas, p, entityRenderer);
+		featuresList = loadEntityProfiles("./bin/data/Features", atlas, p, entityRenderer);
 		maskSys = entityRenderer.getMasks();
 	}
 	public void applyFeature(Entity e, String featureName, int spriteId, Sprite sprite){

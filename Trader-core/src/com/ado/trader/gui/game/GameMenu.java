@@ -1,30 +1,31 @@
-package com.ado.trader.gui.editor;
+package com.ado.trader.gui.game;
 
 import com.ado.trader.gui.GuiUtils;
 import com.ado.trader.gui.MenuGroup;
 import com.ado.trader.gui.ToolTip;
+import com.ado.trader.screens.GameScreen;
 import com.ado.trader.screens.MainMenu;
-import com.ado.trader.screens.MapEditorScreen;
 import com.ado.trader.utils.GameServices;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
-public class EditorMenu extends MenuGroup {
+public class GameMenu extends MenuGroup {
 
-	public EditorMenu(final GameServices gameRes) {
+	public GameMenu(final GameServices gameRes) {
 		super(gameRes);
-		setName("editorMenu");
-		
-		new SaveLoadMap(gameRes);
+		setName("gameMenu");
+		new SaveLoadGame(gameRes);
 		
 		final ToolTip toolTip = (ToolTip)(gameRes.getStage().getRoot().findActor("tooltip"));
 		
+		//Load button
 		LabelStyle lStyle = new LabelStyle(gameRes.getFont(), Color.WHITE);
 		Button b = GuiUtils.createButton("gui/button", null, gameRes.getSkin());
 		b.add(new Label("Load game",lStyle));
@@ -36,14 +37,16 @@ public class EditorMenu extends MenuGroup {
 				toolTip.hide();
 			}
 			public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-				SaveLoadMap file = (SaveLoadMap) gameRes.getStage().getRoot().findActor("saveMenu");
+				SaveLoadGame file = (SaveLoadGame) gameRes.getStage().getRoot().findActor("saveMenu");
 				file.show(true);
 				file.toFront();
+
 				return true;
 			}
 		});
 		functionTable.add(b).row();
 		
+		//Save button
 		b = GuiUtils.createButton("gui/button", null, gameRes.getSkin());
 		b.add(new Label("Save map",lStyle));
 		b.addListener(new ClickListener() {
@@ -54,9 +57,10 @@ public class EditorMenu extends MenuGroup {
 				toolTip.hide();
 			}
 			public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-				SaveLoadMap file = (SaveLoadMap) gameRes.getStage().getRoot().findActor("saveMenu");
+				SaveLoadGame file = (SaveLoadGame) gameRes.getStage().getRoot().findActor("saveMenu");
 				file.show(false);
 				file.toFront();
+
 				return true;
 			}
 		});
@@ -73,12 +77,13 @@ public class EditorMenu extends MenuGroup {
 				toolTip.hide();
 			}
 			public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-				MapEditorScreen.getGameMain().setScreen(new MainMenu(MapEditorScreen.getGameMain()));
+				GameScreen.getGame().setScreen(new MainMenu(GameScreen.getGame()));
 				return true;
 			}
 		});
 		functionTable.add(b).row();
 		
+		//Quit to desktop
 		b = GuiUtils.createButton("gui/button", null, gameRes.getSkin());
 		b.add(new Label("Quit to Desktop",lStyle));
 		b.addListener(new ClickListener() {
@@ -95,6 +100,7 @@ public class EditorMenu extends MenuGroup {
 		});
 		functionTable.add(b).row();
 		
+		//back to game
 		b = GuiUtils.createButton("gui/button", null, gameRes.getSkin());
 		b.add(new Label("Back",lStyle));
 		b.addListener(new ClickListener() {
@@ -110,42 +116,23 @@ public class EditorMenu extends MenuGroup {
 			}
 		});
 		functionTable.add(b);
-		
-		gameRes.getStage().addActor(this);
-		setZIndex(500);
 	}
-	
+
 	@Override
 	public void show(){
 		super.show();
-		
-		for(Actor a: getStage().getActors()){
-			if(a.getName() != null){
-				if(a == this || a.getName().matches("tooltip") || a.getName().matches("saveMenu") ||
-						a.getName().matches("overWrite")){
-					continue;
-				}
-			}
-			if(a.isVisible()){
-				a.setVisible(false);
-			}
-		}
-		MapEditorScreen.runLogic = false;
+		ControlArea control = (ControlArea) getStage().getRoot().findActor("controlArea");
+		control.toBack();
+		control.setTouchable(Touchable.disabled);
+		GameScreen.logicRunning = false;
 	}
+	
 	@Override
 	public void hide(){
 		super.hide();
-		
-		for(Actor a: getStage().getActors()){
-			if(a.getName() != null){
-				if(a == this || a.getName().matches("tooltip") || a.getName().matches("saveMenu")||
-						a.getName().matches("overWrite")){
-					continue;
-				}
-				a.setVisible(true);
-			}
-		}
-		
-		MapEditorScreen.runLogic = true;
+		ControlArea control = (ControlArea) getStage().getRoot().findActor("controlArea");
+		control.toFront();
+		control.setTouchable(Touchable.enabled);
+		GameScreen.logicRunning = true;
 	}
 }

@@ -1,7 +1,6 @@
 package com.ado.trader.gui.game;
 
 import com.ado.trader.gui.BasicWindow;
-import com.ado.trader.input.InputHandler;
 import com.ado.trader.utils.GameServices;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -50,11 +49,6 @@ public class NewsWindow extends BasicWindow {
 				str2 = l.getText().toString();
 				l.setText(str1);
 			}
-		}
-	}
-	public void update(){
-		if(!InputHandler.getVelocity().isZero()){
-			updatePosition(InputHandler.getVelocity().x, InputHandler.getVelocity().y);
 		}
 	}
 }

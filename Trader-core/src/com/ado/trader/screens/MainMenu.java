@@ -2,6 +2,8 @@ package com.ado.trader.screens;
 
 import com.ado.trader.GameMain;
 import com.ado.trader.gui.GameOptions;
+import com.ado.trader.gui.LoadGame;
+import com.ado.trader.gui.NewGame;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
@@ -71,21 +73,25 @@ public class MainMenu implements Screen {
 		
 		Gdx.input.setInputProcessor(stage);
 		
+		new LoadGame(game, white, skin, stage);
+		
 		Table root = new Table();
+		root.setName("mainMenu");
 		root.defaults().width(400).height(60);
 		
 		setStyle("gui/panelButton", "gui/panelButton2", white);
+		new NewGame(game, white, skin, stage);
 		
-		//Start a new game
-		TextButton play = new TextButton("New Game", style);
-		play.addListener(new InputListener(){
+		//Prompts map selection then starts new game
+		TextButton newGame = new TextButton("New Game", style);
+		newGame.addListener(new InputListener(){
 			public boolean touchDown(InputEvent e, float x, float y, int pointer, int button){
 				return true;
 			}
 			public void touchUp(InputEvent e, float x, float y, int pointer, int button){
 				System.out.println("New Game");
-				GameScreen gs = new GameScreen(game);
-				game.setScreen(gs);
+				NewGame window = (NewGame) stage.getRoot().findActor("newGame");
+				window.showWindow(Gdx.graphics.getWidth() / 4, Gdx.graphics.getHeight() / 7);
 			}
 		});
 		
@@ -96,8 +102,8 @@ public class MainMenu implements Screen {
 				return true;
 			}
 			public void touchUp(InputEvent e, float x, float y, int pointer, int button){
-				System.out.println("Loading Game...");
-				game.setScreen(new GameScreen(game, "testSaveDERP"));
+				LoadGame load = (LoadGame) stage.getRoot().findActor("loadGame");
+				load.showWindow(Gdx.graphics.getWidth() / 4, Gdx.graphics.getHeight() / 7);
 			}
 		});
 		
@@ -142,7 +148,7 @@ public class MainMenu implements Screen {
 		label.setAlignment(Align.center);
 		
 		root.add(label).row();
-		root.add(play).row();
+		root.add(newGame).row();
 		root.add(load).row();
 		root.add(mapEditor).row();
 		root.add(optionsButton).row();
@@ -155,6 +161,7 @@ public class MainMenu implements Screen {
 
 	@Override
 	public void hide() {
+		dispose();
 	}
 
 	@Override
