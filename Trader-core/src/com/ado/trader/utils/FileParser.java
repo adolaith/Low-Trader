@@ -49,12 +49,14 @@ public class FileParser {
 		file = null;
 	}
 	public Array<ArrayMap<String, String>> readFile(){
+		FileLogger.writeLog("FileParser: [STARTING READ...]");
 		Array<ArrayMap<String, String>> data = new Array<ArrayMap<String, String>>();
 		String tmp= file.readString();
 		if(tmp.startsWith("#")){
 			tmp=tmp.substring(tmp.indexOf("#")+1);
 			tmp=tmp.substring(tmp.indexOf("#")+1).trim();
 		}
+		
 		String[] nodes = tmp.split("\"");
 		for(String node: nodes){
 			ArrayMap<String, String> elements = new ArrayMap<String, String>();
@@ -70,6 +72,7 @@ public class FileParser {
 				}
 			}
 		}
+		FileLogger.writeLog("FileParser: [FILE READ]");
 		return data;
 	}
 	public FileHandle getFile() {

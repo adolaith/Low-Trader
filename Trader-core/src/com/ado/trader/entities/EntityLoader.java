@@ -1,11 +1,9 @@
- package com.ado.trader.entities;
+package com.ado.trader.entities;
 
 import com.ado.trader.GameMain;
 import com.ado.trader.entities.components.Animation;
 import com.ado.trader.entities.components.Area;
 import com.ado.trader.entities.components.Feature;
-import com.ado.trader.entities.components.Health;
-import com.ado.trader.entities.components.Hunger;
 import com.ado.trader.entities.components.Inventory;
 import com.ado.trader.entities.components.Mask;
 import com.ado.trader.entities.components.Money;
@@ -17,6 +15,7 @@ import com.ado.trader.items.ItemFactory;
 import com.ado.trader.map.EntityLayer;
 import com.ado.trader.rendering.EntityRenderSystem;
 import com.ado.trader.rendering.EntityRenderSystem.Direction;
+import com.ado.trader.utils.FileLogger;
 import com.ado.trader.utils.FileParser;
 import com.ado.trader.utils.GameServices;
 import com.ado.trader.utils.IsoUtils;
@@ -42,19 +41,18 @@ public class EntityLoader {
 	}
 	public ArrayMap<String, SkeletonData> loadSpineData(TextureAtlas atlas, EntityFactory entities){
 		ArrayMap<String, SkeletonData> skeletons = new ArrayMap<String, SkeletonData>();
-		FileHandle[] files = Gdx.files.internal("./bin/data/anim").list();
+		String[] files = Gdx.files.internal("data/anim/files.txt").readString().split(",");
 		
-		for(FileHandle file: files){
-			if(file.extension().matches("json")){
-				
-				SkeletonJson json = new SkeletonJson(atlas);
-				json.setScale(2f);
-				
-				SkeletonData skelData = json.readSkeletonData(file);
-				skeletons.put(skelData.getName(), skelData);
-				
-				EntityFactory.animationPool.put(skelData.getName(), new AnimationStateData(skelData));
-			}
+		for(String file: files){
+			FileLogger.writeLog("EntityLoader: loadSpineData: "+ file);
+			SkeletonJson json = new SkeletonJson(atlas);
+			json.setScale(2f);
+
+			FileHandle f = Gdx.files.internal("data/anim/" +file+ ".json");
+			SkeletonData skelData = json.readSkeletonData(f);
+			skeletons.put(skelData.getName(), skelData);
+
+			EntityFactory.animationPool.put(skelData.getName(), new AnimationStateData(skelData));
 		}
 		return skeletons;
 	}
@@ -62,7 +60,7 @@ public class EntityLoader {
 	//use after loading entity profiles. Loads level data
 	public void loadSavedEntities(String fileName, GameServices gameRes){
 		FileParser p = gameRes.getParser();
-		boolean external = !fileName.contains("bin");
+		boolean external = !fileName.startsWith("data");
 		
 		p.initParser(fileName+"/entities", false, external);
 		if(!p.getFile().exists()){Gdx.app.log(GameMain.LOG, "Save file is empty"); return;}

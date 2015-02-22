@@ -31,11 +31,6 @@ public class ItemFactory {
 				ItemValue v = new ItemValue(value);
 				i.addData(v);
 				break;
-			case "coins":
-				int coins = Integer.valueOf(profile.get(key));
-				Coins c = new Coins(coins);
-				i.addData(c);
-				break;
 			case "food":
 				int fValue = Integer.valueOf(profile.get(key));
 				FoodItem f = new FoodItem(fValue);

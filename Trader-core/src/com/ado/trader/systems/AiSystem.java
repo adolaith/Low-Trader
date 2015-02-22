@@ -62,10 +62,11 @@ public class AiSystem extends EntityProcessingSystem{
 	private void loadAiProfiles(){
 		try {
 			profiles = new ArrayMap<String, String[]>();
-			FileHandle folder = Gdx.files.internal("./bin/data/ai/");
-			FileHandle[] files = folder.list();
-			for(FileHandle file: files){
-				BufferedReader reader = file.reader(200);
+			String[] files = Gdx.files.internal("data/ai/files.txt").readString().split(",");
+
+			for(String file: files){
+				FileHandle f = Gdx.files.internal("data/ai/" + file);
+				BufferedReader reader = f.reader(200);
 				String line = reader.readLine();
 				String[] tasks = new String[200];
 				
@@ -80,7 +81,7 @@ public class AiSystem extends EntityProcessingSystem{
 					}
 					line = reader.readLine();
 				}
-				profiles.put(file.name(), tasks);
+				profiles.put(file, tasks);
 			}
 		} catch (IOException e) {
 			System.out.println("Error loading ai profiles");

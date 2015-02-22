@@ -1,9 +1,9 @@
 package com.ado.trader.gui;
 
-import com.ado.trader.input.InputHandler;
 import com.ado.trader.utils.GameServices;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 
@@ -25,8 +25,10 @@ public class CustomCursor extends Image{
 				hide();
 			}
 			super.act(delta);
-			if(getX() != InputHandler.getMousePos().x || getY() != InputHandler.getMousePos().y){
-				setPosition(InputHandler.getMousePos().x, InputHandler.getMousePos().y);
+			Vector2 tmp = getStage().screenToStageCoordinates(new Vector2(Gdx.input.getX(), Gdx.input.getY()));
+			
+			if(getX() != tmp.x || getY() != tmp.y){
+				setPosition(tmp.x, tmp.y);
 			}
 		}
 	}

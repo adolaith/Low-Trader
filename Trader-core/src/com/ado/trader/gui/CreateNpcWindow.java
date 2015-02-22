@@ -26,6 +26,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldFilter;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldStyle;
+import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ArrayMap;
@@ -70,7 +71,7 @@ public class CreateNpcWindow extends BasicWindow{
 		ArrayMap<Integer, ArrayMap<String, String>> npcs = entities.getNpcs();
 		//selectbox list
 		for(Integer npcId: npcs.keys()){
-			String s = npcId + ":" + npcs.get(npcId).get("tags"); 
+			String s = npcId + ":" + npcs.get(npcId).get("animation"); 
 			list.add(s);
 		}
 		box.setItems(list);
@@ -171,7 +172,7 @@ public class CreateNpcWindow extends BasicWindow{
 		
 		TextField field = new TextField("", fieldStyle);
 		field.setName(value);
-		field.setRightAligned(true);
+		field.setAlignment(Align.right);
 		if(digitsOnly){
 			field.setTextFieldFilter(new TextFieldFilter.DigitsOnlyFilter());
 		}

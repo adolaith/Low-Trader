@@ -4,6 +4,7 @@ import com.ado.trader.GameMain;
 import com.ado.trader.items.Item;
 import com.ado.trader.items.ItemFactory;
 import com.ado.trader.items.ItemPosition;
+import com.ado.trader.map.TileOverlay.Mask;
 import com.ado.trader.systems.GameTime;
 import com.ado.trader.utils.FileParser;
 import com.badlogic.gdx.Gdx;
@@ -21,7 +22,7 @@ public class MapLoader {
 		this.items = items;
 	}
 	public void loadMap(String dirName){
-		boolean external = !dirName.contains("bin");
+		boolean external = !dirName.startsWith("data");
 		
 		parser.initParser(dirName+"/map", false, external);
 		if(parser.getFile().readString().isEmpty()){
@@ -64,6 +65,10 @@ public class MapLoader {
 					return true;
 				}
 				Tile t = map.tilePool.createTile(Integer.valueOf(data.get(count).get("id")), x, y, map.currentLayer);
+				if(data.get(count).containsKey("mask")){
+					t.mask = Mask.valueOf(data.get(count).get("mask"));
+					t.overlayId = Integer.valueOf(data.get(count).get("maskId"));
+				}
 				savedMap[x][y][map.currentLayer] = t;
 				count++;
 			}

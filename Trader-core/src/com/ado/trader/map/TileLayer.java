@@ -19,6 +19,11 @@ public class TileLayer implements Layer{
 					return;
 				}
 				p.addElement("id", String.valueOf(t.id));
+				if(t.mask != null){
+					p.addElement("mask", t.mask.name());
+					p.addElement("maskId", ""+t.overlayId);
+				}
+				
 				p.newNode();
 			}
 		}

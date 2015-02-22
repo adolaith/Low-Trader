@@ -24,8 +24,8 @@ import com.badlogic.gdx.utils.Array;
 
 //Tile map class. Contain tile map array, world width/height, tile width/height
 public class Map implements TileBasedMap{
-	final int tileWidth =64*2;
-	final int tileHeight =32*2;
+	public static int tileWidth = 64*2;
+	public static int tileHeight = 32*2;
 	int worldWidth = 25;
 	int worldHeight = 25;
 	public int currentLayer;

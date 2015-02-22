@@ -2,7 +2,6 @@ package com.ado.trader.gui.editor;
 
 import com.ado.trader.gui.BasicWindow;
 import com.ado.trader.gui.GuiUtils;
-import com.ado.trader.input.InputHandler;
 import com.ado.trader.input.MapEditorInput;
 import com.ado.trader.utils.GameServices;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -10,8 +9,8 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane.ScrollPaneStyle;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.SpriteDrawable;
 import com.badlogic.gdx.utils.ArrayMap;
@@ -21,7 +20,7 @@ public class ObjectMenu extends BasicWindow {
 	Table current;
 	ScrollPane pane;
 	ArrayMap<String, Table> tableList;
-	float sqrLen = 32 * 1.2f;
+	float buttonSize = 32 * 1.2f;
 
 	public ObjectMenu(GameServices gameRes) {
 		super("Object menu", 310, 200, gameRes.getFont(), gameRes.getSkin(), gameRes.getStage());
@@ -36,7 +35,6 @@ public class ObjectMenu extends BasicWindow {
 		for(Table t: tableList.values()){
 			t.top().left();
 			t.setVisible(false);
-			gameRes.getStage().addActor(t);
 		}
 		
 		ScrollPaneStyle spS = new ScrollPaneStyle();
@@ -47,13 +45,12 @@ public class ObjectMenu extends BasicWindow {
 		pane.setScrollingDisabled(true, false);
 		pane.setScrollBarPositions(false, true);
 		root.add(pane).fill().expand();
-		
 	}
 
 	private Table itemsMenu(final GameServices gameRes){
 		Table itemsMenu = new Table();
 		itemsMenu.setFillParent(false);
-		itemsMenu.defaults().size(sqrLen);
+		itemsMenu.defaults().size(buttonSize);
 		
 		ArrayMap<Integer, Sprite> spriteList = gameRes.getItems().getItemSprites();
 		ArrayMap<String, ArrayMap<String, String>> list = gameRes.getItems().getItemProfiles();
@@ -74,22 +71,12 @@ public class ObjectMenu extends BasicWindow {
 			addToTable(butt, itemsMenu);
 		}
 		
-//		ImageButton deleteModeButton = new ImageButton(GameServices.setImgButtonStyle(guiRes.skin.getDrawable("gui/delete"), null, guiRes.skin.getDrawable("gui/button"), null));
-//		deleteModeButton.addListener(new InputListener() {
-//			public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-//				root.game.getPlaceManager().setPlacementSelection("item", "");
-//				root.game.getPlaceManager().getItemPl().delete = true;
-//				return true;
-//			}
-//		});
-//		itemsMenu.add(deleteModeButton).width(56).height(56);
-		
 		return itemsMenu;
 	}
 	private Table wallMenu(final GameServices gameRes){
 		Table wallMenu = new Table();
 		wallMenu.setFillParent(false);
-		wallMenu.defaults().size(sqrLen);
+		wallMenu.defaults().size(buttonSize);
 		
 		ArrayMap<Integer, Sprite> spriteList = gameRes.getRenderer().getRenderEntitySystem().getStaticSprites();
 		ArrayMap<Integer, ArrayMap<String, String>> list = gameRes.getEntities().getEntities();
@@ -114,15 +101,6 @@ public class ObjectMenu extends BasicWindow {
 			addToTable(butt, wallMenu);
 		}
 		
-//		ImageButton deleteModeButton = new ImageButton(GameServices.setImgButtonStyle(guiRes.skin.getDrawable("gui/delete"), null, guiRes.skin.getDrawable("gui/button"), null));
-//		deleteModeButton.addListener(new ChangeListener() {
-//			public void changed(ChangeEvent event, Actor actor) {
-//				root.game.getPlaceManager().setPlacementSelection("wall", 0);
-//				root.game.getPlaceManager().getWallPl().delete = true;
-//			}
-//		});
-//		wallMenu.add(deleteModeButton).width(56).height(56);
-		
 		return wallMenu;
 	}
 	
@@ -130,7 +108,7 @@ public class ObjectMenu extends BasicWindow {
 		final MapEditorInput input = (MapEditorInput) gameRes.getInput();
 		Table entityMenu = new Table();
 		entityMenu.setFillParent(false);
-		entityMenu.defaults().size(sqrLen);
+		entityMenu.defaults().size(buttonSize);
 		
 		final ArrayMap<Integer, ArrayMap<String, String>> list = gameRes.getEntities().getEntities();
 		
@@ -176,23 +154,13 @@ public class ObjectMenu extends BasicWindow {
 			addToTable(butt, entityMenu);
 		}
 		
-		//delete button
-//		ImageButton deleteModeButton = new ImageButton(GuiUtils.setImgButtonStyle(guiRes.skin.getDrawable("gui/delete"), null, guiRes.skin.getDrawable("gui/button"), null));
-//		deleteModeButton.addListener(new ChangeListener() {
-//			public void changed(ChangeEvent event, Actor actor) {
-//				root.game.getPlaceManager().setPlacementSelection("entity", 0);
-//				root.game.getPlaceManager().getEntityPl().delete = true;
-//			}
-//		});
-//		entityMenu.add(deleteModeButton).width(56).height(56);
-		
 		return entityMenu;
 	}
 	//terrain tile menu
 	private Table tileMenu(final GameServices gameRes){
 		Table terrainMenu = new Table();
 		terrainMenu.setFillParent(false);
-		terrainMenu.defaults().size(sqrLen);
+		terrainMenu.defaults().size(buttonSize);
 
 		int profileCount = gameRes.getMap().getTilePool().getTileProfiles().size;
 

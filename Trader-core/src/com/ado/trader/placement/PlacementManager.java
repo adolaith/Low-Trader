@@ -4,6 +4,7 @@ import com.ado.trader.entities.EntityFactory;
 import com.ado.trader.input.InputHandler;
 import com.ado.trader.rendering.EntityRenderSystem;
 import com.ado.trader.rendering.EntityRenderSystem.Direction;
+import com.ado.trader.utils.FileLogger;
 import com.ado.trader.utils.GameServices;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
@@ -31,10 +32,16 @@ public class PlacementManager {
 		this.entityRenderer = gameRes.getRenderer().getRenderEntitySystem();
 		this.entities = gameRes.getEntities();
 		
+		FileLogger.writeLog("PlacementManager: basics added");
+		
 		entityPl = new EntityPlaceable(gameRes);
 		tilePl = new TilePlaceable(gameRes.getMap());
 		wallPl = new WallPlaceable(gameRes.getMap(), gameRes.getEntities(), gameRes.getRenderer().getRenderEntitySystem());
+		FileLogger.writeLog("PlacementManager: WallPlaceable added");
+		
 		featurePl = new FeaturePlaceable(gameRes);
+		FileLogger.writeLog("PlacementManager: FeaturePlaceable added");
+		
 		itemPl = new ItemPlaceable(gameRes.getMap());
 	}
 	

@@ -18,7 +18,7 @@ import com.ado.trader.systems.StatusIconSystem;
 import com.ado.trader.utils.GameServices;
 import com.artemis.World;
 import com.artemis.managers.GroupManager;
-import com.badlogic.gdx.Gdx;
+import com.artemis.managers.TagManager;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.utils.TimeUtils;
 
@@ -39,26 +39,17 @@ public class GameScreen implements Screen{
 	
 	//loads saved states from save dir files
 	public GameScreen(GameMain game, String dirName){
-		try{
-			GameScreen.game = game;
-			init(dirName);
-		}catch(Exception ex){
-			Gdx.app.log("CRITICAL ERROR: ", "Loading game failed. Exception: "+ ex);
-			Gdx.app.exit();
-		}
+		GameScreen.game = game;
+		init(dirName);
 	}
 	private void init(String loadDir){
 		logicRunning = true;
 		gameServices = new GameServices(1280, 720, new GameInput(), loadDir);
 		
-		
-		//CAMERA ZOOM
-		gameServices.getCam().zoom = 1.2f;
-		
 		//loads feature sprites
 		new EntityFeatures(gameServices.getAtlas(), gameServices.getParser(), gameServices.getRenderer().getRenderEntitySystem());
 		
-		//start world sytems and managers
+		//start world systems and managers
 		initWorld();
 		
 		//GUI elements
@@ -76,6 +67,7 @@ public class GameScreen implements Screen{
 	}
 	private void initWorld(){
 		World world = gameServices.getWorld();
+		world.setManager(new TagManager());
 		world.setManager(new GroupManager());
 		world.setSystem(new AnimationSystem());
 		world.setSystem(new AiSystem(gameServices));

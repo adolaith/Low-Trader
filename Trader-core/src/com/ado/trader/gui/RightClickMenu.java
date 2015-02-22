@@ -2,6 +2,8 @@ package com.ado.trader.gui;
 
 import com.ado.trader.entities.components.AiProfile;
 import com.ado.trader.entities.components.Inventory;
+import com.ado.trader.entities.components.Lockable;
+import com.ado.trader.entities.components.Portal;
 import com.ado.trader.input.InputHandler;
 import com.ado.trader.items.Item;
 import com.ado.trader.map.Map;
@@ -9,127 +11,138 @@ import com.ado.trader.utils.GameServices;
 import com.artemis.ComponentMapper;
 import com.artemis.Entity;
 import com.artemis.World;
+import com.artemis.managers.TagManager;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.ArrayMap;
 
-public class RightClickMenu extends Actor{
-	Table root;
-	Circle bounds;
+public class RightClickMenu extends ContextMenu{
 	Button viewEntity, viewZone, viewItem;
 	
 	ArrayMap<String, Entity> entities;
+	ArrayMap<String, BasicWindow> windows;
 	Item i;
 	
 	BitmapFont font;
 	Skin skin;
-	ItemWindow itemWin;
-	NpcInfoWindow npcWin;
-	ContainerWindow containerWin;
+	Map map;
+	
+	ComponentMapper<Portal> portalMap;
+	ComponentMapper<Inventory> inventoryMapper;
+	ComponentMapper<AiProfile> aiMapper;
+	ComponentMapper<Lockable> lockMap;
+	TagManager tags;
 	
 	public RightClickMenu(GameServices gameRes){
+		super(gameRes);
+		
 		setName("rightClickMenu");
-		int width = 180;
 		font = gameRes.getFont();
 		skin = gameRes.getSkin();
-		itemWin = new ItemWindow(gameRes);
-		npcWin = new NpcInfoWindow(gameRes);
-		containerWin = new ContainerWindow(gameRes);
+		map = gameRes.getMap();
+		
+		windows = new ArrayMap<String, BasicWindow>();
+		windows.put("item", new ItemWindow(gameRes));
+		windows.put("npcInfo", new NpcInfoWindow(gameRes));
+		windows.put("containerContents", new ContainerWindow(gameRes));
+		
+		World world = map.getWorld();
+		inventoryMapper = world.getMapper(Inventory.class);
+		aiMapper = world.getMapper(AiProfile.class);
+		portalMap = world.getMapper(Portal.class);
+		lockMap = world.getMapper(Lockable.class);
+		tags = world.getManager(TagManager.class);
 		
 		entities = new ArrayMap<String, Entity>();
-		root = new Table();
-		root.setWidth(width);
-		root.setVisible(false);
-		
-		bounds = new Circle();
-		
-		gameRes.getStage().addActor(root);
-		gameRes.getStage().addActor(this);
 	}
 	
-	public void setupMenu(float x, float y, Vector2 mapClicked, Map map){
+	@Override
+	public void show(){
+		super.show();
+		setupMenu();
+		
+		setHeight(height * getChildren().size);
+	}
+	
+	public void setupMenu(){
 		//sets up item button
-		if(map.getItemLayer().isOccupied((int)mapClicked.x, (int)mapClicked.y, map.currentLayer)){
+		if(map.getItemLayer().isOccupied((int)InputHandler.getMapClicked().x, (int)InputHandler.getMapClicked().y, map.currentLayer)){
+			add(createButton("View item", "itemInfo")).row();
+			add(createButton("Pickup item", "pickupItem")).row();
 			
-			root.add(createButton(x, y, "item", "item")).width(root.getWidth()).height(26).row();
-			i = map.getItemLayer().map[(int)mapClicked.x][(int)mapClicked.y][map.currentLayer];
+			i = map.getItemLayer().map[(int)InputHandler.getMapClicked().x][(int)InputHandler.getMapClicked().y][map.currentLayer];
 		}
 		
 		//click contains entity
-		if(map.getEntityLayer().isOccupied((int)mapClicked.x, (int)mapClicked.y, map.currentLayer)){
-			
+		if(map.getEntityLayer().isOccupied((int)InputHandler.getMapClicked().x, (int)InputHandler.getMapClicked().y, map.currentLayer)){
 			World world = map.getWorld();
-			ComponentMapper<Inventory> inventoryMapper = world.getMapper(Inventory.class);
-			ComponentMapper<AiProfile> aiMapper = world.getMapper(AiProfile.class);
-			Entity e = world.getEntity(map.getEntityLayer().map[(int)mapClicked.x][(int)mapClicked.y][map.currentLayer]);
+			Entity e = world.getEntity(map.getEntityLayer().map[(int)InputHandler.getMapClicked().x][(int)InputHandler.getMapClicked().y][map.currentLayer]);
 			
-			//non npc container
+			//right clicked on player entity
+			if(e.getId() == tags.getEntity("player").getId()) return;
+			
+			//open/close portal(doors, windows etc)
+			if(portalMap.has(e)){
+				add(createButton("Open/Close", "openClose")).row();
+			}
+			
+			//non-npc container
 			if(inventoryMapper.has(e) && !aiMapper.has(e)){
-				root.add(createButton(x, y, "container", "container")).width(root.getWidth()).height(26).row();
+				add(createButton("View container", "container")).row();
 				
-				entities.put("container", world.getEntity(map.getEntityLayer().map[(int)mapClicked.x][(int)mapClicked.y][map.currentLayer]));
+				if(lockMap.has(e)){
+					add(createButton("Lock/Unlock", "unlock")).row();;
+					add(createButton("Break lock", "breakLock")).row();
+				}
+				entities.put("container", world.getEntity(map.getEntityLayer().map[(int)InputHandler.getMapClicked().x][(int)InputHandler.getMapClicked().y][map.currentLayer]));
 			//npc
 			}else if(aiMapper.has(e)){
-				root.add(createButton(x, y, "entity", "entity")).width(root.getWidth()).height(26).row();
+				add(createButton("View entity", "entity")).row();
 				
-				entities.put("entity", world.getEntity(map.getEntityLayer().map[(int)mapClicked.x][(int)mapClicked.y][map.currentLayer]));
+				entities.put("entity", world.getEntity(map.getEntityLayer().map[(int)InputHandler.getMapClicked().x][(int)InputHandler.getMapClicked().y][map.currentLayer]));
 			}
 		}
-		root.layout();
 	}
 	
-	private Button createButton(final float x, final float y, String text, final String key){
+	private Button createButton(String text, final String key){
 		LabelStyle lStyle = new LabelStyle(font, Color.WHITE);
 		Button b = GuiUtils.createButton("gui/button", null, skin);
-		b.add(new Label("View "+text,lStyle));
+		b.add(new Label(text,lStyle));
 		b.addListener(new ChangeListener() {
 			public void changed(ChangeEvent event, Actor actor) {
+				Vector2 tmp = new Vector2(InputHandler.getVec3Clicked().x, InputHandler.getVec3Clicked().y);
+				tmp = getStage().screenToStageCoordinates(tmp);
+				
 				switch(key){
 				case "item":
-					itemWin.showWindow(x, y, i);
+					((ItemWindow)windows.get("item")).showWindow(tmp.x, tmp.y, i);
 					break;
 				case "entity":
-					npcWin.showWindow(x, y, entities.get("entity"));
+					((NpcInfoWindow)windows.get("npcInfo")).showWindow(tmp.x, tmp.y, entities.get("entity"));
 					break;
 				case "container":
-					containerWin.showWindow(x, y, entities.get("container").getComponent(Inventory.class));
+					((ContainerWindow)windows.get("containerContents")).showWindow(tmp.x, tmp.y, entities.get("container").getComponent(Inventory.class));
+					break;
+				case "unlock":
+					
+					break;
+				case "breakLock":
+					
+					break;
+				case "openClose":
+					
 					break;
 				}
-				hideMenu();
+				hide();
 			}
 		});
 		return b;
-	}
-	public void update(){
-		checkBounds();
-	}
-	public void checkBounds(){
-		if(!root.isVisible())return;
-		if(bounds.contains(InputHandler.getMousePos().x, InputHandler.getMousePos().y))return;
-		
-		hideMenu();
-	}
-	public void showMenu(float x, float y, Vector2 mapClicked, Map map){
-		setupMenu(x, y, mapClicked, map);
-		if(root.getChildren().size==0)return;
-		
-		root.setPosition(x, y);
-		bounds.set(x+root.getWidth()/2, y+root.getHeight()/2, (float) (Math.sqrt(root.getWidth()*root.getWidth()+root.getHeight()*root.getHeight())/2+8));
-		
-		root.setVisible(true);
-	}
-	public void hideMenu(){
-		root.setVisible(false);
-		root.clearChildren();
-		entities.clear();
 	}
 }

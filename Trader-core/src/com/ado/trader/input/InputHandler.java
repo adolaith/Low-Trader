@@ -20,13 +20,14 @@ public class InputHandler implements InputProcessor{
 	static Vector2 currentVelocity = new Vector2(); //camera velocity
 	public static boolean DEBUG = false;
 	
-	Vector3 vec3Clicked,mousePosVec3;
+	static Vector3 vec3Clicked;
+	Vector3 mousePosVec3;
 	int mouseButton;
 	public static Vector2 mapClicked;
 	public static Vector2 mapUp;
 	static Vector2 isoClicked;
 	static Vector2 isoUp;
-	static Vector2 mousePosVec2;
+	public static Vector2 mousePosVec2;
 	static Vector2 dragDir;
 	Sprite highlight;
 	
@@ -118,6 +119,7 @@ public class InputHandler implements InputProcessor{
 		
 		if(mapClicked.x < 0 || mapClicked.y < 0 || mapClicked.x > map.getWidthInTiles() || mapClicked.y > map.getHeightInTiles()){return true;}
 		
+		vec3Clicked.set(screenX, screenY, 0);
 		return false;
 	}
 	@Override
@@ -136,12 +138,8 @@ public class InputHandler implements InputProcessor{
 			rightClick(button);	
 		}
 		
+		vec3Clicked.set(screenX, screenY, 0);
 		//clear vectors
-//		if(!dragDir.isZero()){
-//			dragDir.setZero();
-//			currentVelocity.setZero();
-//			Gdx.app.log("InputHandler(drag): ", "GOT HERE");
-//		}
 		mousePosVec2.setZero();
 		mapClicked.setZero();
 		return true;
@@ -153,14 +151,9 @@ public class InputHandler implements InputProcessor{
 		mousePosVec2.set(mousePosVec3.x, mousePosVec3.y);
 		
 		
-//		if(mouseButton == Buttons.RIGHT && dragDir.x != screenX && dragDir.y != screenY){
-//			dragDir.x = mousePosVec3.x - vec3Clicked.x;
-//			dragDir.y = mousePosVec3.y - vec3Clicked.y;
-//			Gdx.app.log("InputHandler(drag): ", "drag direction: "+ dragDir);
-//			
-//			camera.translate( camera.position.x - dragDir.x, camera.position.y - dragDir.y);
-//			dragDir.set(screenX, screenY);
-//		}
+		if(mouseButton == Buttons.RIGHT){
+			camera.translate( -Gdx.input.getDeltaX(), Gdx.input.getDeltaY());
+		}
 		
 		return true;
 	}
@@ -228,7 +221,7 @@ public class InputHandler implements InputProcessor{
 	public static Vector2 getMapClicked() {
 		return mapClicked;
 	}
-	public Vector3 getVec3Clicked() {
+	public static Vector3 getVec3Clicked() {
 		return vec3Clicked;
 	}
 	public static Vector2 getMousePos() {

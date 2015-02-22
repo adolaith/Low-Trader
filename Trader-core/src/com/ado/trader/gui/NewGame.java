@@ -1,7 +1,13 @@
 package com.ado.trader.gui;
 
+import java.net.URL;
+import java.security.CodeSource;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+
 import com.ado.trader.GameMain;
 import com.ado.trader.screens.GameScreen;
+import com.ado.trader.utils.FileLogger;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
@@ -22,7 +28,8 @@ import com.badlogic.gdx.utils.Array;
 
 public class NewGame extends BasicWindow {
 	List<String> mapList;
-	String internalPath = "./bin/data/maps/";
+	Array<String> internalMaps;
+	String internalPath = "data/maps/";
 	String externalPath = "adoGame/maps/";
 	
 	static int width = (int) (Gdx.graphics.getWidth() * 0.5);
@@ -34,6 +41,9 @@ public class NewGame extends BasicWindow {
 		root.top();
 		
 		getTitle().clearListeners();
+		
+		//load maps stored inside JAR
+		getCampaignMaps();
 		
 		//Map list
 		ListStyle listStyle = new ListStyle();
@@ -98,14 +108,10 @@ public class NewGame extends BasicWindow {
 	
 	private void populate(){
 		Array<String> arr = new Array<String>();
-		FileHandle file = Gdx.files.internal(internalPath);
 		
-		if(file.exists() && file.isDirectory()){
-			for(FileHandle f: file.list()){
-				arr.add("*" + f.name());
-			}
-		}
-		file = Gdx.files.external(externalPath);
+		arr.addAll(internalMaps);
+		
+		FileHandle file = Gdx.files.external(externalPath);
 		if(file.exists() && file.isDirectory()){
 			for(FileHandle f: file.list()){
 				arr.add(f.name());
@@ -114,4 +120,33 @@ public class NewGame extends BasicWindow {
 		mapList.setItems(arr);
 	}
 	
+	private void getCampaignMaps(){
+		try{
+			FileLogger.writeLog("READING INTERNAL MAPS...");
+			CodeSource src = this.getClass().getProtectionDomain().getCodeSource();
+			internalMaps = new Array<String>();
+
+			if( src != null ) {
+				URL jar = src.getLocation();
+				
+				ZipInputStream zip = new ZipInputStream( jar.openStream());
+				ZipEntry ze = null;
+
+				while( ( ze = zip.getNextEntry() ) != null ) {
+					String entryName = ze.getName();
+					if(entryName.startsWith("data/maps/") ){
+						entryName = entryName.replaceAll("data/maps/", "");
+						if(entryName.endsWith("/")){
+							FileLogger.writeLog("Map name: " + entryName);
+							internalMaps.add("*" + entryName);
+						}
+					}
+				}
+			}
+			FileLogger.writeLog("DONE READING MAPS!");
+		}catch(Exception ex){
+			System.out.println("Error reading maps inside JAR. Error: "+ ex);
+		}
+	}
+
 }

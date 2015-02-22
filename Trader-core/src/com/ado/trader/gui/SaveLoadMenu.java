@@ -1,5 +1,6 @@
 package com.ado.trader.gui;
 
+import com.ado.trader.gui.editor.EditorMenu;
 import com.ado.trader.utils.GameServices;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -46,8 +47,6 @@ public class SaveLoadMenu extends Group {
 		functionTable.setSize(width, height);
 		
 		new OverwriteDialog(gameRes, width, height * 0.3f);
-		
-		position(gameRes.getStage());
 		
 		background.setBackground(gameRes.getSkin().getDrawable("gui/bGround"));
 		background.add(new Image(gameRes.getSkin().getDrawable("gui/fGround"))).pad(4).width(width * 0.95f).height(height * 0.75f).row();
@@ -144,10 +143,10 @@ public class SaveLoadMenu extends Group {
 		functionTable.setVisible(false);
 	}
 	private void position(Stage stage){
-		background.setPosition(stage.getViewport().getScreenX() + (stage.getViewport().getScreenWidth() / 2) - (background.getWidth() * 1.5f), 
-				stage.getViewport().getScreenY() + (stage.getViewport().getScreenHeight() / 2) - (background.getHeight() / 2));
-		functionTable.setPosition(stage.getViewport().getScreenX() + (stage.getViewport().getScreenWidth() / 2) - (functionTable.getWidth() * 1.5f), 
-				stage.getViewport().getScreenY() + (stage.getViewport().getScreenHeight() / 2) - (functionTable.getHeight() / 2));
+		EditorMenu menu = (EditorMenu) stage.getRoot().findActor("editorMenu");
+		
+		background.setPosition(menu.getX(), menu.getY());
+		functionTable.setPosition(menu.getX(), menu.getY());
 	}
 	protected class OverwriteDialog extends BasicWindow{
 

@@ -30,6 +30,7 @@ public class DeleteMenu extends ContextMenu {
 		setName("deleteMenu");
 		listening = false;
 		map = gameRes.getMap();
+		mapClicked = new Vector2();
 		
 		buttons = new ArrayMap<String, Button>();
 		buttons.put("item", createButton("item", gameRes));
@@ -77,7 +78,7 @@ public class DeleteMenu extends ContextMenu {
 			}
 		}
 		if(listening && !InputHandler.getMapClicked().isZero()){
-			mapClicked = InputHandler.getMapClicked();
+			mapClicked.set(InputHandler.getMapClicked());
 			if(map.getEntityLayer().isOccupied((int) mapClicked.x, (int) mapClicked.y, map.currentLayer)){
 				add(buttons.get("entity")).row();
 			}

@@ -9,6 +9,7 @@ import com.ado.trader.entities.components.Inventory;
 import com.ado.trader.entities.components.Locations;
 import com.ado.trader.entities.components.Money;
 import com.ado.trader.entities.components.Movement;
+import com.ado.trader.entities.components.Name;
 import com.ado.trader.entities.components.Position;
 import com.ado.trader.entities.components.SpriteComp;
 import com.ado.trader.entities.components.Target;
@@ -21,6 +22,7 @@ import com.ado.trader.utils.GameServices;
 import com.artemis.ComponentMapper;
 import com.artemis.Entity;
 import com.artemis.managers.GroupManager;
+import com.artemis.managers.TagManager;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.ArrayMap;
@@ -65,11 +67,24 @@ public class EntityFactory{
 		entity.edit().add(new Position(map.getTileWidth(), map.getTileHeight()));
 		
 		GroupManager gm = map.getWorld().getManager(GroupManager.class);
+		TagManager tm = map.getWorld().getManager(TagManager.class);
+		
 		for(String key: profile.keys()){
 			switch(key){
+			case "name":
+				entity.edit().add(new Name(profile.get(key)));
+				break;
 			case "tags":
 				String[] tags = profile.get(key).split(",");
 				for(String s:tags){
+					if(s.isEmpty())break;
+					tm.register(s, entity);
+				}
+				
+				break;
+			case "group":
+				String[] groups = profile.get(key).split(",");
+				for(String s : groups){
 					if(s.isEmpty())break;
 					gm.add(entity, s);
 					

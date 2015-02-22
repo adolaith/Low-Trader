@@ -7,6 +7,7 @@ import com.ado.trader.entities.components.Wall;
 import com.ado.trader.rendering.EntityRenderSystem;
 import com.ado.trader.rendering.EntityRenderSystem.Direction;
 import com.ado.trader.rendering.MaskingSystem;
+import com.ado.trader.utils.FileLogger;
 import com.ado.trader.utils.FileParser;
 import com.artemis.Entity;
 import com.badlogic.gdx.Gdx;
@@ -20,7 +21,9 @@ public class EntityFeatures {
 	MaskingSystem maskSys;
 	
 	public EntityFeatures(TextureAtlas atlas, FileParser p, EntityRenderSystem entityRenderer){
-		featuresList = loadEntityProfiles("./bin/data/Features", atlas, p, entityRenderer);
+		FileLogger.writeLog("EntityFeatures: [INIT]");
+		featuresList = loadEntityProfiles("data/Features", atlas, p, entityRenderer);
+		FileLogger.writeLog("EntityFeatures: profiles loaded");
 		maskSys = entityRenderer.getMasks();
 	}
 	public void applyFeature(Entity e, String featureName, int spriteId, Sprite sprite){

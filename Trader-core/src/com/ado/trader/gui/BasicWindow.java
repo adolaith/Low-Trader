@@ -21,12 +21,12 @@ public class BasicWindow extends Group{
 	Table bgTable;
 	protected Table functionTable;
 	protected Table root;
-	int width, height;
+	float width, height;
 	private Label title;
 	BitmapFont font;
 	Skin skin;
 	
-	public BasicWindow(String title, int width, int height, BitmapFont font, Skin skin, Stage stage){
+	public BasicWindow(String title, float width, float height, BitmapFont font, Skin skin, Stage stage){
 		this.width = width;
 		this.height = height;
 		this.font = font;

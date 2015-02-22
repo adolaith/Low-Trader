@@ -11,10 +11,12 @@ import com.ado.trader.input.MapEditorInput;
 import com.ado.trader.placement.PlacementManager;
 import com.ado.trader.systems.AnimationSystem;
 import com.ado.trader.systems.SaveSystem;
+import com.ado.trader.utils.FileLogger;
 import com.ado.trader.utils.GameServices;
 import com.artemis.Entity;
 import com.artemis.World;
 import com.artemis.managers.GroupManager;
+import com.artemis.managers.TagManager;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.math.Vector2;
 
@@ -27,18 +29,26 @@ public class MapEditorScreen implements Screen {
 	Entity currentlySelected;
 
 	public MapEditorScreen(GameMain game) {
+		FileLogger.writeLog("MapEditor: [INIT]");
 		MapEditorScreen.game = game;
 		MapEditorInput input = new MapEditorInput();
 		gameServices = new GameServices(1280, 720, input, null);
-		input.addPlacementManager(new PlacementManager(gameServices));
+		
+		FileLogger.writeLog("MapEditor: gameServices started");
 		
 		initWorld();
+		
+		FileLogger.writeLog("MapEditor: world systems started");
+		
+		input.addPlacementManager(new PlacementManager(gameServices));
+		
+		FileLogger.writeLog("MapEditor: placementManager added");
 		
 		new ToolTip(gameServices.getFont(), gameServices.getSkin(), gameServices.getStage());
 		new CustomCursor(gameServices);
 		new MapEditorPanel(gameServices);
 		
-		input.addPlacementManager(new PlacementManager(gameServices));
+		FileLogger.writeLog("MapEditor: gui elements added");
 		
 		runLogic = true;
 	}
@@ -64,13 +74,10 @@ public class MapEditorScreen implements Screen {
 	
 	private void initWorld(){
 		World world = gameServices.getWorld();
+		world.setManager(new TagManager());
 		world.setManager(new GroupManager());
 		world.setSystem(new AnimationSystem());
-//		world.setSystem(new AiSystem(gameServices));
-//		world.setSystem(new MovementSystem(gameServices));
 		world.setSystem(new SaveSystem(gameServices), true);
-//		world.setSystem(new FarmSystem(this), true);
-//		world.setSystem(new StatusIconSystem(0.7f, gameServices.getAtlas()));
 		world.initialize();
 	}
 	@Override

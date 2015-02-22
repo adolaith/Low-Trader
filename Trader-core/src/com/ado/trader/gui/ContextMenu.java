@@ -2,6 +2,8 @@ package com.ado.trader.gui;
 
 import com.ado.trader.input.InputHandler;
 import com.ado.trader.utils.GameServices;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 
 public class ContextMenu extends Table {
@@ -19,15 +21,19 @@ public class ContextMenu extends Table {
 	public void act(float delta){
 		super.act(delta);
 		if(isVisible()){
-			if(InputHandler.getMousePos().x < getX() - 15 || InputHandler.getMousePos().x > getRight() + 15 ||
-					InputHandler.getMousePos().y < getY() - 15 || InputHandler.getMousePos().y > getTop() + 15){
+			Vector2 tmp = getStage().screenToStageCoordinates(new Vector2(Gdx.input.getX(), Gdx.input.getY()));
+			
+			if(tmp.x < getX() - 15 || tmp.x > getRight() + 15 ||
+					tmp.y < getY() - 15 || tmp.y > getTop() + 15){
 				hide();
 			}
 		}
 	}
 	
 	public void show(){
-		setPosition(InputHandler.getIsoClicked().x, InputHandler.getIsoClicked().y - getHeight() / 2);
+		Vector2 tmp = new Vector2(InputHandler.getVec3Clicked().x, InputHandler.getVec3Clicked().y);
+		tmp = getStage().screenToStageCoordinates(tmp);
+		setPosition(tmp.x, tmp.y );
 		setVisible(true);
 	}
 	

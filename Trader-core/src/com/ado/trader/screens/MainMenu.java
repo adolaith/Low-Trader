@@ -37,7 +37,7 @@ public class MainMenu implements Screen {
 	public MainMenu(GameMain game){
 		this.game = game;
 	}
-
+	
 	@Override
 	public void render(float delta) {
 		Gdx.gl.glClearColor(0, 0, 0, 1);
@@ -67,7 +67,8 @@ public class MainMenu implements Screen {
 		atlas = new TextureAtlas(Gdx.files.internal("img/master.pack")); 
 		skin = new Skin();
 		skin.addRegions(atlas);
-		white = new BitmapFont(Gdx.files.internal("font/baseFontWhite.fnt"), false);
+		white = new BitmapFont(Gdx.files.internal("font/white.fnt"), false);
+		white.scale(1.6f);
 		stage = new Stage();
 		options = new GameOptions(white, skin, stage);
 		

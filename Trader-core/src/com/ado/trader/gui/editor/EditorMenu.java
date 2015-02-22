@@ -10,6 +10,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
@@ -27,7 +28,7 @@ public class EditorMenu extends MenuGroup {
 		
 		LabelStyle lStyle = new LabelStyle(gameRes.getFont(), Color.WHITE);
 		Button b = GuiUtils.createButton("gui/button", null, gameRes.getSkin());
-		b.add(new Label("Load game",lStyle));
+		b.add(new Label("Load map",lStyle));
 		b.addListener(new ClickListener() {
 			public void enter (InputEvent event, float x, float y, int pointer, Actor fromActor) {
 				toolTip.show("Load saved map");
@@ -119,32 +120,18 @@ public class EditorMenu extends MenuGroup {
 	public void show(){
 		super.show();
 		
-		for(Actor a: getStage().getActors()){
-			if(a.getName() != null){
-				if(a == this || a.getName().matches("tooltip") || a.getName().matches("saveMenu") ||
-						a.getName().matches("overWrite")){
-					continue;
-				}
-			}
-			if(a.isVisible()){
-				a.setVisible(false);
-			}
-		}
+		MapEditorPanel panel = (MapEditorPanel) getStage().getRoot().findActor("editorPanel");
+		panel.toBack();
+		panel.setTouchable(Touchable.disabled);
 		MapEditorScreen.runLogic = false;
 	}
 	@Override
 	public void hide(){
 		super.hide();
 		
-		for(Actor a: getStage().getActors()){
-			if(a.getName() != null){
-				if(a == this || a.getName().matches("tooltip") || a.getName().matches("saveMenu")||
-						a.getName().matches("overWrite")){
-					continue;
-				}
-				a.setVisible(true);
-			}
-		}
+		MapEditorPanel panel = (MapEditorPanel) getStage().getRoot().findActor("editorPanel");
+		panel.toFront();
+		panel.setTouchable(Touchable.enabled);
 		
 		MapEditorScreen.runLogic = true;
 	}

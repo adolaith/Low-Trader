@@ -47,6 +47,8 @@ public class GameServices {
 		world = new World();
 		parser = new FileParser();
 		
+		FileLogger.writeLog("GameServices: basics started");
+		
 		items = new ItemFactory("data/ItemProfiles", this);
 		
 		if(loadDir == null){
@@ -55,6 +57,8 @@ public class GameServices {
 			map = new Map(loadDir, this);
 		}
 		
+		FileLogger.writeLog("GameServices: map loaded");
+		
 		this.input = input;
 		//configure input
 		this.input.addCamera(cam).addMap(map).addStage(stage).addTileHighlight(atlas.createSprite("gui/highlightTile"));
@@ -62,6 +66,8 @@ public class GameServices {
 		renderer = new WorldRenderer(this);
 		
 		entities = new EntityFactory(this);
+		
+		FileLogger.writeLog("GameServices: entities loaded");
 		
 		//centre camera on map
 		Vector2 tmp = IsoUtils.getIsoXY(map.getWidthInTiles()/2, map.getHeightInTiles()/2, map.getTileWidth(), map.getTileHeight());

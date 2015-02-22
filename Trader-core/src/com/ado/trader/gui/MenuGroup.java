@@ -52,10 +52,10 @@ public class MenuGroup extends Group {
 	}
 	
 	public void show(){
-		if(stageWidth != getStage().getWidth()){
-			size(getStage());
-			stageWidth = getStage().getViewport().getScreenWidth();
-		}
+//		if(stageWidth != getStage().getWidth()){
+//			size(getStage());
+//			stageWidth = getStage().getViewport().getScreenWidth();
+//		}
 		position(getStage());
 		
 		background.setVisible(true);
@@ -77,5 +77,10 @@ public class MenuGroup extends Group {
 		background.setSize(stage.getViewport().getScreenWidth() * 0.25f, stage.getViewport().getScreenHeight() * 0.50f);
 		functionTable.setSize(stage.getViewport().getScreenWidth() * 0.25f, stage.getViewport().getScreenHeight() * 0.50f);
 	}
-	
+	public float getX(){
+		return background.getX();
+	}
+	public float getY(){
+		return background.getY();
+	}
 }
