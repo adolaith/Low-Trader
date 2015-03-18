@@ -1,27 +1,25 @@
 package com.ado.trader.entities.components;
 
-import com.ado.trader.items.Item;
 import com.artemis.Component;
 import com.badlogic.gdx.utils.Array;
 
 public class Inventory extends Component {
-	Array<Item> items;
+	Array<Integer> items;
 	public int max;
 
 	public Inventory() {
-		items = new Array<Item>();
 	}
-	public Inventory(int i) {
-		items = new Array<Item>();
-		max = i;
+	public void init(int max) {
+		items = new Array<Integer>();
+		this.max = max;
 	}
-	public void add(Item i){
-		items.add(i);
+	public void add(int id){
+		items.add(id);
 	}
-	public void removeItem(Item i){
-		items.removeValue(i, true);
+	public void removeItem(int id){
+		items.removeValue(id, true);
 	}
-	public Array<Item> getItems(){
+	public Array<Integer> getItems(){
 		return items;
 	}
 }

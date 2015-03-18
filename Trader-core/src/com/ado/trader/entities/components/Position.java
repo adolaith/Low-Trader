@@ -9,6 +9,9 @@ public class Position extends Component {
 	Vector2 isoPosition;
 	int width, height;
 	
+	public Position(){
+		
+	}
 	public Position(int width, int height){
 		this.width =width;
 		this.height=height;

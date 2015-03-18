@@ -7,11 +7,13 @@ import com.esotericsoftware.spine.AnimationStateData;
 import com.esotericsoftware.spine.Skeleton;
 
 public class Animation extends Component {
-	Skeleton skeleton;
-	AnimationState mainState;
-	AnimationState secondaryState;
+	public Skeleton skeleton;
+	public AnimationState mainState;
+	public AnimationState secondaryState;
 	int width, height;
 
+	public Animation(){
+	}
 	public Animation(Skeleton skeleton, AnimationStateData animData, int width, int height) {
 		this.skeleton = skeleton;
 		mainState = new AnimationState(animData);
@@ -31,6 +33,14 @@ public class Animation extends Component {
 	}
 	public AnimationState getSecondaryState() {
 		return secondaryState;
+	}
+	public void setAnimationData(AnimationStateData animData){
+		mainState = new AnimationState(animData);
+		secondaryState = new AnimationState(animData);
+	}
+	public void setTileSize(int w, int h){
+		width = w;
+		height = h;
 	}
 	public void resetAnimation(){
 		mainState.clearTracks();

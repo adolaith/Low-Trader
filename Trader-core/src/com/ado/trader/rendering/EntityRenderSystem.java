@@ -4,17 +4,17 @@ import com.ado.trader.entities.components.Animation;
 import com.ado.trader.entities.components.Area;
 import com.ado.trader.entities.components.Feature;
 import com.ado.trader.entities.components.Mask;
+import com.ado.trader.entities.components.Name;
 import com.ado.trader.entities.components.Position;
 import com.ado.trader.entities.components.SpriteComp;
 import com.ado.trader.entities.components.Status;
 import com.ado.trader.entities.components.Wall;
-import com.ado.trader.items.Item;
-import com.ado.trader.items.ItemSprite;
 import com.ado.trader.map.Map;
 import com.ado.trader.systems.StatusIconSystem.StatusIcon;
 import com.ado.trader.utils.IsoUtils;
 import com.artemis.ComponentMapper;
 import com.artemis.Entity;
+import com.artemis.annotations.Wire;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -28,29 +28,27 @@ import com.esotericsoftware.spine.SkeletonRendererDebug;
 
 //Handles rendering of all active Entities. 
 //Renders next entity selected for placement at the mouses location.
-
+@Wire
 public class EntityRenderSystem{
-	ComponentMapper<Position> pm;
-	ComponentMapper<SpriteComp> sm;
-	ComponentMapper<Wall> wm;
-	ComponentMapper<Mask> maskm;
+	ComponentMapper<Position> posMapper;
+	ComponentMapper<SpriteComp> spriteMapper;
+	ComponentMapper<Wall> wallMapper;
+	ComponentMapper<Area> areaMapper;
+	ComponentMapper<Mask> maskMapper;
+	ComponentMapper<Feature> featureMapper;
 	ComponentMapper<Animation> animMapper;
+	ComponentMapper<Status> statusMapper;
+	ComponentMapper<Name> nameMapper;
 	
 	Map map;
 	SkeletonRenderer skeletonRenderer;
 	SkeletonRendererDebug debugRenderer;
-	ArrayMap<Integer, Sprite> staticSprites;
+	ArrayMap<String, Sprite[]> entitySprites;
 	MaskingSystem masks;
 
 	public EntityRenderSystem(Map map, MaskingSystem masks) {
 		this.map = map;
 		this.masks = masks;
-		
-		pm = map.getWorld().getMapper(Position.class);
-		sm = map.getWorld().getMapper(SpriteComp.class);
-		wm = map.getWorld().getMapper(Wall.class);
-		maskm = map.getWorld().getMapper(Mask.class);
-		animMapper = map.getWorld().getMapper(Animation.class);
 		
 		skeletonRenderer = new SkeletonRenderer();
 		debugRenderer = new SkeletonRendererDebug();
@@ -89,14 +87,13 @@ public class EntityRenderSystem{
 						if(map.getEntityLayer().isOccupied(x, y, map.currentLayer)){
 							Entity e = map.getWorld().getEntity(map.getEntityLayer().map[x][y][map.currentLayer]);
 
-							if(sm.has(e)){		//RENDER STATIC ENTITY
+							if(spriteMapper.has(e)){		//RENDER STATIC ENTITY
 								drawSprite(e,batch);
-							}else if(animMapper.has(e)){		//RENDER ANIMATED ENTITY
+							}else if(animMapper.has(e)){		//RENDER ANIMATED(NPC) ENTITY
 								Skeleton skel = animMapper.get(e).getSkeleton();
 								skeletonRenderer.draw(batch,skel);
 								
 								//render status icons
-								ComponentMapper<Status> statusMapper = map.getWorld().getMapper(Status.class);
 								if(statusMapper.has(e)){
 									StatusIcon icon = statusMapper.get(e).getStatusIcon();
 									Vector2 iconPos = new Vector2(skel.getX(), skel.getY());
@@ -114,16 +111,23 @@ public class EntityRenderSystem{
 		batch.end();
 	}
 	private boolean drawWideEntity(SpriteBatch batch){
+		//check current tile for entity
 		if(map.getEntityLayer().isOccupied(x, y, map.currentLayer)){
 			Entity e = map.getWorld().getEntity(map.getEntityLayer().map[x][y][map.currentLayer]);
-			ComponentMapper<Area> areaM = map.getWorld().getMapper(Area.class);
-			Position p = pm.get(e);
-			if(areaM.has(e)){
+			Position p = posMapper.get(e);
+			
+			//entity is larger than 1 tile?
+			if(areaMapper.has(e)){
+				//the current tile is the entity's origin/anchor tile?
 				if(x==p.getX()&&y==p.getY()){
-					Area a = areaM.get(e);
-					SpriteComp s = sm.get(e);
-					Sprite tmp = s.mainSprite;
-					if(tmp.isFlipX()){		//render next entity
+					Area a = areaMapper.get(e);
+					SpriteComp s = spriteMapper.get(e);
+					
+					//get entity's main sprite
+					Sprite tmp = entitySprites.get(nameMapper.get(e).getName())[s.mainSprite];
+					
+					//render next entity to prevent drawing overlap
+					if(tmp.isFlipX()){
 						if(map.getEntityLayer().isOccupied(x+1, y-1, map.currentLayer)){
 							Entity next = map.getWorld().getEntity(map.getEntityLayer().map[x+1][y-1][map.currentLayer]);
 							drawSprite(next, batch);
@@ -131,21 +135,33 @@ public class EntityRenderSystem{
 							this.y--;
 						}
 					}
+					
+					//render any NE, NW walls for current tile
 					renderNorthernWall(p.getX(), p.getY(), batch);
-					for(Vector2 vec:a.area){			//north walls
+					
+					//render NE, NW walls for other entity occupied tiles
+					for(Vector2 vec:a.area){			
 						int aX = (int)(vec.x+p.getX());
 						int aY = (int)(vec.y+p.getY());
 						renderNorthernWall(aX, aY, batch);
 					}
-					if(tmp.isFlipX()){		//render next entity
+					
+					//draw wide sprite offset to the bottom left occupied tile(eg [0,0],[1,1])
+					if(tmp.isFlipX()){		
 						batch.draw(tmp , (int)p.getIsoPosition().x-4, (int)p.getIsoPosition().y-32,
 								tmp.getWidth()*tmp.getScaleX(),tmp.getHeight()*tmp.getScaleY());
 					}else{
+					//draw wide sprite offset to the top left occupied tile(eg [0,1],[1,0])
+
 						batch.draw(tmp , (int)p.getIsoPosition().x-68, (int)p.getIsoPosition().y-32,
 								tmp.getWidth()*tmp.getScaleX(),tmp.getHeight()*tmp.getScaleY());
 					}
+					
+					//render any SE, SW walls for current tile
 					renderSouthernWall(p.getX(), p.getY(), batch);
-					for(Vector2 vec:a.area){			//south walls
+					
+					//render SE, SW walls for other entity occupied tiles
+					for(Vector2 vec:a.area){
 						int aX = (int)(vec.x+p.getX());
 						int aY = (int)(vec.y+p.getY());
 
@@ -157,90 +173,124 @@ public class EntityRenderSystem{
 		}
 		return false;
 	}
-	private void drawFeature(Entity e,float x, float y, SpriteBatch batch){
-		ComponentMapper<Feature> fMapper = map.getWorld().getMapper(Feature.class); 
-		if(!fMapper.has(e))return;
-		Feature f = fMapper.get(e);
-		batch.draw(f.sprite, x, y, f.sprite.getWidth()*f.sprite.getScaleX(), f.sprite.getHeight()*f.sprite.getScaleY());
+	//draw decorating sprite(lamps/paintings on wall, windows)
+	private void drawFeature(Entity e, Position p, SpriteBatch batch){
+		if(!featureMapper.has(e))return;
+		
+		Feature f = featureMapper.get(e);
+		Sprite s = entitySprites.get(f.featureName)[f.spriteIndex];
+		batch.draw(s, p.getIsoPosition().x, p.getIsoPosition().y, s.getWidth() * s.getScaleX(), s.getHeight() * s.getScaleY());
 	}
 
-	private void drawNorthSprite(Direction dir, Sprite s, Position p, Mask m, SpriteBatch batch){
+	private void drawNorthSprite(Direction dir, int spriteIndex, Entity e, SpriteBatch batch){
 		if(dir==null)return;
+		
+		Position p = posMapper.get(e);
+		Mask m = null;
+		
+		if(maskMapper.has(e)){
+			m = maskMapper.get(e);
+		}
+		
+		Sprite s = entitySprites.get(nameMapper.get(e).getName())[spriteIndex];
+		
 		Vector2 vec = null;
+		
 		switch(dir){
 		case NE:
 			vec = new Vector2((int)p.getIsoPosition().x+(30*s.getScaleX()), (int)p.getIsoPosition().y+(16*s.getScaleY()));
-			masks.drawMask(batch, "wallMask_sw", vec, s.getHeight(), p, m);
+			masks.drawMask(batch, 0, vec, s.getHeight(), p, m);
 			batch.draw(s , vec.x, vec.y,s.getWidth()*s.getScaleX(),s.getHeight()*s.getScaleY());
+			
 			break;
 		case NW:
 			vec = new Vector2((int)p.getIsoPosition().x-4, (int)p.getIsoPosition().y+(16*s.getScaleY()));
-			masks.drawMask(batch, "wallMask_se", vec, s.getHeight(), p, m);
+			masks.drawMask(batch, 1, vec, s.getHeight(), p, m);
 			batch.draw(s , vec.x, vec.y,s.getWidth()*s.getScaleX(),s.getHeight()*s.getScaleY());
+			
 			break;
 		}
 		batch.flush();
 		batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 	}
+	
 	private void renderNorthernWall(int x, int y, SpriteBatch batch){
 		if(!map.getWallLayer().isOccupied(x, y, map.currentLayer)) return;
+		
+		//wall entity
 		Entity e = map.getWorld().getEntity(map.getWallLayer().map[x][y][map.currentLayer]);
-		Wall w = wm.get(e);
+		
+		Wall w = wallMapper.get(e);
+		
+		//check if walls are north facing
 		if(!(w.firstSprite==Direction.NE||w.firstSprite==Direction.NW)&&!
 				(w.secondSprite==Direction.NE||w.secondSprite==Direction.NW))return;
-		SpriteComp sC = sm.get(e);
-		Position p = pm.get(e);
-		Mask m = null;
-		if(maskm.has(e)){
-			m = maskm.get(e);
-		}
-		drawNorthSprite(w.firstSprite, sC.mainSprite, p, m, batch);
-		drawNorthSprite(w.secondSprite, sC.secondarySprite, p, m, batch);
-		drawFeature(e, p.getIsoPosition().x, p.getIsoPosition().y, batch);
+				
+		SpriteComp sC = spriteMapper.get(e);
+		
+		drawNorthSprite(w.firstSprite, sC.mainSprite, e, batch);
+		drawNorthSprite(w.secondSprite, sC.secondSprite, e, batch);
+		drawFeature(e, posMapper.get(e), batch);
 	}
+	
 	private void renderSouthernWall(int x, int y, SpriteBatch batch){
 		if(!map.getWallLayer().isOccupied(x, y, map.currentLayer)) return;
+		
 		Entity e = map.getWorld().getEntity(map.getWallLayer().map[x][y][map.currentLayer]);
-		Wall w = wm.get(e);
+		Wall w = wallMapper.get(e);
+		
+		//check if walls are south facing
 		if(!(w.firstSprite==Direction.SE||w.firstSprite==Direction.SW)&&!
 				(w.secondSprite==Direction.SE||w.secondSprite==Direction.SW))return;
-		SpriteComp sC = sm.get(e);
-		Position p = pm.get(e);
-		Mask m = null;
-		if(maskm.has(e)){
-			m = maskm.get(e);
-		}
-		drawSouthSprite(w.firstSprite, sC.mainSprite, p, m, batch);
-		drawSouthSprite(w.secondSprite, sC.secondarySprite, p, m, batch);
-		drawFeature(e, p.getIsoPosition().x, p.getIsoPosition().y, batch);
+		
+		SpriteComp sC = spriteMapper.get(e);
+		
+		drawSouthSprite(w.firstSprite, sC.mainSprite, e, batch);
+		drawSouthSprite(w.secondSprite, sC.secondSprite, e, batch);
+		drawFeature(e, posMapper.get(e), batch);
 	}
-	private void drawSouthSprite(Direction dir, Sprite s, Position p, Mask m, SpriteBatch batch){
+	private void drawSouthSprite(Direction dir, int spriteIndex, Entity e, SpriteBatch batch){
 		if(dir==null)return;
+		
+		Position p = posMapper.get(e);
+		Mask m = null;
+		
+		if(maskMapper.has(e)){
+			m = maskMapper.get(e);
+		}
+		
+		Sprite s = entitySprites.get(nameMapper.get(e).getName())[spriteIndex];
+		
 		Vector2 vec = null;
+		
 		switch(dir){
 		case SE:
 			vec = new Vector2((int)p.getIsoPosition().x+(28*s.getScaleX()), (int)p.getIsoPosition().y);
-			masks.drawMask(batch, "wallMask_se", vec, s.getHeight(), p, m);
+			masks.drawMask(batch, 0, vec, s.getHeight(), p, m);
 			batch.draw(s , vec.x, vec.y,s.getWidth()*s.getScaleX(),s.getHeight()*s.getScaleY());
+		
 			break;
 		case SW:
 			vec = new Vector2((int)p.getIsoPosition().x, (int)p.getIsoPosition().y);
-			masks.drawMask(batch, "wallMask_sw", vec, s.getHeight(), p, m);
+			masks.drawMask(batch, 1, vec, s.getHeight(), p, m);
 			batch.draw(s , vec.x, vec.y,s.getWidth()*s.getScaleX(),s.getHeight()*s.getScaleY());
+			
 			break;
 		}
+		
 		batch.flush();
 		batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 	}
 	private void drawSprite(Entity e, SpriteBatch batch){
 		//draws entities
-		Position p = pm.get(e);
-		SpriteComp s = sm.get(e);
-		Sprite tmp = s.mainSprite;
+		Position p = posMapper.get(e);
+		SpriteComp s = spriteMapper.get(e);
+		Sprite tmp = entitySprites.get(nameMapper.get(e).getName())[s.mainSprite];
+		
 		batch.draw(tmp , (int)p.getIsoPosition().x, (int)p.getIsoPosition().y,tmp.getWidth()*tmp.getScaleX(),tmp.getHeight()*tmp.getScaleY());		//static entities
 	}
-	public ArrayMap<Integer, Sprite> getStaticSprites() {
-		return staticSprites;
+	public ArrayMap<String, Sprite[]> getSprites() {
+		return entitySprites;
 	}
 	public SkeletonRenderer getSkeletonRenderer() {
 		return skeletonRenderer;
@@ -248,8 +298,8 @@ public class EntityRenderSystem{
 	public SkeletonRendererDebug getDebugRenderer() {
 		return debugRenderer;
 	}
-	public void loadSprites(ArrayMap<Integer, Sprite> entitySprites){
-		staticSprites = entitySprites;
+	public void loadSprites(ArrayMap<String, Sprite[]> entitySprites){
+		this.entitySprites = entitySprites;
 	}
 	public MaskingSystem getMasks() {
 		return masks;

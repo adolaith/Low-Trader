@@ -14,6 +14,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.SpriteDrawable;
 import com.badlogic.gdx.utils.ArrayMap;
+import com.badlogic.gdx.utils.JsonValue;
 
 
 public class ObjectMenu extends BasicWindow {
@@ -59,7 +60,6 @@ public class ObjectMenu extends BasicWindow {
 			ArrayMap<String, String> profile = list.get(id);
 			
 			Sprite tmp = new Sprite(spriteList.get(Integer.valueOf(profile.get("sprite"))));
-			tmp.setScale(1f);
 
 			Button butt = new ImageButton(GuiUtils.setImgButtonStyle(new SpriteDrawable(tmp), null, gameRes.getSkin().getDrawable("gui/button"), null));
 			butt.addListener(new ChangeListener() {
@@ -78,24 +78,22 @@ public class ObjectMenu extends BasicWindow {
 		wallMenu.setFillParent(false);
 		wallMenu.defaults().size(buttonSize);
 		
-		ArrayMap<Integer, Sprite> spriteList = gameRes.getRenderer().getRenderEntitySystem().getStaticSprites();
-		ArrayMap<Integer, ArrayMap<String, String>> list = gameRes.getEntities().getEntities();
+		ArrayMap<String, Sprite[]> spriteList = gameRes.getRenderer().getRenderEntitySystem().getSprites();
+		ArrayMap<String, JsonValue> list = gameRes.getEntities().getEntityData();
 		
-		for(int x=0;x<list.size; x++){
-			final int i = x;
-			if(list.getValueAt(i).get("tags")==null||!list.getValueAt(i).get("tags").contains("wall")){
+		for(JsonValue e: list.values){
+			final JsonValue d = e;
+			if(!d.has("group") || !d.get("group").has("wall")){
 				continue;
 			}
 			
-			final String[] str = list.getValueAt(i).get("sprite").split(",");
-			Sprite tmp = new Sprite(spriteList.get(Integer.valueOf(str[0])));
-			tmp.setScale(1f);
-
+			Sprite tmp = spriteList.get(d.getString("name"))[0];
+			
 			Button butt = new ImageButton(GuiUtils.setImgButtonStyle(new SpriteDrawable(tmp), null, gameRes.getSkin().getDrawable("gui/button"), null));
 			butt.addListener(new ChangeListener() {
 				public void changed(ChangeEvent event, Actor actor) {
 					MapEditorInput input = (MapEditorInput) gameRes.getInput();
-					input.getPlacementManager().setPlacementSelection("wall", gameRes.getEntities().getEntities().getKeyAt(i));
+					input.getPlacementManager().setPlacementSelection("wall", d.getString("name"));
 				}
 			});
 			addToTable(butt, wallMenu);
@@ -110,45 +108,46 @@ public class ObjectMenu extends BasicWindow {
 		entityMenu.setFillParent(false);
 		entityMenu.defaults().size(buttonSize);
 		
-		final ArrayMap<Integer, ArrayMap<String, String>> list = gameRes.getEntities().getEntities();
-		
+		ArrayMap<String, Sprite[]> spriteList = gameRes.getRenderer().getRenderEntitySystem().getSprites();
+		ArrayMap<String, JsonValue> list = gameRes.getEntities().getEntityData();
 		
 		//static entity buttons (tables, containers, signs etc)
-		for(int x = 0; x < list.size; x++){
-			final int i = x;
+		for(JsonValue e: list.values){
+			final JsonValue d = e;
 			
-			if(list.getValueAt(i).containsKey("animation"))continue;
-			if(list.getValueAt(i).get("tags")!=null){
-				if(list.getValueAt(i).get("tags").contains("wall")){continue;}
+			if(d.has("animation"))continue;
+			
+			if(d.has("group")){
+				if(d.get("group").has("wall")){
+					continue;
+				}
 			}
 			
-			final String[] str = list.getValueAt(i).get("sprite").split(",");
-			Sprite tmp = new Sprite(gameRes.getRenderer().getRenderEntitySystem().getStaticSprites().get(Integer.valueOf(str[0])));
-			tmp.setScale(1f);
+			Sprite tmp = spriteList.get(d.getString("name"))[0];
 
 			Button butt = new ImageButton(GuiUtils.setImgButtonStyle(new SpriteDrawable(tmp), null, gameRes.getSkin().getDrawable("gui/button"), null));
 			butt.addListener(new ChangeListener() {
 				public void changed(ChangeEvent event, Actor actor) {
-					input.getPlacementManager().setPlacementSelection("entity", gameRes.getEntities().getEntities().getKeyAt(i));	
+					input.getPlacementManager().setPlacementSelection("entity", d.getString("name"));	
 				}
 			});
 			addToTable(butt, entityMenu);
 		}
 		
 		//feature(decoration) buttons(lamps, windows)
-		final ArrayMap<String, ArrayMap<String, String>> features = input.getPlacementManager().getFeaturePl().getFeatures().getFeaturesList();
+		ArrayMap<String, JsonValue> features = input.getPlacementManager().getFeaturePl().getFeatures().getFeaturesList();
 		//loop profiles
-		for(final ArrayMap<String, String> f: features.values()){
-			final String[] str = f.get("sprite").split(",");
-			Sprite tmp = new Sprite(gameRes.getRenderer().getRenderEntitySystem().getStaticSprites().get(Integer.valueOf(str[0])));
-			tmp.setScale(1f);
+		for(JsonValue e: features.values){
+			final JsonValue d = e;
+			
+			Sprite tmp = spriteList.get(d.getString("name"))[0];
 			
 			//make button with icon
 			Button butt = new ImageButton(GuiUtils.setImgButtonStyle(new SpriteDrawable(tmp), null, gameRes.getSkin().getDrawable("gui/button"), null));
 			butt.addListener(new ChangeListener() {
 				public void changed(ChangeEvent event, Actor actor) {
 					MapEditorInput input = (MapEditorInput) gameRes.getInput();
-					input.getPlacementManager().setPlacementSelection("feature", f.get("id"));						
+					input.getPlacementManager().setPlacementSelection("feature", d.getString("name"));						
 				}
 			});
 			addToTable(butt, entityMenu);

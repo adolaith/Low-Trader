@@ -1,19 +1,22 @@
 package com.ado.trader.placement;
 
-import com.ado.trader.items.Item;
+import com.ado.trader.entities.components.Position;
 import com.ado.trader.items.ItemFactory;
-import com.ado.trader.items.ItemPosition;
 import com.ado.trader.map.ItemLayer;
 import com.ado.trader.map.Map;
-import com.ado.trader.rendering.EntityRenderSystem;
+import com.artemis.ComponentMapper;
+import com.artemis.Entity;
+import com.artemis.annotations.Wire;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 
+@Wire
 public class ItemPlaceable extends Placeable {
+	ComponentMapper<Position> positionMapper;
 	String itemId;
 	
 	public ItemPlaceable(Map map) {
-		super(map);
+		super(map, null);
 	}
 
 	public void place(int x, int y) {
@@ -22,10 +25,9 @@ public class ItemPlaceable extends Placeable {
 			// Invalid placement
 			return;
 		}
-		Item i = ItemFactory.createItem(itemId);
+		Entity i = ItemFactory.createItem(itemId);
 		itemLayer.addToMap(i, x, y, map.currentLayer);
-		ItemPosition p = i.getData(ItemPosition.class);
-		p.position.set(x, y, map.currentLayer);
+		positionMapper.get(i).setPosition(x, y, map.currentLayer);
 	}
 
 	@Override
@@ -42,5 +44,5 @@ public class ItemPlaceable extends Placeable {
 	}
 
 	@Override
-	void rotateSelection(EntityRenderSystem entityRenderer) {}
+	void rotateSelection() {}
 }

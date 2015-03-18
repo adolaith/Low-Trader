@@ -2,7 +2,6 @@ package com.ado.trader.placement;
 
 import com.ado.trader.entities.EntityFactory;
 import com.ado.trader.input.InputHandler;
-import com.ado.trader.rendering.EntityRenderSystem;
 import com.ado.trader.rendering.EntityRenderSystem.Direction;
 import com.ado.trader.utils.FileLogger;
 import com.ado.trader.utils.GameServices;
@@ -21,7 +20,6 @@ public class PlacementManager {
 	
 	boolean editMode;
 	InputHandler input;
-	EntityRenderSystem entityRenderer;
 	EntityFactory entities;
 
 	public PlacementManager(GameServices gameRes) {
@@ -29,7 +27,6 @@ public class PlacementManager {
 		placementSelection=null;
 		editMode = true;
 		
-		this.entityRenderer = gameRes.getRenderer().getRenderEntitySystem();
 		this.entities = gameRes.getEntities();
 		
 		FileLogger.writeLog("PlacementManager: basics added");
@@ -86,54 +83,40 @@ public class PlacementManager {
 	}
 	
 	public void rotateSelection(){
-		placementSelection.rotateSelection(entityRenderer);
+		placementSelection.rotateSelection();
 	}
 	
 	public void setPlacementSelection(String type, String name){
 		switch(type){
 		case "feature":
 			placementSelection = featurePl;
-			featurePl.featureId = name;
-			featurePl.spriteId = Integer.valueOf(featurePl.features.getFeature(name).get("sprite").split(",")[0]);
-			featurePl.sprite = entityRenderer.getStaticSprites().get(featurePl.spriteId);
+			featurePl.featureName = name;
+			featurePl.spriteIndex = 0;
 			break;
 		case "item":
 			placementSelection = itemPl;
 			itemPl.itemId = name;
+			break;
+		case "entity":
+			placementSelection = entityPl;
+			entityPl.entityName = name;
+			entityPl.spriteIndex = 0;
+			break;
+		case "wall":
+			placementSelection = wallPl;
+			wallPl.entityName = name;
+
+			wallPl.firstSprite = 0;
+			wallPl.first = Direction.SW;
 			break;
 		}
 	}
 	
 	public void setPlacementSelection(String type, int id) {
 		switch(type){
-		case "entity":
-			placementSelection = entityPl;
-			if(id == 0){
-				entityPl.entityTypeID = 0;
-				entityPl.spriteId = 0;
-				entityPl.sprite = null;
-				break;
-			}
-			entityPl.entityTypeID = id;
-			entityPl.spriteId = Integer.valueOf(entities.getEntities().get(id).get("sprite").split(",")[0]);
-			entityPl.sprite = entityRenderer.getStaticSprites().get(entityPl.spriteId);
-			break;
 		case "tile":
 			placementSelection = tilePl;
 			tilePl.tileId = id;
-			break;
-		case "wall":
-			placementSelection = wallPl;
-			wallPl.entityTypeID = id;
-			if(id==0){
-				wallPl.firstId = 0;
-				wallPl.firstSprite = null;
-				wallPl.first = null;
-				break;
-			}
-			wallPl.firstId = Integer.valueOf(entities.getEntities().get(id).get("sprite").split(",")[0]);
-			wallPl.firstSprite = entityRenderer.getStaticSprites().get(wallPl.firstId);
-			wallPl.first = Direction.SW;
 			break;
 		}
 	}

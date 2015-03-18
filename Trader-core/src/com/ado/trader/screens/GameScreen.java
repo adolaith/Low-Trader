@@ -47,7 +47,7 @@ public class GameScreen implements Screen{
 		gameServices = new GameServices(1280, 720, new GameInput(), loadDir);
 		
 		//loads feature sprites
-		new EntityFeatures(gameServices.getAtlas(), gameServices.getParser(), gameServices.getRenderer().getRenderEntitySystem());
+		new EntityFeatures(gameServices.getAtlas(), gameServices.getRenderer().getRenderEntitySystem());
 		
 		//start world systems and managers
 		initWorld();

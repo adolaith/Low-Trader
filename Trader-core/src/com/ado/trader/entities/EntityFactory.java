@@ -3,178 +3,143 @@ package com.ado.trader.entities;
 import com.ado.trader.entities.components.AiProfile;
 import com.ado.trader.entities.components.Animation;
 import com.ado.trader.entities.components.Area;
-import com.ado.trader.entities.components.Health;
-import com.ado.trader.entities.components.Hunger;
+import com.ado.trader.entities.components.AttributeTable;
 import com.ado.trader.entities.components.Inventory;
-import com.ado.trader.entities.components.Locations;
-import com.ado.trader.entities.components.Money;
 import com.ado.trader.entities.components.Movement;
 import com.ado.trader.entities.components.Name;
 import com.ado.trader.entities.components.Position;
 import com.ado.trader.entities.components.SpriteComp;
-import com.ado.trader.entities.components.Target;
-import com.ado.trader.entities.components.Type;
-import com.ado.trader.entities.components.Wall;
 import com.ado.trader.map.IntMapLayer;
 import com.ado.trader.map.Map;
 import com.ado.trader.systems.AiSystem;
 import com.ado.trader.utils.GameServices;
+import com.artemis.Archetype;
 import com.artemis.ComponentMapper;
 import com.artemis.Entity;
+import com.artemis.annotations.Wire;
 import com.artemis.managers.GroupManager;
 import com.artemis.managers.TagManager;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ArrayMap;
+import com.badlogic.gdx.utils.JsonValue;
 import com.esotericsoftware.spine.AnimationStateData;
 import com.esotericsoftware.spine.Skeleton;
 import com.esotericsoftware.spine.SkeletonData;
 
 //Contains entity templates and creates entities.
+@Wire
 public class EntityFactory{
+	static ComponentMapper<Name> nameMap;
+	static ComponentMapper<SpriteComp> spriteMap;
+	static ComponentMapper<Animation> animMap;
+	static ComponentMapper<AiProfile> aiMap;
+	static ComponentMapper<Area> areaMap;
+	static ComponentMapper<Inventory> inventoryMap;
+	static ComponentMapper<Movement> movementMap;
+	static ComponentMapper<AttributeTable> attributeMap;
+	static ComponentMapper<Position> positionMap;
+	static TagManager tagManager;
+	static GroupManager groupManager;
+	
 	EntityLoader loader;
 	static Map map;
 
-	static ArrayMap<Integer, ArrayMap<String, String>> staticEntities;
-	static ArrayMap<Integer, ArrayMap<String, String>> npcs;
+	static ArrayMap<String, Archetype> entityArchetypes;
+	static ArrayMap<String, JsonValue> entityData;
 	static ArrayMap<String, SkeletonData> skeletons;
 	static ArrayMap<String, AnimationStateData> animationPool;
 
 	public EntityFactory(GameServices gameRes){
 		EntityFactory.map = gameRes.getMap();
-		staticEntities = new ArrayMap<Integer, ArrayMap<String,String>>();
-		npcs = new ArrayMap<Integer, ArrayMap<String,String>>();
+		entityArchetypes = new ArrayMap<String, Archetype>();
+		entityData = new ArrayMap<String, JsonValue>();
 		animationPool = new ArrayMap<String, AnimationStateData>();
 
 		loader = new EntityLoader(map.getWorld());
-		loader.loadEntityProfiles("data/EntityProfiles", gameRes.getAtlas(), this, 
-				gameRes.getRenderer().getRenderEntitySystem(), gameRes.getParser());
+		loader.loadEntityArchetypes(gameRes.getAtlas(), this, 
+				gameRes.getRenderer().getRenderEntitySystem());
 		
 		skeletons = loader.loadSpineData(gameRes.getAtlas(), this);
 	}
 
-	//Takes entityName, gets entityProfile from master collection and creates entity accordingly
-	public static Entity createEntity(int typeID){
-		Entity entity = map.getWorld().createEntity();
-		ArrayMap<String, String> profile;
-		if(npcs.containsKey(typeID)){
-			profile = npcs.get(typeID);
-		}else{
-			profile = staticEntities.get(typeID);
-		}
-		entity.edit().add(new Type(typeID));
+	//Creates entity from archetype and configures it
+	public static Entity createEntity(String entityName){
+		Entity entity = map.getWorld().createEntity(entityArchetypes.get(entityName));
 		
-		entity.edit().add(new Position(map.getTileWidth(), map.getTileHeight()));
-		
-		GroupManager gm = map.getWorld().getManager(GroupManager.class);
-		TagManager tm = map.getWorld().getManager(TagManager.class);
-		
-		for(String key: profile.keys()){
-			switch(key){
+		for(JsonValue d = entityData.get(entityName).child; d != null; d = d.next){
+			switch(d.name){
 			case "name":
-				entity.edit().add(new Name(profile.get(key)));
-				break;
-			case "tags":
-				String[] tags = profile.get(key).split(",");
-				for(String s:tags){
-					if(s.isEmpty())break;
-					tm.register(s, entity);
-				}
-				
-				break;
-			case "group":
-				String[] groups = profile.get(key).split(",");
-				for(String s : groups){
-					if(s.isEmpty())break;
-					gm.add(entity, s);
-					
-					//entity is a wall?
-					if(s.matches("wall")){
-						entity.edit().add(new Wall());
-					}
-				}
+				nameMap.get(entity).setName(d.asString());
 				break;
 			case "animation":
-				Skeleton skel = new Skeleton(skeletons.get(profile.get(key)));
+				Skeleton skel = new Skeleton(skeletons.get(d.asString()));
 				skel.setToSetupPose();
-				Animation c = new Animation(skel, animationPool.get(profile.get(key)),
-						map.getTileWidth(), map.getTileHeight());
-				entity.edit().add(c);
-				break;
-			case "sprite":
-				entity.edit().add(new SpriteComp());
-				break;
-			case "movement":
-				entity.edit().add(new Movement(Float.parseFloat(profile.get(key))));
-				entity.edit().add(new Target());
+				Animation a = animMap.get(entity);
+				a.skeleton = skel;
+				a.setAnimationData(animationPool.get(d.asString()));
+				a.setTileSize(map.getTileWidth(), map.getTileHeight());
 				break;
 			case "ai":
 				AiSystem aiSys = map.getWorld().getSystem(AiSystem.class);
-				entity.edit().add(new AiProfile(aiSys.getAiProfile(profile.get(key))));
-				entity.edit().add(new Locations());
+				aiMap.get(entity).setAiProfile(aiSys.getAiProfile(d.asString()));
 				break;
 			case "area":
-				Area areaComp = new Area();
-				String[] sList = profile.get(key).split("'");
-				for(String s: sList){
-					String[] vec = s.split(","); 
-					areaComp.area.add(new Vector2(Float.valueOf(vec[0]), Float.valueOf(vec[1])));
+				Area area = areaMap.get(entity);
+				area.area = new Array<Vector2>();
+				for(JsonValue v = d.child; v != null; v = v.next){
+					float[] xy = v.asFloatArray();
+					area.area.add(new Vector2(xy[0], xy[1]));
 				}
-				entity.edit().add(areaComp);
 				break;
 			case "attributes":
-				String[] aList = profile.get(key).split(",");
-				for(String s: aList){
-					switch(s){
-					case "health":
-						entity.edit().add(new Health());
-						break;
-					case "hunger":
-						entity.edit().add(new Hunger());
-						break;
-					case "money":
-						entity.edit().add(new Money());
-						break;
-					}
-				}
+				
 				break;
 			case "inventory":
-				entity.edit().add(new Inventory(Integer.valueOf(profile.get(key))));
+				inventoryMap.get(entity).init(d.asInt());
+				break;
+			case "movement":
+				movementMap.get(entity).init(d.asFloat());
+				break;
+			case "group":
+				groupManager.add(entity, d.asString());
+				break;
+			case "tags":
+				tagManager.register(d.asString(), entity);
 				break;
 			}
 		}
-		map.getWorld().getEntityManager().added(entity);
-//		game.getWorld().changedEntity(entity);
+		
 		return entity;
 	}
 
 	//create entity with specified sprite
-	public static Entity createEntity(int typeID, int spriteId, Sprite sprite){
-		Entity e = createEntity(typeID);
-		e.getComponent(SpriteComp.class).mainId = spriteId;
-		e.getComponent(SpriteComp.class).mainSprite = sprite;
+	public static Entity createEntity(String entityName, int spriteIndex){
+		Entity e = createEntity(entityName);
+		spriteMap.get(e).mainSprite = spriteIndex;
+		
 		return e;
 	}
 	public static void deleteEntity(int x, int y, int h, IntMapLayer layer){
 		if(layer.isOccupied(x,y,h)){
 			Entity e = map.getWorld().getEntity(layer.map[x][y][h]);
-//			game.getWorld().disable(e);
-			Position p = map.getWorld().getMapper(Position.class).get(e);
+
+			Position p = positionMap.get(e);
 			layer.deleteFromMap(p.getX(),p.getY(),h);
-			ComponentMapper<Area> areaM = map.getWorld().getMapper(Area.class);
-			if(areaM.has(e)){
-				for(Vector2 vec: areaM.get(e).area){
+			
+			if(areaMap.has(e)){
+				for(Vector2 vec: areaMap.get(e).area){
 					layer.deleteFromMap((int)(p.getX()+vec.x),(int)(p.getY()+vec.y),h);
 				}
 			}
 			e.edit().deleteEntity();
 		}
 	}
-	public ArrayMap<Integer, ArrayMap<String, String>> getEntities() {
-		return staticEntities;
+	public ArrayMap<String, JsonValue> getEntityData(){
+		return entityData;
 	}
-	public ArrayMap<Integer, ArrayMap<String, String>> getNpcs(){
-		return npcs;
+	public ArrayMap<String, Archetype> getEntityProfiles() {
+		return entityArchetypes;
 	}
 	public EntityLoader getLoader() {
 		return loader;

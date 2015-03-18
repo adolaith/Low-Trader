@@ -3,7 +3,6 @@ package com.ado.trader.placement;
 import com.ado.trader.entities.EntityFactory;
 import com.ado.trader.entities.EntityFeatures;
 import com.ado.trader.input.InputHandler;
-import com.ado.trader.rendering.EntityRenderSystem;
 import com.ado.trader.utils.GameServices;
 import com.ado.trader.utils.IsoUtils;
 import com.artemis.Entity;
@@ -14,31 +13,28 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 
 public class FeaturePlaceable extends Placeable {
-	public String featureId;
-	public int spriteId;
-	Sprite sprite;
+	public String featureName;
+	public int spriteIndex;
 	
 	EntityFeatures features;
 
 	protected FeaturePlaceable(GameServices gameRes) {
-		super(gameRes.getMap());
-		features = new EntityFeatures(gameRes.getAtlas(), gameRes.getParser(), gameRes.getRenderer().getRenderEntitySystem());
+		super(gameRes.getMap(), gameRes.getRenderer().getRenderEntitySystem());
+		features = new EntityFeatures(gameRes.getAtlas(), gameRes.getRenderer().getRenderEntitySystem());
 	}
 	
 	@Override
 	void place(int x, int y) {
-		switch(features.getFeature(featureId).get("deco")){
+		String decorates = features.getFeature(featureName).get("decorates").asString();
+		switch(decorates){
 		case "wall":
 			if(!map.getWallLayer().isOccupied(x, y, map.currentLayer)){
 				//Invalid placement. Wall decoration only
 				return;
 			}
 			Entity w = map.getWorld().getEntity(map.getWallLayer().map[x][y][map.currentLayer]);
-			features.applyFeature(w, featureId, spriteId, new Sprite(sprite));
+			features.applyFeature(w, featureName, spriteIndex);
 			break;
-		}
-		if(sprite.isFlipX()){
-			sprite.flip(true, false);
 		}
 	}
 
@@ -52,37 +48,33 @@ public class FeaturePlaceable extends Placeable {
 			delete^=delete;
 		}
 	}
-	public void rotateSelection(EntityRenderSystem entityRenderer){
-		String[] tmp = features.getFeature(featureId).get("sprite").split(",");
-		if(tmp.length==1){
-			sprite.flip(true, false);
-			return;
-		}
-		if(sprite.isFlipX()){
-			sprite.flip(true, false);
-			for(String s:tmp){
-				int i = Integer.valueOf(s);
-				if(i==spriteId)continue;
-				spriteId = i;
-				sprite = entityRenderer.getStaticSprites().get(i);
-				break;
-			}
+	
+	public void rotateSelection(){
+		Sprite[] sprites = entityRenderer.getSprites().get(featureName);
+		
+		if(spriteIndex == sprites.length){
+			spriteIndex = 0;
 		}else{
-			sprite.flip(true, false);
+			spriteIndex++;
 		}
 	}
+	
 	public void renderPreview(SpriteBatch batch){
 		if(delete)return;
 		Vector2 mousePos = IsoUtils.getColRow((int)InputHandler.getMousePos().x, (int)InputHandler.getMousePos().y, 
 				map.getTileWidth(), map.getTileHeight());
 		mousePos = IsoUtils.getIsoXY((int)mousePos.x, (int)mousePos.y, 
 				map.getTileWidth(), map.getTileHeight());
+		
+		Sprite sprite = entityRenderer.getSprites().get(featureName)[spriteIndex];
+		
 		batch.begin();
 		
 		batch.draw(sprite, mousePos.x, mousePos.y, 
 				sprite.getWidth()*sprite.getScaleX(), sprite.getHeight()*sprite.getScaleY());
 		batch.end();
 	}
+	
 	@Override
 	void dragPlace(Vector2 start, Vector2 widthHeight) {
 	}

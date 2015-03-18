@@ -1,8 +1,9 @@
 package com.ado.trader.entities.components;
 
 import com.artemis.Component;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 
+//sprite mask for windows in walls, wall mask, doorway mask
 public class Mask extends Component {
-	public Sprite mask;
+	public int maskIndex;
+	public String maskName;
 }

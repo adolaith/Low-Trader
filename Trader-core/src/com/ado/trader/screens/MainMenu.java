@@ -21,6 +21,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
+import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.JsonValue;
+import com.badlogic.gdx.utils.ObjectMap;
 
 //old code from a tutorial. Used purely for utility. TO be replaced.
 public class MainMenu implements Screen {
@@ -158,6 +161,20 @@ public class MainMenu implements Screen {
 		root.setY(Gdx.graphics.getHeight() / 2);
 		
 		stage.addActor(root);
+		
+//		Json json = new Json();
+//		JsonValue entities = json.fromJson(null, Gdx.files.internal("data/EntityProfiles"));
+//		entities = entities.child();
+//		for(JsonValue e = entities.child; e != null; e = e.next){
+//			for(JsonValue i = e.child; i != null; i = i.next){
+//				if(i.isString()){
+//					Gdx.app.log("MAIN_MENU(JSON_TEST): ", ""+i.asString());
+//				}else if(i.isNumber()){
+//					Gdx.app.log("MAIN_MENU(JSON_TEST): ", ""+i.asInt());
+//				}
+//			}
+//		}
+		
 	}
 
 	@Override

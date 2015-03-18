@@ -15,7 +15,7 @@ public class AiProfile extends Component{
 	public Task getTaskProfile() {
 		return taskProfile;
 	}
-	public void setTaskProfile(Task taskProfile) {
+	public void setAiProfile(Task taskProfile) {
 		this.taskProfile = taskProfile;
 	}
 }

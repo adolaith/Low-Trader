@@ -16,7 +16,7 @@ public class Movement extends Component implements Mover{
 	public Movement() {
 	}
 
-	public Movement(float f) {
+	public void init(float f) {
 		this.velocity = f;
 		direction = new Vector2();
 	}

@@ -10,9 +10,11 @@ import com.badlogic.gdx.utils.Array;
 
 public class EntityLayer extends IntMapLayer {
 	ComponentMapper<Area> areaMapper;
+	World world;
 
 	public EntityLayer(int w, int h, World world) {
 		super(w, h);
+		this.world = world;
 		areaMapper = world.getMapper(Area.class);
 	}
 	public void addToMap(Integer id, int x, int y, int h) {
@@ -30,7 +32,7 @@ public class EntityLayer extends IntMapLayer {
 		}
 	}
 	//finds neighbours of x,y to a depth of n with the desired tag.
-	public Array<Integer> getNeighborEntitys(int x, int y, int h, int n, String tag, World world) {
+	public Array<Integer> getNeighborEntitys(int x, int y, int h, int n, String tag) {
 		Array<Integer> neighbours = new Array<Integer>();
 		GroupManager gm = world.getManager(GroupManager.class);
 		for(int i = x-n; i<x+n+n; i++){
@@ -48,7 +50,7 @@ public class EntityLayer extends IntMapLayer {
 		}
 		return neighbours;		  
 	}
-	public Entity getClosestEntity(int x, int y, int h,int n, String tag, World world){
+	public Entity getClosestEntity(int x, int y, int h,int n, String tag){
 		GroupManager gm = world.getManager(GroupManager.class);
 		for(int d = 1; d <= n; d++){
 			int i = x - d;

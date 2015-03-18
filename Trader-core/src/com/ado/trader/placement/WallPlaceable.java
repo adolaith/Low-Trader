@@ -14,34 +14,28 @@ import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.ArrayMap;
 
 public class WallPlaceable extends Placeable{
-	int entityTypeID, firstId, secondId;
-	Sprite firstSprite, secondSprite;
+	String entityName;
+	Integer firstSprite, secondSprite;
 	Direction first, second;
-	EntityRenderSystem entityRenderer;
 	EntityFactory entities;
 	
 	public WallPlaceable(Map map, EntityFactory entities, EntityRenderSystem entityRenderer) {
-		super(map);
+		super(map, entityRenderer);
 		this.entities = entities;
-		this.entityRenderer = entityRenderer;
 	}
 
 	public void place(int x, int y) {
 		WallLayer wLayer = map.getWallLayer();
 		if(!wLayer.isOccupied(x, y, map.currentLayer)){
-			Sprite s = new Sprite(firstSprite);
-			Entity e = EntityFactory.createEntity(entityTypeID,firstId, s);
+			Entity e = EntityFactory.createEntity(entityName, firstSprite);
 			Wall w = e.getComponent(Wall.class);
 			
 			w.firstSprite = first;
 			
 			if(secondSprite!=null){
-				s = new Sprite(secondSprite);
-				e.getComponent(SpriteComp.class).secondId = secondId;
-				e.getComponent(SpriteComp.class).secondarySprite = s;
+				e.getComponent(SpriteComp.class).secondSprite = secondSprite;
 				e.getComponent(Wall.class).secondSprite = second;
 			}
 			e.getComponent(Position.class).setPosition(x, y, map.currentLayer);
@@ -68,95 +62,77 @@ public class WallPlaceable extends Placeable{
 		}
 	}
 	private void changeExistingSprite(int x, int y){
-		ArrayMap<Integer, Sprite> spriteList = entityRenderer.getStaticSprites();
 		Entity e = map.getWorld().getEntity(map.getWallLayer().map[x][y][map.currentLayer]);
 		SpriteComp s = e.getComponent(SpriteComp.class);
 		Wall w = e.getComponent(Wall.class);
-		if(s.secondarySprite==null){
-			s.secondId = firstId;
-			s.secondarySprite = new Sprite(spriteList.get(firstId));
+		if(s.secondSprite == null){
+			s.secondSprite = firstSprite;
 			w.secondSprite = first;
 		}else{
-			s.mainId = s.secondId;
-			s.mainSprite = s.secondarySprite;
+			s.mainSprite = s.secondSprite;
 			w.firstSprite = w.secondSprite;
-			s.secondId = firstId;
-			s.secondarySprite = new Sprite(spriteList.get(firstId));
+			s.secondSprite = firstSprite;
 			w.secondSprite = first;
 		}
 	}
-	//returns an entity with the correct sprite selected when click+dragged
+	
+	//maps click-dragged square to proper sprites
 	private void selectCorrectDirection(int x,int y,Vector2 start,Vector2 widthHeight){
-		String[] tmp = entities.getEntities().get(entityTypeID).get("sprite").split(",");
-		ArrayMap<Integer, Sprite> spriteList = entityRenderer.getStaticSprites();
-		if(tmp[1].isEmpty())return;
+		Sprite[] sprites = entityRenderer.getSprites().get(entityName);
+		
+		if(sprites[1] == null)return;
 		
 		if(x==start.x&&y==start.y){		//s
-			firstId = Integer.valueOf(tmp[0]);
-			firstSprite = spriteList.get(firstId);
+			firstSprite = 0;
 			first = Direction.SW;
-			secondId = Integer.valueOf(tmp[1]);
-			secondSprite = spriteList.get(secondId);
+			secondSprite = 1;
 			second = Direction.SE;
 		}else if(x==start.x&&y==widthHeight.y){		//w
-			firstId = Integer.valueOf(tmp[0]);
-			firstSprite = spriteList.get(firstId);
+			firstSprite = 0;
 			first = Direction.SW;
-			secondId = Integer.valueOf(tmp[1]);
-			secondSprite = spriteList.get(secondId);
+			secondSprite = 1;
 			second = Direction.NW;
 		}else if(x==widthHeight.x&&y==widthHeight.y){		//n
-			firstId = Integer.valueOf(tmp[0]);
-			firstSprite = spriteList.get(firstId);
+			firstSprite = 0;
 			first = Direction.NE;
-			secondId = Integer.valueOf(tmp[1]);
-			secondSprite = spriteList.get(secondId);
+			secondSprite = 1;
 			second = Direction.NW;
 		}else if(x==widthHeight.x&&y==start.y){		//e
-			firstId = Integer.valueOf(tmp[0]);
-			firstSprite = spriteList.get(firstId);
+			firstSprite = 0;
 			first = Direction.NE;
-			secondId = Integer.valueOf(tmp[1]);
-			secondSprite = spriteList.get(secondId);
+			secondSprite = 1;
 			second = Direction.SE;
 		}else if(x<=widthHeight.x&&y==start.y){		//se
-			firstId = Integer.valueOf(tmp[1]);
-			firstSprite = spriteList.get(firstId);
+			firstSprite = 1;
 			first = Direction.SE;
 		}else if(x<=widthHeight.x&&y==widthHeight.y){		//nw
-			firstId = Integer.valueOf(tmp[1]);
-			firstSprite = spriteList.get(firstId);
+			firstSprite = 1;
 			first = Direction.NW;
 		}else if(y<=widthHeight.y&&x==start.x){				//sw
-			firstId = Integer.valueOf(tmp[0]);
-			firstSprite = spriteList.get(firstId);
+			firstSprite = 0;
 			first = Direction.SW;
 		}else if(y<=widthHeight.y&&x==widthHeight.x){		//ne
-			firstId = Integer.valueOf(tmp[0]);
-			firstSprite = spriteList.get(firstId);
+			firstSprite = 0;
 			first = Direction.NE;
 		}
 	}
-	public void rotateSelection(EntityRenderSystem entityRenderer){
-		String[] tmp = entities.getEntities().get(entityTypeID).get("sprite").split(",");
-		ArrayMap<Integer, Sprite> spriteList = entityRenderer.getStaticSprites();
-		if(tmp[1].isEmpty())return;
-		
+	
+	public void rotateSelection(){
 		switch(first){
 		case NE:
-			firstId = Integer.valueOf(tmp[1]);
-			firstSprite = spriteList.get(firstId);
+			firstSprite = 1;
 			first = Direction.SE;
 			break;
 		case NW:
-			firstId = Integer.valueOf(tmp[0]);
-			firstSprite = spriteList.get(firstId);
+			firstSprite = 0;
 			first = Direction.SW;
 			break;
 		case SW:
+			firstSprite = 0;
 			first = Direction.NE;
 			break;
 		case SE:
+			firstSprite = 1;
 			first = Direction.NW;
 			break;
 		}
@@ -172,6 +148,7 @@ public class WallPlaceable extends Placeable{
 	}
 	public void resetDirections(){
 		first = Direction.SW;
+		firstSprite = 0;
 		second = null;
 		secondSprite = null;
 	}

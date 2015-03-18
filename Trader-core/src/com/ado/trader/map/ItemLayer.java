@@ -1,24 +1,27 @@
 package com.ado.trader.map;
 
-import com.ado.trader.items.Item;
-import com.ado.trader.items.ItemData;
 import com.ado.trader.utils.FileParser;
+import com.artemis.Component;
+import com.artemis.ComponentMapper;
+import com.artemis.World;
 import com.badlogic.gdx.utils.Array;
 
-public class ItemLayer implements Layer {
-	public Item[][][] map;
+public class ItemLayer extends IntMapLayer {
+	World world;
 
-	public ItemLayer(int w, int h) {
-		map = new Item[w][h][8];
+	public ItemLayer(int w, int h, World world) {
+		super(w, h);
+		this.world = world;
 	}
-	public void addToMap(Item i, int x, int y, int h) {
+	public void addToMap(int i, int x, int y, int h) {
 		map[x][y][h] = i;
 	}
 	public void deleteFromMap(int x, int y, int h) {
 		map[x][y][h] = null;
 	}
-	public Array<Item> getNeighborItems(int x, int y, int h, int n, Class<? extends ItemData> type) {
-		Array<Item> neighbours = new Array<Item>();
+	public Array<Integer> getNeighborItems(int x, int y, int h, int n, Class<? extends Component> type) {
+		Array<Integer> neighbours = new Array<Integer>();
+		ComponentMapper<Component> mapper = (ComponentMapper<Component>) world.getMapper(type);
 
 		for(int i = x-n; i<x+n+n; i++){
 			for(int j = y-n; j<y+n+n; j++){
@@ -26,7 +29,7 @@ public class ItemLayer implements Layer {
 					continue;
 				}
 				if(map[i][j][h]!=null){
-					if(map[i][j][h].hasDataType(type)){
+					if(mapper.has(world.getEntity(map[i][j][h]))){
 						neighbours.add(map[i][j][h]);
 					}
 				}

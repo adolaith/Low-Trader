@@ -14,33 +14,45 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.ArrayMap;
 
 public class MaskingSystem {
-	ArrayMap<String, Sprite> maskSprites;
+	ArrayMap<String, Sprite[]> maskSprites;
 	Map map;
 	
 	public MaskingSystem(Skin skin, Map map){
 		this.map = map;
-		maskSprites = new ArrayMap<String, Sprite>();
-		Sprite s = new Sprite(skin.getSprite("wallMask_se"));
-		s.scale(1f);
-		loadMask("wallMask_se", s);
-		s = new Sprite(skin.getSprite("wallMask_sw"));
-		s.scale(1f);
-		loadMask("wallMask_sw", s);
+		maskSprites = new ArrayMap<String, Sprite[]>();
+		
+		//load wall masks
+		Sprite[] wallList = new Sprite[2];
+		Sprite firstMask = new Sprite(skin.getSprite("wallMask_se"));
+		firstMask.scale(1f);
+		wallList[0] = firstMask;
+		Sprite secondMask = new Sprite(skin.getSprite("wallMask_sw"));
+		secondMask.scale(1f);
+		wallList[1] = secondMask;
+		
+		maskSprites.put("wallMask", wallList);
 	}
-	public void drawMask(SpriteBatch batch, String wallDir, Vector2 vec, float height, Position p, Mask mask){
+	public void drawMask(SpriteBatch batch, int spriteIndex, Vector2 vec, float height, Position p, Mask mask){
 		Vector2 tmp = IsoUtils.getColRow((int)InputHandler.getMousePos().x, (int)InputHandler.getMousePos().y, map.getTileWidth(), map.getTileHeight());
+		
 		//wall is within 6 tiles of x,y
 		if(Math.abs((int)p.getX() - (int)tmp.x) < 6 &&  Math.abs((int)p.getY() - (int)tmp.y) < 4){
+			
+			//only sprites over 64 in height get masked(keep fences short) 
 			if(height > 64){
 				setGlMask(batch);
-				Sprite s = maskSprites.get(wallDir);
+				Sprite s = maskSprites.get("wallMask")[spriteIndex];
+				
 				batch.draw(s, vec.x, vec.y, s.getWidth()*s.getScaleX(),s.getHeight()*s.getScaleY());
 				setGlBlend(batch);
 			}
+		
 		}else if(mask!=null){
 			//wall has a feature mask(window, door)
 			setGlMask(batch);
-			batch.draw(mask.mask, vec.x, vec.y, mask.mask.getWidth()*mask.mask.getScaleX(),mask.mask.getHeight()*mask.mask.getScaleY());
+			Sprite s = maskSprites.get(mask.maskName)[mask.maskIndex];
+			
+			batch.draw(s, vec.x, vec.y, s.getWidth() * s.getScaleX(), s.getHeight() * s.getScaleY());
 			setGlBlend(batch);
 		}
 	}
@@ -57,13 +69,13 @@ public class MaskingSystem {
 		Gdx.gl.glColorMask(true, true, true, true);
 		batch.setBlendFunction(GL20.GL_DST_ALPHA, GL20.GL_ONE_MINUS_DST_ALPHA);
 	}
-	public void loadMask(String key, Sprite sprite){
-		maskSprites.put(key, sprite);
+	public void loadMaskSet(String key, Sprite[] sprites){
+		maskSprites.put(key, sprites);
 	}
-	public Sprite getMask(String key) {
+	public Sprite[] getMask(String key) {
 		return maskSprites.get(key);
 	}
-	public ArrayMap<String, Sprite> getAllMasks(){
+	public ArrayMap<String, Sprite[]> getAllMasks(){
 		return maskSprites;
 	}
 }
