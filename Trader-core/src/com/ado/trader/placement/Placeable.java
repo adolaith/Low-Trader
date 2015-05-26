@@ -14,11 +14,11 @@ abstract class Placeable {
 		this.map = map;
 		this.entityRenderer = entityRenderer;
 	}
-	                                                                                                                                                  
-	abstract void place(int x, int y);
+	
+	abstract void place(int mapX, int mapY);
 	abstract void dragPlace(Vector2 start, Vector2 widthHeight);
-	abstract void remove(int x, int y);
 	abstract void rotateSelection();
 	abstract void renderPreview(SpriteBatch batch);
+	abstract void clearSettings();
 
 }

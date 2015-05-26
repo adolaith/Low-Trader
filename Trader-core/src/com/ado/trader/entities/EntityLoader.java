@@ -28,7 +28,6 @@ import com.artemis.ArchetypeBuilder;
 import com.artemis.ComponentMapper;
 import com.artemis.Entity;
 import com.artemis.World;
-import com.artemis.annotations.Wire;
 import com.artemis.managers.GroupManager;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
@@ -43,7 +42,6 @@ import com.esotericsoftware.spine.AnimationStateData;
 import com.esotericsoftware.spine.SkeletonData;
 import com.esotericsoftware.spine.SkeletonJson;
 
-@Wire
 public class EntityLoader {
 	ComponentMapper<Name> nameMap;
 	ComponentMapper<SpriteComp> spriteMap;
@@ -64,7 +62,25 @@ public class EntityLoader {
 
 	public EntityLoader(World world){
 		this.world = world;
+		
+		nameMap = world.getMapper(Name.class);
+		spriteMap = world.getMapper(SpriteComp.class);
+		animMap = world.getMapper(Animation.class);
+		aiMap = world.getMapper(AiProfile.class);
+		areaMap = world.getMapper(Area.class);
+		inventoryMap = world.getMapper(Inventory.class);
+		movementMap = world.getMapper(Movement.class);
+		attributeMap = world.getMapper(AttributeTable.class);
+		positionMap = world.getMapper(Position.class);
+		wallMap = world.getMapper(Wall.class);
+		maskMap = world.getMapper(Mask.class);
+		featureMap = world.getMapper(Feature.class);
+		moneyMap = world.getMapper(Money.class);
+		
+		groupManager = world.getManager(GroupManager.class);
 	}
+	
+	//loads all animations
 	public ArrayMap<String, SkeletonData> loadSpineData(TextureAtlas atlas, EntityFactory entities){
 		ArrayMap<String, SkeletonData> skeletons = new ArrayMap<String, SkeletonData>();
 		String[] files = Gdx.files.internal("data/anim/files.txt").readString().split(",");
@@ -209,16 +225,16 @@ public class EntityLoader {
 		//loops each entity
 		for(JsonValue e = profiles.child(); e != null; e = e.next()){
 			ArchetypeBuilder entity = new ArchetypeBuilder();
+			
+			entity.add(Name.class);
+			entity.add(Position.class);
 			//loops entity components
 			for(JsonValue d = e.child; d != null; d = d.next){
 				switch(d.name){
-				case "name":
-					entity.add(Name.class);
-					break;
 				case "sprite":
 					entity.add(SpriteComp.class);
 					//load sprites into memory
-					sprites.put(e.get("name").asString(), createSprites(d, atlas));
+					sprites.put(e.get("name").asString(), createSprites(d, e, atlas));
 					break;
 				case "animation":
 					entity.add(Animation.class);
@@ -264,15 +280,21 @@ public class EntityLoader {
 		}
 		entityRenderer.loadSprites(sprites);
 	}
-	private Sprite[] createSprites(JsonValue spriteData, TextureAtlas atlas){
+	private Sprite[] createSprites(JsonValue spriteData, JsonValue entityData, TextureAtlas atlas){
 		String[] list = spriteData.asStringArray();
 		Sprite[] sprites = new Sprite[4];
 		int x = 0;
 		for(String s: list){
 			Sprite sprite = atlas.createSprite(s);
-			sprite.scale(1f);
+			sprite.scale(1);
 			sprites[x] = sprite;
 			
+			if(entityData.has("group")){
+				if(entityData.getString("group").matches("wall")){
+					x++;
+					continue;
+				}
+			}
 			Sprite spriteFlip = new Sprite(sprite);
 			spriteFlip.flip(true, false);
 			sprites[x + 1] = spriteFlip;

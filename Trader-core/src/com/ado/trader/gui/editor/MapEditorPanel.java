@@ -1,83 +1,37 @@
 package com.ado.trader.gui.editor;
 
-import com.ado.trader.gui.CustomCursor;
 import com.ado.trader.gui.GuiUtils;
 import com.ado.trader.gui.ToolTip;
-import com.ado.trader.input.InputHandler;
 import com.ado.trader.utils.GameServices;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.utils.ArrayMap;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 public class MapEditorPanel extends Table{
-	ObjectMenu objectMenus;
 	int stageWidth;
+	ArrayMap<String, Table> tables;
 
 	public MapEditorPanel(final GameServices gameRes) {
 		setName("editorPanel");
-		objectMenus = new ObjectMenu(gameRes);
-		
 		setVisible(true);
 		setWidth(38);
 		setHeight(6 * 36);
-		defaults().center().width(30).height(30).pad(2);
 		setBackground(gameRes.getSkin().getDrawable("gui/bGround"));
 		
-		new DeleteMenu(gameRes);
+		tables = new ArrayMap<String, Table>();
 		
+		new DeleteMenu(gameRes);
 		new EditorMenu(gameRes);
 		
-		createButton("zoneTile", "Tile menu", "tileMenu", gameRes);
-		createButton("wallIcon", "Wall menu", "wallMenu", gameRes);
-		createButton("entityIcon", "Entity menu", "entityMenu", gameRes);
-		createButton("workIcon", "Item menu", "itemsMenu", gameRes);
-		
-		final ToolTip toolTip = (ToolTip)(gameRes.getStage().getRoot().findActor("tooltip"));
-		//delete button
-		final ImageButton deleteButton = GuiUtils.createImageButton("gui/trashcanIcon", null, "gui/button", null, gameRes.getSkin());
-		deleteButton.addListener(new ClickListener() {
-			public void enter (InputEvent event, float x, float y, int pointer, Actor fromActor) {
-				toolTip.show("Delete object");
-			}
-			public void exit (InputEvent event, float x, float y, int pointer, Actor fromActor) {
-				toolTip.hide();
-			}
-			public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-				CustomCursor icon = (CustomCursor)(gameRes.getStage().getRoot().findActor("customCursor"));
-				DeleteMenu menu = (DeleteMenu)(gameRes.getStage().getRoot().findActor("deleteMenu"));
-				InputHandler.getMapClicked().setZero();
-				if(icon.isVisible()){
-					icon.hide();
-					menu.listening = false;
-				}else{
-					icon.show("trashcanIcon");
-					menu.listening = true;
-				}
-				
-				return true;
-			}
-		});
-		add(deleteButton).row();
-		
-		//exit game button
-		final ImageButton exitButton = GuiUtils.createImageButton("gui/exitIcon", null, "gui/button", null, gameRes.getSkin());
-		exitButton.addListener(new ClickListener() {
-			public void enter (InputEvent event, float x, float y, int pointer, Actor fromActor) {
-				toolTip.show("Exit menu");
-			}
-			public void exit (InputEvent event, float x, float y, int pointer, Actor fromActor) {
-				toolTip.hide();
-			}
-			public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-				EditorMenu menu = (EditorMenu) gameRes.getStage().getRoot().findActor("editorMenu");
-				menu.show();
-				return true;
-			}
-		});
-		add(exitButton);
+		tables.put("main", createMainPanel(gameRes));
+		tables.put("objects", new ObjectPanel(gameRes, this));
+
+		add(tables.get("main"));
 		
 		Viewport view = gameRes.getStage().getViewport();
 		stageWidth = (int) view.getScreenWidth();
@@ -100,38 +54,72 @@ public class MapEditorPanel extends Table{
 		}
 		super.act(delta);
 	}
-
-	private void createButton(String icon, final String tooltip, final String menuName, final GameServices gameRes){
-		final ImageButton b = GuiUtils.createImageButton("gui/" +icon, null, "gui/button", null, gameRes.getSkin());
+	
+	//default table
+	private Table createMainPanel(final GameServices gameRes){
+		Table t = new Table();
+		t.setWidth(38);
+		t.setHeight(6 * 36);
+		t.defaults().center().width(30).height(30).pad(2);
+		
+		final AiEditorWindow aiWin = new AiEditorWindow(gameRes);
 		final ToolTip toolTip = (ToolTip)(gameRes.getStage().getRoot().findActor("tooltip"));
 		
-		b.addListener(new ClickListener() {
+		ImageButton aiButton = GuiUtils.createImageButton("gui/iconImportant", null, "gui/button", null, gameRes.getSkin());
+		aiButton.addListener(new ClickListener() {
 			public void enter (InputEvent event, float x, float y, int pointer, Actor fromActor) {
-				toolTip.show(tooltip);
+				toolTip.show("Ai editor");
 			}
 			public void exit (InputEvent event, float x, float y, int pointer, Actor fromActor) {
 				toolTip.hide();
 			}
-			@Override
 			public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-				Table t = objectMenus.getTable(menuName);
-				if(objectMenus.isVisible()){
-					if(objectMenus.getCurrentTable() == t){
-						objectMenus.hideWindow();
-					}else{
-						objectMenus.setCurrentTable(t);
-						objectMenus.getTitle().setText(tooltip);
-					}
-				}else{
-					objectMenus.setCurrentTable(t);
-					objectMenus.getTitle().setText(tooltip);
-					Viewport view = gameRes.getStage().getViewport();
-					objectMenus.showWindow(view.getScreenX() + view.getScreenWidth() - getWidth() - objectMenus.getWidth() - 2, getY());
-				}
+				Viewport view = gameRes.getStage().getViewport();
+				aiWin.showWindow((view.getScreenX() + view.getScreenWidth() / 2) - aiWin.getWidth() / 2,
+						(view.getScreenY() + view.getScreenHeight() / 2) - aiWin.getHeight() / 2);
+				Gdx.app.log("editorPanel: ", "w: "+ getWidth());
 				return true;
 			}
 		});
-		add(b).row();
+		t.add(aiButton).row();
+		
+		ImageButton objectsButton = GuiUtils.createImageButton("gui/toolbox", null, "gui/button", null, gameRes.getSkin());
+		objectsButton.addListener(new ClickListener() {
+			public void enter (InputEvent event, float x, float y, int pointer, Actor fromActor) {
+				toolTip.show("Objects menu");
+			}
+			public void exit (InputEvent event, float x, float y, int pointer, Actor fromActor) {
+				toolTip.hide();
+			}
+			public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+				setChildTable("objects");
+				return true;
+			}
+		});
+		t.add(objectsButton).row();
+		
+		//exit game button
+		ImageButton exitButton = GuiUtils.createImageButton("gui/exitIcon", null, "gui/button", null, gameRes.getSkin());
+		exitButton.addListener(new ClickListener() {
+			public void enter (InputEvent event, float x, float y, int pointer, Actor fromActor) {
+				toolTip.show("Exit menu");
+			}
+			public void exit (InputEvent event, float x, float y, int pointer, Actor fromActor) {
+				toolTip.hide();
+			}
+			public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+				EditorMenu menu = (EditorMenu) gameRes.getStage().getRoot().findActor("editorMenu");
+				menu.show();
+				return true;
+			}
+		});
+		t.add(exitButton);
+		
+		return t;
 	}
 	
+	public void setChildTable(String tableName){
+		clearChildren();
+		add(tables.get(tableName));
+	}
 }

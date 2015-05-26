@@ -1,15 +1,14 @@
 package com.ado.trader.items;
 
 import com.ado.trader.entities.components.Name;
-import com.ado.trader.entities.components.Position;
 import com.ado.trader.entities.components.SpriteComp;
+import com.ado.trader.map.Chunk;
 import com.ado.trader.utils.GameServices;
 import com.artemis.Archetype;
 import com.artemis.ArchetypeBuilder;
 import com.artemis.ComponentMapper;
 import com.artemis.Entity;
 import com.artemis.World;
-import com.artemis.annotations.Wire;
 import com.artemis.managers.GroupManager;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -18,14 +17,13 @@ import com.badlogic.gdx.utils.ArrayMap;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
 
-@Wire
 public class ItemFactory {
 	static ComponentMapper<Name> nameMap;
 	static ComponentMapper<SpriteComp> spriteMap;
-	static ComponentMapper<Position> positionMap;
 	static ComponentMapper<Value> valueMap;
 	static ComponentMapper<Food> foodMap;
 	static ComponentMapper<Tool> toolMap;
+	static ComponentMapper<Description> descMap;
 	
 	static GroupManager groupManager;
 	
@@ -42,6 +40,14 @@ public class ItemFactory {
 		
 		world  = gameRes.getWorld();
 		
+		nameMap = world.getMapper(Name.class);
+		spriteMap = world.getMapper(SpriteComp.class);
+		valueMap = world.getMapper(Value.class);
+		foodMap = world.getMapper(Food.class);
+		toolMap = world.getMapper(Tool.class);
+		descMap = world.getMapper(Description.class);
+		groupManager = world.getManager(GroupManager.class);
+		
 		init(filePath, gameRes.getAtlas());
 	}
 	
@@ -53,7 +59,6 @@ public class ItemFactory {
 		for(JsonValue i = file.child; i != null; i = i.next){
 			
 			ArchetypeBuilder item = new ArchetypeBuilder();
-			item.add(Position.class);
 
 			for(JsonValue d = i.child; d != null; d = d.next){
 				switch(d.name){
@@ -81,6 +86,9 @@ public class ItemFactory {
 //					addFarmProfile(farmProfiles, template.get("id"), template.get(key));
 					item.add(Farmable.class);
 					break;
+				case "desc":
+					item.add(Description.class);
+					break;	
 				}
 			}
 			itemProfiles.put(i.getString("name"), item.build(world));
@@ -97,6 +105,7 @@ public class ItemFactory {
 			switch(d.name){
 			case "name":
 				nameMap.get(i).setName(d.asString());
+				break;
 			case "value":
 				valueMap.get(i).value = d.asInt();
 				break;
@@ -106,9 +115,23 @@ public class ItemFactory {
 			case "tool":
 				toolMap.get(i).init(d.asInt());
 				break;
+			case "desc":
+				descMap.get(i).description = d.asString();
+				break;
 			}
 		}
 		return i;
+	}
+	
+	public static void deleteItem(Chunk chunk, int tileX, int tileY, String name){
+		for(int c = 0; c < chunk.getItems().map[tileX][tileY].length; c++){
+			Entity e = world.getEntity(chunk.getItems().map[tileX][tileY][c]);
+			if(nameMap.get(e).getName().matches(name)){
+				chunk.getItems().map[tileX][tileY][c] = null;
+			}
+			e.deleteFromWorld();
+		}
+		
 	}
 	
 	private void addFarmProfile(ArrayMap<String, ArrayMap<String, Integer>> farmProfiles, String id, String values){
@@ -123,7 +146,7 @@ public class ItemFactory {
 	
 	private void createSprite(String itemName, String spriteName, TextureAtlas atlas){
 		Sprite sprite = atlas.createSprite(spriteName);
-		sprite.scale(1f);
+		sprite.scale(1);
 		itemSprites.put(itemName, sprite);
 	}
 	public static ArrayMap<String, JsonValue> getItemData() {

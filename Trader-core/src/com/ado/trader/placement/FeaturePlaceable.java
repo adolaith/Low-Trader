@@ -1,13 +1,11 @@
 package com.ado.trader.placement;
 
-import com.ado.trader.entities.EntityFactory;
 import com.ado.trader.entities.EntityFeatures;
 import com.ado.trader.input.InputHandler;
+import com.ado.trader.map.Chunk;
 import com.ado.trader.utils.GameServices;
 import com.ado.trader.utils.IsoUtils;
 import com.artemis.Entity;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
@@ -24,39 +22,33 @@ public class FeaturePlaceable extends Placeable {
 	}
 	
 	@Override
-	void place(int x, int y) {
+	void place(int mapX, int mapY) {
+		Chunk c = map.getChunk(mapX, mapY);
+		Vector2 tile = map.worldVecToTile(mapX, mapY);
+		
 		String decorates = features.getFeature(featureName).get("decorates").asString();
 		switch(decorates){
 		case "wall":
-			if(!map.getWallLayer().isOccupied(x, y, map.currentLayer)){
+			if(!c.getWalls().isOccupied((int)tile.x, (int)tile.y)){
 				//Invalid placement. Wall decoration only
 				return;
 			}
-			Entity w = map.getWorld().getEntity(map.getWallLayer().map[x][y][map.currentLayer]);
+			Entity w = map.getWorld().getEntity(c.getWalls().map[(int)tile.x][(int)tile.y]);
 			features.applyFeature(w, featureName, spriteIndex);
 			break;
 		}
 	}
 
-	@Override
-	void remove(int x, int y) {
-		if(!delete){return;}
-		if(map.getWallLayer().isOccupied(x, y, map.currentLayer)){
-			EntityFactory.deleteEntity(x,y, map.currentLayer, map.getWallLayer());
-		}
-		if(!Gdx.input.isKeyPressed(Keys.SHIFT_LEFT)){
-			delete^=delete;
-		}
-	}
-	
 	public void rotateSelection(){
 		Sprite[] sprites = entityRenderer.getSprites().get(featureName);
 		
-		if(spriteIndex == sprites.length){
-			spriteIndex = 0;
-		}else{
-			spriteIndex++;
+		if(spriteIndex <= sprites.length){
+			if(sprites[spriteIndex + 1] != null){
+				spriteIndex++;
+				return;
+			}
 		}
+		spriteIndex = 0;
 	}
 	
 	public void renderPreview(SpriteBatch batch){
@@ -78,7 +70,14 @@ public class FeaturePlaceable extends Placeable {
 	@Override
 	void dragPlace(Vector2 start, Vector2 widthHeight) {
 	}
+	
 	public EntityFeatures getFeatures(){
 		return features;
+	}
+
+	@Override
+	void clearSettings() {
+		featureName = null;
+		spriteIndex = 0;
 	}
 }

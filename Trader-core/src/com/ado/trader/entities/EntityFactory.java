@@ -9,16 +9,16 @@ import com.ado.trader.entities.components.Movement;
 import com.ado.trader.entities.components.Name;
 import com.ado.trader.entities.components.Position;
 import com.ado.trader.entities.components.SpriteComp;
-import com.ado.trader.map.IntMapLayer;
+import com.ado.trader.map.Chunk;
 import com.ado.trader.map.Map;
 import com.ado.trader.systems.AiSystem;
 import com.ado.trader.utils.GameServices;
 import com.artemis.Archetype;
 import com.artemis.ComponentMapper;
 import com.artemis.Entity;
-import com.artemis.annotations.Wire;
 import com.artemis.managers.GroupManager;
 import com.artemis.managers.TagManager;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ArrayMap;
@@ -28,7 +28,6 @@ import com.esotericsoftware.spine.Skeleton;
 import com.esotericsoftware.spine.SkeletonData;
 
 //Contains entity templates and creates entities.
-@Wire
 public class EntityFactory{
 	static ComponentMapper<Name> nameMap;
 	static ComponentMapper<SpriteComp> spriteMap;
@@ -55,12 +54,27 @@ public class EntityFactory{
 		entityArchetypes = new ArrayMap<String, Archetype>();
 		entityData = new ArrayMap<String, JsonValue>();
 		animationPool = new ArrayMap<String, AnimationStateData>();
+		
+		nameMap = gameRes.getWorld().getMapper(Name.class);
+		spriteMap = gameRes.getWorld().getMapper(SpriteComp.class);
+		animMap = gameRes.getWorld().getMapper(Animation.class);
+		aiMap = gameRes.getWorld().getMapper(AiProfile.class);
+		areaMap = gameRes.getWorld().getMapper(Area.class);
+		inventoryMap = gameRes.getWorld().getMapper(Inventory.class);
+		movementMap = gameRes.getWorld().getMapper(Movement.class);
+		attributeMap = gameRes.getWorld().getMapper(AttributeTable.class);
+		positionMap = gameRes.getWorld().getMapper(Position.class);
+		
+		tagManager = gameRes.getWorld().getManager(TagManager.class);
+		groupManager = gameRes.getWorld().getManager(GroupManager.class);
+		
 
 		loader = new EntityLoader(map.getWorld());
 		loader.loadEntityArchetypes(gameRes.getAtlas(), this, 
 				gameRes.getRenderer().getRenderEntitySystem());
 		
 		skeletons = loader.loadSpineData(gameRes.getAtlas(), this);
+		
 	}
 
 	//Creates entity from archetype and configures it
@@ -75,7 +89,9 @@ public class EntityFactory{
 			case "animation":
 				Skeleton skel = new Skeleton(skeletons.get(d.asString()));
 				skel.setToSetupPose();
+				
 				Animation a = animMap.get(entity);
+				
 				a.skeleton = skel;
 				a.setAnimationData(animationPool.get(d.asString()));
 				a.setTileSize(map.getTileWidth(), map.getTileHeight());
@@ -120,19 +136,27 @@ public class EntityFactory{
 		
 		return e;
 	}
-	public static void deleteEntity(int x, int y, int h, IntMapLayer layer){
-		if(layer.isOccupied(x,y,h)){
-			Entity e = map.getWorld().getEntity(layer.map[x][y][h]);
+	public static void deleteWall(Chunk chunk, int tileX, int tileY){
+		Entity e = map.getWorld().getEntity(chunk.getWalls().map[tileX][tileY]);
 
-			Position p = positionMap.get(e);
-			layer.deleteFromMap(p.getX(),p.getY(),h);
-			
-			if(areaMap.has(e)){
-				for(Vector2 vec: areaMap.get(e).area){
-					layer.deleteFromMap((int)(p.getX()+vec.x),(int)(p.getY()+vec.y),h);
-				}
-			}
-			e.edit().deleteEntity();
+		chunk.getWalls().map[tileX][tileY] = null;
+		
+		e.deleteFromWorld();
+	}
+	public static void deleteEntity(Chunk chunk, int tileX, int tileY, String name){
+		for(int c = 0; c < chunk.getEntities().map[tileX][tileY].length; c++){
+			Entity e = map.getWorld().getEntity(chunk.getEntities().map[tileX][tileY][c]);
+//			if(nameMap.get(e).getName().matches(name)){
+//
+//				chunk.getEntities().map[tileX][tileY][c] = null;
+//
+//				if(areaMap.has(e)){
+//					for(Vector2 vec: areaMap.get(e).area){
+//						chunk.getEntities().map[(int)(tileX + vec.x)][(int)(tileY + vec.y)][c] = null;
+//					}
+//				}
+//				e.deleteFromWorld();
+//			}
 		}
 	}
 	public ArrayMap<String, JsonValue> getEntityData(){

@@ -10,7 +10,7 @@ import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.utils.Align;
+import com.badlogic.gdx.utils.Align;
 
 public class ToolTip extends Actor{
 	final int delay = 1; //sec
@@ -38,6 +38,7 @@ public class ToolTip extends Actor{
 		//if quickly moving between actors using TT, hide TT
 		if(label.isVisible() && label.getColor().a < 1){
 			label.setVisible(false);
+			label.setColor(label.getColor().r, label.getColor().g, label.getColor().b, 1);
 			label.clearActions();
 		}
 		if(started == true) return;

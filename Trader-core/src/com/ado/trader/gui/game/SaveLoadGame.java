@@ -14,11 +14,9 @@ import com.badlogic.gdx.utils.Array;
 public class SaveLoadGame extends SaveLoadMenu {
 
 	public SaveLoadGame(final GameServices gameRes) {
-		super(gameRes);
+		super(gameRes, "adoGame/saves/");
 		setName("saveMenu");
 		
-		filePath = "adoGame/saves/";
-
 		final ToolTip toolTip = (ToolTip)(gameRes.getStage().getRoot().findActor("tooltip"));
 
 		save.addListener(new ClickListener() {
@@ -29,14 +27,14 @@ public class SaveLoadGame extends SaveLoadMenu {
 				toolTip.hide();
 			}
 			public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-				FileHandle file = Gdx.files.external(filePath + field.getText());
+				FileHandle file = Gdx.files.external(externalPath + field.getText());
 				if(file.exists()){
 					//over write existing save?
 					OverwriteDialog dialog = (OverwriteDialog) gameRes.getStage().getRoot().findActor("overWrite");
 					dialog.showWindow(background.getX(), background.getY());
 					dialog.toFront();
 				}else{
-					gameRes.getMap().saveGameState(filePath+field.getText());
+					gameRes.getMap().saveGameState(externalPath+field.getText());
 					Gdx.app.log("SaveGame: ", "Game SAVED!");
 				}
 				populateList();
@@ -53,7 +51,7 @@ public class SaveLoadGame extends SaveLoadMenu {
 			}
 			public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
 				if(folderList.getSelected() != null){
-					FileHandle file = Gdx.files.external(filePath + folderList.getSelected());
+					FileHandle file = Gdx.files.external(externalPath + folderList.getSelected());
 					file.deleteDirectory();
 					populateList();
 				}
@@ -69,9 +67,9 @@ public class SaveLoadGame extends SaveLoadMenu {
 				toolTip.hide();
 			}
 			public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-				FileHandle file = Gdx.files.external(filePath + folderList.getSelected());
+				FileHandle file = Gdx.files.external(externalPath + folderList.getSelected());
 				if(file.exists()){
-					GameScreen.getGame().setScreen(new GameScreen(GameScreen.getGame(), filePath + folderList.getSelected()));
+					GameScreen.getGame().setScreen(new GameScreen(GameScreen.getGame(), externalPath + folderList.getSelected()));
 				}
 				return true;
 			}
@@ -85,7 +83,7 @@ public class SaveLoadGame extends SaveLoadMenu {
 	}
 	
 	private void populateList(){
-		FileHandle file = Gdx.files.external(filePath);
+		FileHandle file = Gdx.files.external(externalPath);
 		if(file.exists() && file.isDirectory()){
 			Array<String> arr = new Array<String>();
 			for(FileHandle f: file.list()){

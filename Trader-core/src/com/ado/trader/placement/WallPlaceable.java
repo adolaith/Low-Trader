@@ -4,18 +4,19 @@ import com.ado.trader.entities.EntityFactory;
 import com.ado.trader.entities.components.Position;
 import com.ado.trader.entities.components.SpriteComp;
 import com.ado.trader.entities.components.Wall;
+import com.ado.trader.map.Chunk;
 import com.ado.trader.map.Map;
-import com.ado.trader.map.WallLayer;
 import com.ado.trader.rendering.EntityRenderSystem;
 import com.ado.trader.rendering.EntityRenderSystem.Direction;
+import com.artemis.ComponentMapper;
 import com.artemis.Entity;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 
 public class WallPlaceable extends Placeable{
+	ComponentMapper<SpriteComp> spriteMap;
+	ComponentMapper<Wall> wallMap;
 	String entityName;
 	Integer firstSprite, secondSprite;
 	Direction first, second;
@@ -24,11 +25,16 @@ public class WallPlaceable extends Placeable{
 	public WallPlaceable(Map map, EntityFactory entities, EntityRenderSystem entityRenderer) {
 		super(map, entityRenderer);
 		this.entities = entities;
+		
+		spriteMap = map.getWorld().getMapper(SpriteComp.class);
+		wallMap = map.getWorld().getMapper(Wall.class);
 	}
 
-	public void place(int x, int y) {
-		WallLayer wLayer = map.getWallLayer();
-		if(!wLayer.isOccupied(x, y, map.currentLayer)){
+	public void place(int mapX, int mapY) {
+		Chunk c = map.getChunk(mapX, mapY);
+		Vector2 t = map.worldVecToTile(mapX, mapY);
+		
+		if(!c.getWalls().isOccupied((int) t.x, (int) t.y)){
 			Entity e = EntityFactory.createEntity(entityName, firstSprite);
 			Wall w = e.getComponent(Wall.class);
 			
@@ -38,12 +44,14 @@ public class WallPlaceable extends Placeable{
 				e.getComponent(SpriteComp.class).secondSprite = secondSprite;
 				e.getComponent(Wall.class).secondSprite = second;
 			}
-			e.getComponent(Position.class).setPosition(x, y, map.currentLayer);
-			wLayer.map[x][y][map.currentLayer] = e.getId();
+			
+			e.getComponent(Position.class).setPosition(mapX, mapY);
+			c.getWalls().map[(int) t.x][(int) t.y] = e.getId();
+			
 		}else{
-			changeExistingSprite(x, y);
+			changeExistingSprite((int) t.x, (int) t.y, c);
 		}
-		resetDirections();
+		clearSettings();
 	}
 
 	public void dragPlace(Vector2 start, Vector2 widthHeight) {
@@ -51,20 +59,28 @@ public class WallPlaceable extends Placeable{
 			for(int y=(int) start.y;y<widthHeight.y+1; y++){
 				if((x<=widthHeight.x&&y==start.y||y==widthHeight.y)
 						||(y<=widthHeight.y&&x==start.x||x==widthHeight.x)){	//outline check
-					if(!map.getWallLayer().isOccupied(x, y, map.currentLayer)){
-						selectCorrectDirection(x,y,start,widthHeight);
-						place(x, y);
-					}else{
-						changeExistingSprite(x, y);
-					}
+					
+					selectCorrectDirection(x,y,start,widthHeight);
+					place(x, y);
+//					
+//					if(!map.getWallLayer().isOccupied(x, y, map.currentLayer)){
+//						selectCorrectDirection(x,y,start,widthHeight);
+//						place(x, y);
+//					}else{
+//						changeExistingSprite(x, y);
+//					}
 				}
 			}
 		}
 	}
-	private void changeExistingSprite(int x, int y){
-		Entity e = map.getWorld().getEntity(map.getWallLayer().map[x][y][map.currentLayer]);
-		SpriteComp s = e.getComponent(SpriteComp.class);
-		Wall w = e.getComponent(Wall.class);
+	private void changeExistingSprite(int tileX, int tileY, Chunk c){
+		if(c.getWalls().map[tileX][tileX] == null) return;
+		
+		Entity e = map.getWorld().getEntity(c.getWalls().map[tileX][tileX]);
+		
+		SpriteComp s = spriteMap.get(e);
+		Wall w = wallMap.get(e);
+		
 		if(s.secondSprite == null){
 			s.secondSprite = firstSprite;
 			w.secondSprite = first;
@@ -138,15 +154,15 @@ public class WallPlaceable extends Placeable{
 		}
 	}
 	public void remove(int x, int y) {
-		if(!delete){return;}
-		if(map.getWallLayer().isOccupied(x, y, map.currentLayer)){
-			EntityFactory.deleteEntity(x,y, map.currentLayer, map.getWallLayer());
-		}
-		if(!Gdx.input.isKeyPressed(Keys.SHIFT_LEFT)){
-			delete^=delete;
-		}
+//		if(!delete){return;}
+//		if(map.getWallLayer().isOccupied(x, y, map.currentLayer)){
+//			EntityFactory.deleteEntity(x,y, map.currentLayer, map.getWallLayer());
+//		}
+//		if(!Gdx.input.isKeyPressed(Keys.SHIFT_LEFT)){
+//			delete^=delete;
+//		}
 	}
-	public void resetDirections(){
+	public void clearSettings(){
 		first = Direction.SW;
 		firstSprite = 0;
 		second = null;

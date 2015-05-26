@@ -8,6 +8,9 @@ import com.ado.trader.gui.ToolTip;
 import com.ado.trader.gui.editor.MapEditorPanel;
 import com.ado.trader.input.InputHandler;
 import com.ado.trader.input.MapEditorInput;
+import com.ado.trader.map.Chunk;
+import com.ado.trader.map.MapRegion;
+import com.ado.trader.map.TileLayer;
 import com.ado.trader.placement.PlacementManager;
 import com.ado.trader.systems.AnimationSystem;
 import com.ado.trader.systems.SaveSystem;
@@ -15,10 +18,12 @@ import com.ado.trader.utils.FileLogger;
 import com.ado.trader.utils.GameServices;
 import com.artemis.Entity;
 import com.artemis.World;
-import com.artemis.managers.GroupManager;
-import com.artemis.managers.TagManager;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.JsonValue;
 
 public class MapEditorScreen implements Screen {
 	static GameMain game;
@@ -51,7 +56,9 @@ public class MapEditorScreen implements Screen {
 		FileLogger.writeLog("MapEditor: gui elements added");
 		
 		runLogic = true;
+		
 	}
+	
 	public MapEditorScreen(GameMain game, String loadDir){
 		MapEditorScreen.game = game;
 		MapEditorInput input = new MapEditorInput();
@@ -74,8 +81,7 @@ public class MapEditorScreen implements Screen {
 	
 	private void initWorld(){
 		World world = gameServices.getWorld();
-		world.setManager(new TagManager());
-		world.setManager(new GroupManager());
+//		world.setSystem(new AiSystem(gameServices)); //TEST USE
 		world.setSystem(new AnimationSystem());
 		world.setSystem(new SaveSystem(gameServices), true);
 		world.initialize();
@@ -88,15 +94,15 @@ public class MapEditorScreen implements Screen {
 	public static boolean runLogic;
 	@Override
 	public void render(float delta) {
-		//LOGIC
-		if(runLogic){
-			gameServices.getWorld().setDelta(delta);
-			gameServices.getWorld().process();
-			
-		}else{
+		if(!runLogic){
 			//dont move camera or gui :P
 			InputHandler.getVelocity().setZero();
+			
 		}
+		
+		//LOGIC
+		gameServices.getWorld().setDelta(delta);
+		gameServices.getWorld().process();
 		
 		//RENDER
 		gameServices.getCam().translate(InputHandler.getVelocity().x, InputHandler.getVelocity().y);
@@ -112,7 +118,7 @@ public class MapEditorScreen implements Screen {
 
 	@Override
 	public void resize(int width, int height) {
-		gameServices.getStage().getViewport().update(width, height);
+		gameServices.getStage().getViewport().update(width, height, true);
 	}
 
 	@Override

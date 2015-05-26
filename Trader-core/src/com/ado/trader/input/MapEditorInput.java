@@ -14,7 +14,7 @@ public class MapEditorInput extends InputHandler{
 	}
 	
 	public boolean leftClick(int button){
-		if(plManager.handleClick(mapUp, this)){
+		if(plManager.handleClick(mapUp)){
 			return true;
 		}
 		
@@ -49,7 +49,6 @@ public class MapEditorInput extends InputHandler{
 			DEBUG = !DEBUG;
 			break;
 		case Keys.F3:
-			plManager.setEditMode(!plManager.isEditMode());
 			break;
 		default:
 			break;

@@ -36,7 +36,7 @@ public interface TileBasedMap {
 	 * @param h The height layer of the tile to check
 	 * @return True if the location is blocked
 	 */
-	public boolean blocked(Mover mover,int srcX, int srcY, int srcH, int dX, int dY, int dH);
+	public boolean blocked(Mover mover,int srcX, int srcY, int dX, int dY);
 	
 	/**
 	 * Get the cost of moving through the given tile. This can be used to 
@@ -50,7 +50,7 @@ public interface TileBasedMap {
 	 * @param ty The y coordinate of the tile we're moving to
 	 * @return The relative cost of moving across the given tile
 	 */
-	public float getCost(Mover mover, int sx, int sy, int sh, int tx, int ty, int th);
+	public float getCost(Mover mover, int sx, int sy, int tx, int ty);
 	
 	public int getTileWidth();
 	public int getTileHeight();

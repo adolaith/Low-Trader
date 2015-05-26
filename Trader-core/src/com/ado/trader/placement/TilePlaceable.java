@@ -1,102 +1,159 @@
 package com.ado.trader.placement;
 
 import com.ado.trader.input.InputHandler;
+import com.ado.trader.map.Chunk;
 import com.ado.trader.map.Map;
+import com.ado.trader.map.MapRegion;
 import com.ado.trader.map.Tile;
-import com.ado.trader.map.TileOverlay.Mask;
-import com.ado.trader.rendering.EntityRenderSystem;
+import com.ado.trader.map.TileMask;
 import com.ado.trader.utils.IsoUtils;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
-import com.badlogic.gdx.Input.Keys;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.ArrayMap;
+import com.badlogic.gdx.utils.JsonValue;
 
 public class TilePlaceable extends Placeable {
-	Integer tileId;
+	Integer id;
+	public Integer mask;
+	public int dir;
 	
 	public TilePlaceable(Map map) {
-		super(map);
+		super(map, null);
 	}
-	public void place(int x, int y) {
-		Tile[][][] tileMap = map.getTileLayer().map;
-		if(Gdx.input.isKeyPressed(Keys.SHIFT_LEFT)){
-			changeTile(tileMap[x][y][map.currentLayer], tileMap[x][y][map.currentLayer].id, Mask.CENTRE);	
+	
+	@Override
+	void place(int mapX, int mapY) {
+		//create new map region
+		if(map.getRegion(mapX, mapY) == null){
+			createRegion(mapX, mapY);
+		}
+		
+		Chunk c = map.getChunk(mapX, mapY);
+		//create new region chunk
+		if(c == null){
+			c = createChunk(mapX, mapY);
+		}
+		
+		Vector2 tile = map.worldVecToTile(mapX, mapY);
+		TileMask m = null;
+		Tile t = c.getTiles().map[(int) tile.x][(int) tile.y];
+		
+		//apply mask only if tile exists
+		if(t != null){
+			if(mask != null){
+				m = new TileMask(c.getTiles().map[(int) tile.x][(int) tile.y].getId(), mask, dir);
+			}
 		}else{
-			changeTile(tileMap[x][y][map.currentLayer], null, null);
+			t = new Tile(id);
+			c.getTiles().map[(int) tile.x][(int) tile.y] = t;
+		}
+
+		changeTile(t, m);
+	}
+	
+	@Override
+	void dragPlace(Vector2 start, Vector2 widthHeight) {
+		for(int x=(int) start.x; x < widthHeight.x + 1; x++){
+			for(int y=(int) start.y; y < widthHeight.y + 1; y++){
+				place(x, y);
+			}
 		}
 	}
-	public void changeTile(Tile t,Integer overlay, Mask mask){
-		ArrayMap<String, String> profile = map.getTilePool().getTileProfile(tileId);
-		t.id = tileId;
-		for(String key: profile.keys()){
-			switch(key){
+	
+	private void createRegion(int mapX, int mapY){
+		Vector2 regVec = map.worldVecToRegion(mapX, mapY);
+		MapRegion r = new MapRegion();
+		map.getRegionMap()[(int) regVec.x][(int) regVec.y] = r;
+	}
+	private Chunk createChunk(int mapX, int mapY){
+		Vector2 cVec = map.worldVecToChunk(mapX, mapY);
+		Chunk c = new Chunk(map.getWorld());
+		MapRegion r = map.getRegion(mapX, mapY);
+		r.setChunk((int) cVec.x, (int) cVec.y, c);
+		
+		return c;
+	}
+	
+	public void changeTile(Tile t, TileMask mask){
+		JsonValue profile = map.getTilePool().getTileProfile(id);
+		t.setId(id);
+		for(JsonValue v = profile.child; v != null; v = v.next){
+			switch(v.name){
 			case "travel":
-				t.travelCost = Integer.valueOf(profile.get(key));
+				t.setTravelCost(v.asInt());
 				break;
 			}
 		}
-		t.mask = mask;
-		t.overlayId = overlay;
+		t.setMask(mask);
 	}
+	
 	public void renderPreview(SpriteBatch batch){
+		Vector2 mousePos = IsoUtils.getColRow((int)InputHandler.getMousePos().x, (int)InputHandler.getMousePos().y, map.getTileWidth(), map.getTileHeight());
+		
+		//button pressed
 		if(Gdx.input.isButtonPressed(Buttons.LEFT) && !InputHandler.getMapClicked().isZero() && !InputHandler.getMousePos().isZero()){
-			Vector2 mousePos = IsoUtils.getColRow((int)InputHandler.getMousePos().x, (int)InputHandler.getMousePos().y, map.getTileWidth(), map.getTileHeight());
 			Vector2 start = new Vector2(Math.min((int)mousePos.x, (int)InputHandler.getMapClicked().x), Math.min((int)mousePos.y, (int)InputHandler.getMapClicked().y));
 			Vector2 widthHeight = new Vector2(Math.max((int)mousePos.x, (int)InputHandler.getMapClicked().x), Math.max((int)mousePos.y, (int)InputHandler.getMapClicked().y));
 			batch.begin();
 			for(int x=(int)start.x;x<=widthHeight.x;x++){
 				for(int y=(int)start.y;y<=widthHeight.y;y++){
 					Vector2 tmp = IsoUtils.getIsoXY(x, y, map.getTileWidth(), map.getTileHeight());
-					batch.draw(map.getTileSprites().get(tileId), tmp.x, tmp.y, map.getTileWidth(), map.getTileHeight() + ( map.getTileHeight()/2 ));
+					batch.draw(map.getTileSprites().get(id), tmp.x, tmp.y, map.getTileWidth(), map.getTileHeight() + ( map.getTileHeight()/2 ));
+					
+					drawMask(batch, new Vector2(x,y), tmp);
 				}
 			}
 			batch.end();
-		}
-	}
-	public void dragPlace(Vector2 start, Vector2 widthHeight) {
-		Tile[][][] tileMap = map.getTileLayer().map;
-		if(Gdx.input.isKeyPressed(Keys.SHIFT_LEFT)){
-			setTransitionTiles(start, widthHeight, tileMap);
 		}else{
-			for(int x=(int) start.x;x<widthHeight.x+1; x++){
-				for(int y=(int) start.y;y<widthHeight.y+1; y++){
-					changeTile(tileMap[x][y][map.currentLayer], null, null);
+		//preview
+			batch.begin();
+			Vector2 tmp = IsoUtils.getIsoXY((int) mousePos.x, (int) mousePos.y, map.getTileWidth(), map.getTileHeight());
+			
+			batch.draw(map.getTileSprites().get(id), tmp.x, tmp.y, map.getTileWidth(), map.getTileHeight() + ( map.getTileHeight()/2 ));
+			
+			drawMask(batch, mousePos, tmp);
+			
+			batch.end();
+		}
+	}
+	private void drawMask(SpriteBatch batch, Vector2 mousePos, Vector2 mouseIso){
+		if(mask != null){
+			Chunk c = map.getChunk((int) mousePos.x, (int) mousePos.y);
+			if(c != null){
+				Vector2 tile = map.worldVecToTile((int) mousePos.x, (int) mousePos.y);
+				Tile t = c.getTiles().map[(int) tile.x][(int) tile.y];
+				if(t != null){
+					map.getTileMasks().drawMask(batch, mouseIso.x, mouseIso.y, mask, dir);
+					map.getTileMasks().drawOverlay(batch, mouseIso.x, mouseIso.y, map.getTileSprites().get(t.getId()));
 				}
 			}
 		}
 	}
-	private void setTransitionTiles(Vector2 start, Vector2 widthHeight, Tile[][][] tileMap){
-		for(int x=(int) start.x;x<widthHeight.x+1; x++){
-			for(int y=(int) start.y;y<widthHeight.y+1; y++){
-				if(x==start.x&&y==start.y){		//s
-					changeTile(tileMap[x][y][map.currentLayer], tileMap[x][y][map.currentLayer].id, Mask.SOUTH);
-				}else if(x==start.x&&y==widthHeight.y){		//w
-					changeTile(tileMap[x][y][map.currentLayer], tileMap[x][y][map.currentLayer].id, Mask.WEST);
-				}else if(x==widthHeight.x&&y==widthHeight.y){		//n
-					changeTile(tileMap[x][y][map.currentLayer], tileMap[x][y][map.currentLayer].id, Mask.NORTH);
-				}else if(x==widthHeight.x&&y==start.y){		//e
-					changeTile(tileMap[x][y][map.currentLayer], tileMap[x][y][map.currentLayer].id, Mask.EAST);
-				}else if(x<=widthHeight.x&&y==start.y){		//se
-					changeTile(tileMap[x][y][map.currentLayer], tileMap[x][y][map.currentLayer].id, Mask.SE);
-				}else if(x<=widthHeight.x&&y==widthHeight.y){		//nw
-					changeTile(tileMap[x][y][map.currentLayer], tileMap[x][y][map.currentLayer].id, Mask.NW);
-				}else if(y<=widthHeight.y&&x==start.x){				//sw
-					changeTile(tileMap[x][y][map.currentLayer], tileMap[x][y][map.currentLayer].id, Mask.SW);
-				}else if(y<=widthHeight.y&&x==widthHeight.x){		//ne
-					changeTile(tileMap[x][y][map.currentLayer], tileMap[x][y][map.currentLayer].id, Mask.NE);
-				}else{
-					changeTile(tileMap[x][y][map.currentLayer], null, null);
-				}
-			}
-		}
-	}
-	public void remove(int x, int y) {
-	}
+	
 	@Override
-	void rotateSelection(EntityRenderSystem entityRenderer) {
-		// TODO Auto-generated method stub
+	void rotateSelection() {
+		Sprite[][] sprites = map.getTileMasks().getMaskSprites();
 		
+		if(mask != null){
+			if(dir + 1 < sprites[mask].length){
+				if(sprites[mask][dir + 1] != null){
+					dir++;
+				}else{
+					dir = 0;
+				}
+				
+			}else{
+				dir = 0;
+			}
+		}
+	}
+	
+	@Override
+	void clearSettings() {
+		id = null;
+		mask = null;
+		dir = 0;
 	}
 }

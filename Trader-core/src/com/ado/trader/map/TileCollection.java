@@ -1,33 +1,27 @@
 package com.ado.trader.map;
 
-import java.io.IOException;
-
-import com.ado.trader.utils.FileParser;
-import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.ArrayMap;
+import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.JsonValue;
 
 //Contains tile templates and basic tile pooling
 public class TileCollection {
-	ArrayMap<Integer, ArrayMap<String,String>> tileProfiles;
+	ArrayMap<Integer, JsonValue> tileProfiles;
 
-	public TileCollection(FileParser p) {
-		try {
-			loadTiles("data/tiles", p);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+	public TileCollection() {
+		loadTiles("data/tiles");
 	}
 	
-	public void loadTiles(String fileName, FileParser p) throws IOException{
-		tileProfiles = new ArrayMap<Integer, ArrayMap<String,String>>();
-		p.initParser(fileName, false, false);
+	public void loadTiles(String fileName){
+		tileProfiles = new ArrayMap<Integer, JsonValue>();
 		
-		Array<ArrayMap<String, String>> array = p.readFile();
+		Json j = new Json();
+		JsonValue l = j.fromJson(null, Gdx.files.internal(fileName));
+		l = l.child;
 		
-		for(ArrayMap<String, String> tile: array){
-			int id = Integer.valueOf(tile.get("id"));
-			tile.removeKey("id");
-			tileProfiles.put(id, tile);
+		for(JsonValue v = l.child(); v != null; v = v.next){
+			tileProfiles.put(v.getInt("id"), v);
 		}
 	}
 	
@@ -37,28 +31,23 @@ public class TileCollection {
 	}
 	
 	//Takes entityName, gets entityProfile from master collection and creates entity accordingly
-	public Tile createTile(int index, int x, int y, int h){
-		ArrayMap<String, String> profile = tileProfiles.get(index);
-		Tile t = new Tile();
-		for(String key: profile.keys()){
-			switch(key){
+	public Tile createTile(int index){
+		JsonValue profile = tileProfiles.get(index);
+		Tile t = new Tile(index);
+		for(JsonValue v = profile.child(); v != null; v = v.next){
+			switch(v.name){
 			//sets travel cost
 			case "travel":
-				t.travelCost = Integer.valueOf(profile.get(key));
-				break;
-			case "dmg":
-				t.dmg = Integer.valueOf(profile.get(key));
+				t.travelCost = v.asInt();
 				break;
 			}
 		}
-		t.id = index;
-		t.setPosition(x, y, h);
 		return t;
 	}
-	public ArrayMap<Integer, ArrayMap<String, String>> getTileProfiles() {
+	public ArrayMap<Integer, JsonValue> getTileProfiles() {
 		return tileProfiles;
 	}
-	public ArrayMap<String, String> getTileProfile(int id){
+	public JsonValue getTileProfile(int id){
 		return tileProfiles.get(id);
 	}
 }

@@ -1,7 +1,6 @@
 package com.ado.trader.input;
 
 import com.ado.trader.map.Map;
-import com.ado.trader.map.Tile;
 import com.ado.trader.utils.IsoUtils;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
@@ -182,10 +181,11 @@ public class InputHandler implements InputProcessor{
 	}
 	public void renderTileHighlight(SpriteBatch batch){
 		Vector2 mapPos = IsoUtils.getColRow((int)mousePosVec2.x, (int)mousePosVec2.y, map.getTileWidth(), map.getTileHeight());
-		if(mapPos.x<0||mapPos.y<0||mapPos.x>=map.getWidthInTiles()||mapPos.y>=map.getHeightInTiles()){return;}
-		
-		Tile t = map.getTileLayer().map[(int)mapPos.x][(int)mapPos.y][map.currentLayer];
-		mapPos = IsoUtils.getIsoXY((int)t.getX(), (int)t.getY(), map.getTileWidth(), map.getTileHeight());
+		if(mapPos.x<0||mapPos.y<0||mapPos.x>=map.getWidthInTiles()||mapPos.y>=map.getHeightInTiles()){
+			return;
+		}
+				
+		mapPos = IsoUtils.getIsoXY((int) mapPos.x, (int) mapPos.y, map.getTileWidth(), map.getTileHeight());
 		batch.begin();
 		batch.draw(highlight, (int)mapPos.x, (int)mapPos.y,highlight.getWidth()*highlight.getScaleX(),highlight.getHeight()*highlight.getScaleY());	
 		batch.end();

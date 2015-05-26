@@ -1,38 +1,27 @@
 package com.ado.trader.entities.components;
 
-import com.ado.trader.utils.IsoUtils;
 import com.artemis.Component;
 import com.badlogic.gdx.math.Vector2;
 
 public class Position extends Component {
-	int x,y, h;
-	Vector2 isoPosition;
-	int width, height;
+	int mapX, mapY;
+	Vector2 isoOffset;
 	
 	public Position(){
-		
+		isoOffset = new Vector2();
 	}
-	public Position(int width, int height){
-		this.width =width;
-		this.height=height;
-		isoPosition = new Vector2();
+	
+	public void setPosition(int mapX, int mapY){
+		this.mapX = mapX;
+		this.mapY = mapY;
 	}
-	public void setPosition(int x, int y, int h){
-		this.x =x;
-		this.y =y;
-		this.h = h;
-		isoPosition = IsoUtils.getIsoXY(x, y, width, height);
+	public int getMapX() {
+		return mapX;
 	}
-	public int getX() {
-		return x;
+	public int getMapY() {
+		return mapY;
 	}
-	public int getY() {
-		return y;
-	}
-	public int getHeightLayer(){
-		return h;
-	}
-	public Vector2 getIsoPosition() {
-		return isoPosition;
+	public Vector2 getIsoOffset() {
+		return isoOffset;
 	}
 }

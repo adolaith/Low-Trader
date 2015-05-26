@@ -18,14 +18,11 @@ public class PlacementManager {
 	FeaturePlaceable featurePl;
 	ItemPlaceable itemPl;
 	
-	boolean editMode;
 	InputHandler input;
 	EntityFactory entities;
 
 	public PlacementManager(GameServices gameRes) {
-		editMode = true;
 		placementSelection=null;
-		editMode = true;
 		
 		this.entities = gameRes.getEntities();
 		
@@ -42,11 +39,13 @@ public class PlacementManager {
 		itemPl = new ItemPlaceable(gameRes.getMap());
 	}
 	
-	public boolean handleClick(Vector2 mapUp, InputHandler input){
-		if(placementSelection==null || !editMode){return false;}
+	public boolean handleClick(Vector2 mapUp){
+		if(placementSelection == null){
+			return false;
+		}
 
 		//mouse was dragged
-		if(mapUp.x!=InputHandler.mapClicked.x&&mapUp.y!=InputHandler.mapClicked.y){
+		if(mapUp.x != InputHandler.mapClicked.x && mapUp.y != InputHandler.mapClicked.y){
 			//get smallest x,y
 			Vector2 start = new Vector2(Math.min((int)mapUp.x, (int)InputHandler.getMapClicked().x), 
 					Math.min((int)mapUp.y, (int)InputHandler.getMapClicked().y));
@@ -54,29 +53,15 @@ public class PlacementManager {
 			Vector2 widthHeight = new Vector2(Math.max((int)mapUp.x, (int)InputHandler.getMapClicked().x), 
 					Math.max((int)mapUp.y, (int)InputHandler.getMapClicked().y));
 			
-			//delete area
-			if(placementSelection.delete){
-				for(int x = (int) start.x; x <= widthHeight.x; x++){
-					for(int y = (int) start.y; y <= widthHeight.y; y++){
-						placementSelection.remove(x, y);
-					}
-				}
-				placementSelection.delete = false;
-			//run area placement
-			}else{
-				placementSelection.dragPlace(start, widthHeight);	
-			}
-		//single tile delete
-		}else if(placementSelection.delete){
-			placementSelection.remove((int)mapUp.x, (int)mapUp.y);
+			placementSelection.dragPlace(start, widthHeight);
+			
 		//single tile placement
 		}else{
 			placementSelection.place((int)mapUp.x, (int)mapUp.y);
 		}
-		//not holding shit when placing clears currently selected placement type after placement
+		//clear settings after placement
 		if(!Gdx.input.isKeyPressed(Keys.SHIFT_LEFT)){
-			if(placementSelection == wallPl)wallPl.resetDirections();
-			placementSelection.delete = false;
+			placementSelection.clearSettings();
 			placementSelection = null;
 		}
 		return true;
@@ -116,7 +101,7 @@ public class PlacementManager {
 		switch(type){
 		case "tile":
 			placementSelection = tilePl;
-			tilePl.tileId = id;
+			tilePl.id = id;
 			break;
 		}
 	}
@@ -141,15 +126,10 @@ public class PlacementManager {
 		return featurePl;
 	}
 	public void resetSelection(){
+		placementSelection.clearSettings();
 		placementSelection = null;
 	}
 	public Placeable getPlacementSelection() {
 		return placementSelection;
-	}
-	public boolean isEditMode() {
-		return editMode;
-	}
-	public void setEditMode(boolean editMode) {
-		this.editMode = editMode;
 	}
 }

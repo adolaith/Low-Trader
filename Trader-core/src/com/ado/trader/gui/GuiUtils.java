@@ -1,9 +1,11 @@
 package com.ado.trader.gui;
 
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
+import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Button.ButtonStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton.ImageButtonStyle;
+import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane.ScrollPaneStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 
@@ -63,5 +65,18 @@ public class GuiUtils {
 		imgStyle.pressedOffsetX = imgStyle.unpressedOffsetX + 1f;
 		imgStyle.pressedOffsetY = -1f;
 		return imgStyle;
+	}
+	public static ScrollPane createScrollTable(Skin skin){
+		ScrollPaneStyle spS = new ScrollPaneStyle();
+		spS.vScroll = skin.getDrawable("gui/scrollBar");
+		spS.vScrollKnob = skin.getDrawable("gui/scrollBar");
+		spS.hScroll = skin.getDrawable("gui/scrollBar");
+		spS.hScrollKnob = skin.getDrawable("gui/scrollBar");
+		
+		ScrollPane pane = new ScrollPane(null, spS);
+		pane.setScrollingDisabled(true, false);
+		pane.setScrollBarPositions(false, true);
+		
+		return pane;
 	}
 }

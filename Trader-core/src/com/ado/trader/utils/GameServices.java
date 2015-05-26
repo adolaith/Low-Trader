@@ -5,12 +5,17 @@ import com.ado.trader.input.InputHandler;
 import com.ado.trader.items.ItemFactory;
 import com.ado.trader.map.Map;
 import com.ado.trader.pathfinding.AStarPathFinder;
-import com.ado.trader.rendering.WorldRenderer;
+import com.ado.trader.rendering.Renderer;
 import com.artemis.World;
+import com.artemis.managers.GroupManager;
+import com.artemis.managers.TagManager;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -25,9 +30,8 @@ public class GameServices {
 	
 	World world;
 	Map map;
-	FileParser parser;
 	InputHandler input;
-	WorldRenderer renderer;
+	Renderer renderer;
 	
 	EntityFactory entities;
 	ItemFactory items;
@@ -37,15 +41,22 @@ public class GameServices {
 	public GameServices(int camWidth, int camHeight, InputHandler input, String loadDir){
 		atlas = new TextureAtlas("img/master.pack");
 		
-		this.font = new BitmapFont(Gdx.files.internal("font/white.fnt"), false);
-		font.setScale(2f);
+		Texture texture = new Texture(Gdx.files.internal("font/white.png"), true);
+		texture.setFilter(TextureFilter.Linear, TextureFilter.Linear);
+		
+		this.font = new BitmapFont(Gdx.files.internal("font/white.fnt"), new TextureRegion(texture), false);
+		
+//		this.font = new BitmapFont(Gdx.files.internal("font/white.fnt"), false);
+		font.getData().setScale(0.6f);
+		
 		cam = new OrthographicCamera(camWidth, camHeight);
 		this.skin = new Skin(atlas);
 		
 		this.stage = new Stage(new ExtendViewport(camWidth, camHeight));
 		
 		world = new World();
-		parser = new FileParser();
+		world.setManager(new TagManager());
+		world.setManager(new GroupManager());
 		
 		FileLogger.writeLog("GameServices: basics started");
 		
@@ -63,16 +74,18 @@ public class GameServices {
 		//configure input
 		this.input.addCamera(cam).addMap(map).addStage(stage).addTileHighlight(atlas.createSprite("gui/highlightTile"));
 		
-		renderer = new WorldRenderer(this);
+		renderer = new Renderer(this);
 		
 		entities = new EntityFactory(this);
 		
 		FileLogger.writeLog("GameServices: entities loaded");
 		
 		//centre camera on map
-		Vector2 tmp = IsoUtils.getIsoXY(map.getWidthInTiles()/2, map.getHeightInTiles()/2, map.getTileWidth(), map.getTileHeight());
-		renderer.getCamera().position.x = tmp.x;
-		renderer.getCamera().position.y = tmp.y;
+		if(map.getRegionMap()[1][1] != null){
+			Vector2 tmp = IsoUtils.getIsoXY(map.getWidthInTiles()/2, map.getHeightInTiles()/2, map.getTileWidth(), map.getTileHeight());
+			renderer.getCamera().position.x = tmp.x;
+			renderer.getCamera().position.y = tmp.y;
+		}
 
 		pathfinder = new AStarPathFinder(map, 500, false);
 	}
@@ -85,13 +98,10 @@ public class GameServices {
 	public Map getMap() {
 		return map;
 	}
-	public FileParser getParser() {
-		return parser;
-	}
 	public InputHandler getInput() {
 		return input;
 	}
-	public WorldRenderer getRenderer() {
+	public Renderer getRenderer() {
 		return renderer;
 	}
 	public EntityFactory getEntities() {

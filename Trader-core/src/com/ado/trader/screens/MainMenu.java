@@ -1,12 +1,28 @@
 package com.ado.trader.screens;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.Writer;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.util.HashMap;
+import java.util.Map;
+
 import com.ado.trader.GameMain;
 import com.ado.trader.gui.GameOptions;
 import com.ado.trader.gui.LoadGame;
 import com.ado.trader.gui.NewGame;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.GL30;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -20,10 +36,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
-import com.badlogic.gdx.scenes.scene2d.utils.Align;
-import com.badlogic.gdx.utils.Json;
-import com.badlogic.gdx.utils.JsonValue;
-import com.badlogic.gdx.utils.ObjectMap;
+import com.badlogic.gdx.utils.Align;
 
 //old code from a tutorial. Used purely for utility. TO be replaced.
 public class MainMenu implements Screen {
@@ -39,12 +52,76 @@ public class MainMenu implements Screen {
 	
 	public MainMenu(GameMain game){
 		this.game = game;
+		
+		long t = System.nanoTime();
+		try{
+//			FileOutputStream oS = new FileOutputStream(System.getProperty("user.home") + "/adoGame/test.zip");
+//			ZipOutputStream zipOut = new ZipOutputStream(oS);
+			
+			Map<String, String> env = new HashMap<>(); 
+			env.put("create", "true");
+			
+			Path path = Paths.get(System.getProperty("user.home") + "/adoGame/test.zip");
+			
+			URI uri = URI.create("jar:" + path.toUri());
+			try (FileSystem fs = FileSystems.newFileSystem(uri, env))
+			{
+			    Path nf = fs.getPath("new.txt");
+			    try (Writer writer = Files.newBufferedWriter(nf, StandardCharsets.UTF_8, StandardOpenOption.CREATE)) {
+			        writer.write("hello");
+			    }
+			    
+			    nf = fs.getPath("test/vapeTest.txt");
+			    try (Writer writer = Files.newBufferedWriter(nf, StandardCharsets.UTF_8, StandardOpenOption.CREATE)) {
+			        writer.write("hello");
+			    }
+			}
+			
+			
+//			ZipFile zip = new ZipFile(System.getProperty("user.home") + "/adoGame/test.zip");
+//			ZipEntry e = zip.getEntry("test/1234");
+//			
+//			System.out.println("FileName: "+e.getName());
+//			System.out.println("FileSize: "+e.getSize());
+			
+//			Enumeration<? extends ZipEntry> entries = zip.entries();
+//			while (entries.hasMoreElements()) {
+//				ZipEntry entry = entries.nextElement();
+//
+//				String filename = entry.getName();
+//				System.out.println("FileName: "+filename);
+//				System.out.println("FileSize: "+entry.getSize());
+//			}
+		}catch(Exception ex){
+			System.out.println("Zip error! : "+ex);
+		}
+	    System.out.println((System.nanoTime() - t) / 1e9);
+		
+	    
+		//create temp dir
+//		try {
+//			//mk tmp dir
+//			final Path tmpP = Files.createTempDirectory("adoGameTmp");
+//			Gdx.app.log("editorScreen(tmpDir): ", "tmp dir: "+tmpP);
+//			
+//			//get file + path
+//			FileHandle f = Gdx.files.absolute(tmpP.toString() + "/daBuddha");
+//			//write and create file
+//			f.writeString("TEST TEST TEST", true);
+//			Gdx.app.log("editorScreen(tmpDir): ", "tmp file: "+f);
+//			
+//			
+//		} catch (IOException e) {
+//			Gdx.app.log("editorScreen(tmpDir): ", "error creating tmp dir");
+//			e.printStackTrace();
+//		}
+	    
 	}
 	
 	@Override
 	public void render(float delta) {
 		Gdx.gl.glClearColor(0, 0, 0, 1);
-		Gdx.gl.glClear(GL30.GL_COLOR_BUFFER_BIT);
+		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		
 		stage.act(delta);
 		
@@ -71,7 +148,7 @@ public class MainMenu implements Screen {
 		skin = new Skin();
 		skin.addRegions(atlas);
 		white = new BitmapFont(Gdx.files.internal("font/white.fnt"), false);
-		white.scale(1.6f);
+//		white.setScale(1f);
 		stage = new Stage();
 		options = new GameOptions(white, skin, stage);
 		
@@ -161,19 +238,6 @@ public class MainMenu implements Screen {
 		root.setY(Gdx.graphics.getHeight() / 2);
 		
 		stage.addActor(root);
-		
-//		Json json = new Json();
-//		JsonValue entities = json.fromJson(null, Gdx.files.internal("data/EntityProfiles"));
-//		entities = entities.child();
-//		for(JsonValue e = entities.child; e != null; e = e.next){
-//			for(JsonValue i = e.child; i != null; i = i.next){
-//				if(i.isString()){
-//					Gdx.app.log("MAIN_MENU(JSON_TEST): ", ""+i.asString());
-//				}else if(i.isNumber()){
-//					Gdx.app.log("MAIN_MENU(JSON_TEST): ", ""+i.asInt());
-//				}
-//			}
-//		}
 		
 	}
 

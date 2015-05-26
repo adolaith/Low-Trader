@@ -30,13 +30,26 @@ public class SaveLoadMenu extends Group {
 	protected LabelStyle labelStyle;
 	protected TextField field;
 	protected float width, height;
-	protected String filePath;
+	protected String externalPath, internalPath;
 	protected Button save, load, delete;
 	protected Cell<Button> activeButton;
 
-	public SaveLoadMenu(final GameServices gameRes) {
-		width = gameRes.getStage().getWidth() * 0.25f;
-		height = gameRes.getStage().getHeight() * 0.50f;
+	public SaveLoadMenu(final GameServices gameRes, String externalPath, int width, int height) {
+		this.width = width;
+		this.height = height;
+		this.externalPath = externalPath;
+		
+		init(gameRes);
+	}
+	public SaveLoadMenu(final GameServices gameRes, String externalPath, String internalPath, int width, int height) {
+		this.width = width;
+		this.height = height;
+		this.externalPath = externalPath;
+		this.internalPath = internalPath;
+		
+		init(gameRes);
+	}
+	private void init(final GameServices gameRes){
 		cam = gameRes.getCam();
 		
 		background = new Table();
@@ -48,9 +61,11 @@ public class SaveLoadMenu extends Group {
 		
 		new OverwriteDialog(gameRes, width, height * 0.3f);
 		
+		//bg imgs
 		background.setBackground(gameRes.getSkin().getDrawable("gui/bGround"));
 		background.add(new Image(gameRes.getSkin().getDrawable("gui/fGround"))).pad(4).width(width * 0.95f).height(height * 0.75f).row();
 		
+		//empty list 
 		ListStyle listStyle = new ListStyle();
 		listStyle.font = gameRes.getFont();
 		listStyle.selection = gameRes.getSkin().getDrawable("gui/tooltip");
@@ -64,6 +79,7 @@ public class SaveLoadMenu extends Group {
 			}
 		});
 		
+		//scrollpane with list
 		ScrollPaneStyle spS = new ScrollPaneStyle();
 		spS.vScroll = gameRes.getSkin().getDrawable("gui/scrollBar");
 		spS.vScrollKnob = gameRes.getSkin().getDrawable("gui/scrollBar");
@@ -75,6 +91,7 @@ public class SaveLoadMenu extends Group {
 		
 		functionTable.add(sP).colspan(3).pad(4).width(width * 0.95f).height(height * 0.75f).row();
 		
+		//save name text field
 		TextFieldStyle textStyle = new TextFieldStyle();
 		textStyle.font = gameRes.getFont();
 		textStyle.fontColor = Color.BLACK;
@@ -85,13 +102,16 @@ public class SaveLoadMenu extends Group {
 		functionTable.add(field).padTop(-6).colspan(3).width(width * 0.95f).height(height * 0.1f).row();
 		
 		final ToolTip toolTip = (ToolTip)(gameRes.getStage().getRoot().findActor("tooltip"));
+		
 		//save button
 		labelStyle = new LabelStyle(gameRes.getFont(), Color.WHITE);
 		save = GuiUtils.createButton("gui/button", null, gameRes.getSkin());
 		save.add(new Label("Save",labelStyle));
 		
+		//cell contains either save or load button
 		activeButton = functionTable.add(save).bottom().width(width * 0.2f).height(height * 0.1f);
 		
+		//delete save file
 		delete = GuiUtils.createButton("gui/button", null, gameRes.getSkin());
 		delete.add(new Label("Delete",labelStyle));
 
@@ -113,6 +133,7 @@ public class SaveLoadMenu extends Group {
 		});
 		functionTable.add(b).bottom().width(width * 0.2f).height(height * 0.1f);
 		
+		//load button
 		load = GuiUtils.createButton("gui/button", null, gameRes.getSkin());
 		load.add(new Label("Load",labelStyle));
 		
@@ -161,7 +182,8 @@ public class SaveLoadMenu extends Group {
 			b.add(new Label("Save",labelStyle));
 			b.addListener(new ClickListener() {
 				public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-					gameRes.getMap().saveGameState(filePath+field.getText());
+					gameRes.getMap().saveGameState(externalPath+field.getText());
+					save();
 					hideWindow();
 					return true;
 				}
@@ -179,5 +201,8 @@ public class SaveLoadMenu extends Group {
 			root.add(b);
 		}
 	}
-	
+	public void save(GameServices gameRes){
+	}
+	public void load(){
+	}
 }

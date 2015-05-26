@@ -65,24 +65,29 @@ public class EntityFeatures {
 			//loop node data
 			for(JsonValue d = e.child; d != null; d = d.next){
 				switch(d.name()){
+				
 				case "sprite":
-					String[] s = d.asStringArray();
+					String[] spriteNames = d.asStringArray();
 					Sprite[] featureSprites = new Sprite[4];
-					for(int i = 0; i <= s.length; i += 2){
-						Sprite sprite = atlas.createSprite(s[i]);
+					int x = 0;
+					for(String s: spriteNames){
+						Sprite sprite = atlas.createSprite(s);
 						sprite.scale(1f);
-						featureSprites[i] = sprite;
-						Sprite spriteFlip = atlas.createSprite(s[i]);
-						spriteFlip.scale(1f);
-						featureSprites[i + 1] = spriteFlip;
+						featureSprites[x] = sprite;
+						
+						Sprite spriteFlip = new Sprite(sprite);
+						spriteFlip.flip(true, false);
+						featureSprites[x + 1] = spriteFlip;
+						x += 2;
 					}
 					sprites.put(e.get("name").asString(), featureSprites);
 					break;
+					
 				case "mask":
 					//wall masks dont need flipped sprites. They are positioned according to the parent wall entity's direction and position
 					String[] maskList = d.asStringArray();
 					Sprite[] maskSprites = new Sprite[2];
-					for(int i = 0; i <= maskList.length; i++){
+					for(int i = 0; i < maskList.length; i++){
 						Sprite sprite = atlas.createSprite(maskList[i]);
 						sprite.scale(1f);
 						maskSprites[i] = sprite;

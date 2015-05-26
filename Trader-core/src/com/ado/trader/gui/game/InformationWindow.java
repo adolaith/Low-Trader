@@ -2,7 +2,7 @@ package com.ado.trader.gui.game;
 
 import com.ado.trader.gui.BasicWindow;
 import com.ado.trader.gui.GuiUtils;
-import com.ado.trader.rendering.WorldRenderer;
+import com.ado.trader.rendering.Renderer;
 import com.ado.trader.screens.GameScreen;
 import com.ado.trader.systems.GameTime;
 import com.ado.trader.utils.GameServices;
@@ -16,7 +16,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.utils.Align;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 
 public class InformationWindow extends BasicWindow {
@@ -68,7 +68,7 @@ public class InformationWindow extends BasicWindow {
 		((Label)devInfo.findActor("timeMod")).setText(""+GameScreen.speed);
 		((Label)devInfo.findActor("active")).setText(""+world.getEntityManager().getActiveEntityCount());
 		((Label)devInfo.findActor("logic")).setText(""+GameScreen.updateTime);
-		((Label)devInfo.findActor("render")).setText(""+ WorldRenderer.renderTime);
+		((Label)devInfo.findActor("render")).setText(""+ Renderer.renderTime);
 	}
 	protected void addLabelPair(String text,String valueName, BitmapFont font){
 		LabelStyle ls = new LabelStyle(font, Color.WHITE);

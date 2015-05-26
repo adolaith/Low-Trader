@@ -1,16 +1,8 @@
 package com.ado.trader.systems;
 
-import java.io.BufferedReader;
-import java.io.IOException;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 
-import com.ado.trader.GameMain;
-import com.ado.trader.entities.AiComponents.ResetDecorator;
-import com.ado.trader.entities.AiComponents.base.Parallel;
 import com.ado.trader.entities.AiComponents.base.ParentTaskController;
-import com.ado.trader.entities.AiComponents.base.Selector;
-import com.ado.trader.entities.AiComponents.base.Sequence;
 import com.ado.trader.entities.AiComponents.base.Task;
 import com.ado.trader.entities.components.AiProfile;
 import com.ado.trader.entities.components.Inventory;
@@ -27,6 +19,8 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ArrayMap;
+import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.JsonValue;
 
 //processes an entitys AiProfile and returns a task or ,if task already underway, updates the task
 @Wire
@@ -35,7 +29,7 @@ public class AiSystem extends EntityProcessingSystem{
 	ComponentMapper<Movement> mm;
 	ComponentMapper<Inventory> invenm;
 	ComponentMapper<AiProfile> aim;
-	ArrayMap<String, String[]> profiles;
+	ArrayMap<String, JsonValue> profiles;
 
 	public Entity currentEntity;
 	public GameServices gameRes;
@@ -50,157 +44,112 @@ public class AiSystem extends EntityProcessingSystem{
 
 	//update Ai loop
 	protected void process(Entity e) {
-		currentEntity = e;
-		if(!aim.get(e).getTaskProfile().getControl().started()){
-			Gdx.app.log(GameMain.LOG, "AI started");
-			aim.get(e).getTaskProfile().getControl().safeStart();
-			return;
-		}
-		aim.get(e).getTaskProfile().doTask();
-//		Gdx.app.log(GameMain.LOG, "*********************");
+//		currentEntity = e;
+//		if(!aim.get(e).getTaskProfile().getControl().started()){
+//			Gdx.app.log(GameMain.LOG, "AI started");
+//			aim.get(e).getTaskProfile().getControl().safeStart();
+//			return;
+//		}
+//		aim.get(e).getTaskProfile().doTask();
 	}
+	
 	private void loadAiProfiles(){
 		try {
-			profiles = new ArrayMap<String, String[]>();
-			String[] files = Gdx.files.internal("data/ai/files.txt").readString().split(",");
-
+			profiles = new ArrayMap<String, JsonValue>();
+			Json j = new Json();
+			
+			//internal profiles
+			String[] files = Gdx.files.internal("data/ai/Profiles.txt").readString().split("\n");
 			for(String file: files){
-				FileHandle f = Gdx.files.internal("data/ai/" + file);
-				BufferedReader reader = f.reader(200);
-				String line = reader.readLine();
-				String[] tasks = new String[200];
-				
-				//loop while not end of file
-				for(int x = 0;line != null && !line.matches("null"); x++){
-					line = line.trim();
-					char flag = line.charAt(0); 
-					if(flag != '#'){
-						tasks[x] = line;	
-					}else{
-						x--;
-					}
-					line = reader.readLine();
+				if(!file.isEmpty()){
+					JsonValue p = j.fromJson(null, Gdx.files.internal("data/ai/" + file));
+					profiles.put(file, p.child);
 				}
-				profiles.put(file, tasks);
 			}
-		} catch (IOException e) {
+			
+			//external profiles
+			FileHandle e = Gdx.files.external("adoGame/ai/");
+			
+			for(FileHandle c: e.list()){
+				JsonValue p = j.fromJson(null, Gdx.files.external(c.path()));
+				profiles.put(c.name(), p.child);
+			}
+			
+			
+		} catch (Exception e) {
 			System.out.println("Error loading ai profiles");
 			e.printStackTrace();
 		}
 	}
 	
-	private int taskIndex;
-	
 	public Task getAiProfile(String name){
 		if(!profiles.containsKey(name)) return null;
 		
-		String[] profile = profiles.get(name);
+		JsonValue profile = profiles.get(name);
 		
-		Task root = new Selector(this, "root");
-		root = new ResetDecorator(this, root);
-		
-		taskIndex = 0;
-		while(taskIndex < profile.length){
-			String line = profile[taskIndex];
-			if(line == null){
-				break;
-			}
-			createNewTask(profile, root);
-		}
-		return root;
+		return createProfile(profile, null);
 	}
-	private Task createNewTask(String[] profile, Task task){
-		String line = profile[taskIndex];
-		char flag = line.charAt(0);
-		switch(flag){
-		case '*':
-			if(task == null){
-				return createParentTask(profile, task);
-			}
-			createParentTask(profile, task);
-			break;
-		case '>':
-			taskIndex = taskIndex + 1;
-			
-			Task deco = createNewTask(profile, null);
-			
-			deco = createTask(line, deco);
-			if(task == null){
-				return deco;
-			}
-			((ParentTaskController)task.getControl()).Add(deco);
-			break;
-		case '-':
-			int index = taskIndex;
-			taskIndex = taskIndex + 1;
-			if(task != null){
-				Task t = createTask(profile[index], null);
-				((ParentTaskController)task.getControl()).Add(t);
-			}else{
-				return createTask(profile[index], null);
-			}
-			break;
-		}
-		return null;
-	}
-	private Task createParentTask(String[] profile, Task task){
-		String line = profile[taskIndex];
-		Task parent = null;
+	
+	private Task createProfile(JsonValue task, Task parent){
+		Task t = createTask(task, parent);
 		
-		String[] t = line.substring(1).split(":"); 
+		if(task.has("deco")){
+			for(JsonValue d = task.get("deco").child; d != null; d = d.next){
+				t = createTask(d, t);
+			}
+		}
+		if(task.has("children")){
+			for(JsonValue c = task.get("children").child; c != null; c = c.next){
+				createProfile(c, t);
+			}
+		}
 		
-		switch(t[0]){
-		case "Sequence":
-			parent = new Sequence(this, t[1]);
-			break;
-		case "Selector":
-			parent = new Selector(this, t[1]);
-			break;
-		case "Parallel":
-			parent = new Parallel(this, t[1]);
-			break;
+		if(parent != null){
+			((ParentTaskController)parent.getControl()).Add(t);
 		}
-		taskIndex = taskIndex + 1;
-		while(!profile[taskIndex].substring(0).matches("!")){
-			createNewTask(profile, parent);
-		}
-		taskIndex = taskIndex + 1;
-		if(task != null){
-			((ParentTaskController)task.getControl()).Add(parent);
-			return null;
-		}
-		return parent;
+		
+		return t;
 	}
-	private Task createTask(String taskData, Task task){
+	
+	String pkgPath = "com.ado.trader.entities.AiComponents.";
+	//Creates a task class. parent task is used only for decorations
+	private Task createTask(JsonValue taskData, Task parent){
 		try {
-			String path = "com.ado.trader.entities.AiComponents.";
-			String[] data = taskData.split(":");
-			
-			if(data.length != 1){
-				
+			if(taskData.has("param")){
+				JsonValue params = taskData.get("param");
 				Object[] args;
 				Array<Class> argClasses = new Array<Class>();
 				int index = 0;
-				if(task != null){
-					args = new Object[data[1].split(",").length + 2];
+				
+				//extract params
+				if(parent != null){
+					args = new Object[params.asString().split(",").length + 2];
 					args[0] = this;
-					args[1] = task;
+					args[1] = parent;
 					argClasses.add(AiSystem.class);
 					argClasses.add(Task.class);
 					index = 2;
 				}else{
-					args = new Object[data[1].split(",").length + 1];
+					args = new Object[params.asString().split(",").length + 1];
 					args[0] = this;
 					argClasses.add(AiSystem.class);
 					index = 1;
 				}
-				for(String s: data[1].split(",")){
+
+				for(String s: params.asString().split(",")){
 					args[index] = s;
 					argClasses.add(s.getClass());
 					index++;
 				}
 				
-				Class<? extends Task> taskClass = (Class<? extends Task>) Class.forName(path + data[0].substring(1));
+				//create task class
+				Class<? extends Task> taskClass;
+				if(taskData.has("children")){
+					taskClass = (Class<? extends Task>) Class.forName(pkgPath + "base." + taskData.name);	
+				}else{
+					taskClass = (Class<? extends Task>) Class.forName(pkgPath + taskData.name);
+				}
+				
 				Constructor<? extends Task> constructor = null;
 				
 				//loops all constructors
@@ -215,6 +164,7 @@ public class AiSystem extends EntityProcessingSystem{
 								match = false;
 							}
 						}
+						//load params on match
 						if(match){
 							constructor = (Constructor<? extends Task>) c;
 						}
@@ -222,35 +172,30 @@ public class AiSystem extends EntityProcessingSystem{
 				}
 				return (Task) constructor.newInstance(args);
 			}else{
-				Class<?> taskClass = Class.forName(path + data[0].substring(1));
+				//create task class
+				Class<? extends Task> taskClass;
+				if(taskData.has("children")){
+					taskClass = (Class<? extends Task>) Class.forName(pkgPath + "base." + taskData.name);	
+				}else{
+					taskClass = (Class<? extends Task>) Class.forName(pkgPath + taskData.name);
+				}
 				
-				if(task != null){
+				//load params and return
+				if(parent != null){
 					Constructor<?> constructor = taskClass.getConstructor(AiSystem.class, Task.class);
-					return (Task) constructor.newInstance(this, task);
+					return (Task) constructor.newInstance(this, parent);
 				}else{
 					Constructor<?> constructor = taskClass.getConstructor(AiSystem.class);
 					return (Task) constructor.newInstance(this);
 				}
 			}
 
-		} catch (InstantiationException e) {
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			e.printStackTrace();
-		} catch (IllegalArgumentException e) {
-			e.printStackTrace();
-		} catch (InvocationTargetException e) {
-			e.printStackTrace();
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		} catch (NoSuchMethodException e) {
-			e.printStackTrace();
-		} catch (SecurityException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return null;
 	}
-	public ArrayMap<String, String[]> getAllAiProfiles(){
+	public ArrayMap<String, JsonValue> getAllAiProfiles(){
 		return profiles;
 	}
 	public ComponentMapper<Position> getPm() {

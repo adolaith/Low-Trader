@@ -67,8 +67,6 @@ public class GameScreen implements Screen{
 	}
 	private void initWorld(){
 		World world = gameServices.getWorld();
-		world.setManager(new TagManager());
-		world.setManager(new GroupManager());
 		world.setSystem(new AnimationSystem());
 		world.setSystem(new AiSystem(gameServices));
 		world.setSystem(new MovementSystem(gameServices));
