@@ -190,10 +190,9 @@ public class EntityRenderSystem{
 				if(areaMapper.has(e)){
 					
 					Position p = posMapper.get(e);
-					Vector2 t = map.worldVecToTile(p.getMapX(), p.getMapY());
 					
 					//the current tile is the entity's origin/anchor tile?
-					if(tileX == t.x && tileY == t.y){
+					if(tileX == p.getTileX() && tileY == p.getTileY()){
 						Area a = areaMapper.get(e);
 						SpriteComp s = spriteMapper.get(e);
 						

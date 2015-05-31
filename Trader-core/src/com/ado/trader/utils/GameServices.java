@@ -4,6 +4,7 @@ import com.ado.trader.entities.EntityFactory;
 import com.ado.trader.input.InputHandler;
 import com.ado.trader.items.ItemFactory;
 import com.ado.trader.map.Map;
+import com.ado.trader.map.MapStreamer;
 import com.ado.trader.pathfinding.AStarPathFinder;
 import com.ado.trader.rendering.Renderer;
 import com.artemis.World;
@@ -30,6 +31,7 @@ public class GameServices {
 	
 	World world;
 	Map map;
+	MapStreamer streamer;
 	InputHandler input;
 	Renderer renderer;
 	
@@ -46,7 +48,6 @@ public class GameServices {
 		
 		this.font = new BitmapFont(Gdx.files.internal("font/white.fnt"), new TextureRegion(texture), false);
 		
-//		this.font = new BitmapFont(Gdx.files.internal("font/white.fnt"), false);
 		font.getData().setScale(0.6f);
 		
 		cam = new OrthographicCamera(camWidth, camHeight);
@@ -88,6 +89,12 @@ public class GameServices {
 		}
 
 		pathfinder = new AStarPathFinder(map, 500, false);
+	}
+	public MapStreamer getStreamer(){
+		return streamer;
+	}
+	public void setStreamer(MapStreamer streamer){
+		this.streamer = streamer;
 	}
 	public TextureAtlas getAtlas() {
 		return atlas;

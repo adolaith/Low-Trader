@@ -34,9 +34,10 @@ public class MaskingSystem {
 	}
 	public void drawMask(SpriteBatch batch, int spriteIndex, Vector2 vec, float height, Position p, Mask mask){
 		Vector2 tmp = IsoUtils.getColRow((int)InputHandler.getMousePos().x, (int)InputHandler.getMousePos().y, map.getTileWidth(), map.getTileHeight());
+		tmp = Map.worldVecToTile((int) tmp.x, (int) tmp.y);
 		
 		//Mouse near wall mask. wall is within 6 tiles of mouse
-		if(Math.abs((int)p.getMapX() - (int)tmp.x) < 6 &&  Math.abs((int)p.getMapY() - (int)tmp.y) < 4){
+		if(Math.abs((int)p.getTileX() - (int)tmp.x) < 6 &&  Math.abs((int)p.getTileY() - (int)tmp.y) < 4){
 			//only sprites over 64 in height get masked(keep fences short) 
 			if(height > 64){
 				setGlMask(batch);

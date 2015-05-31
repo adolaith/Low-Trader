@@ -58,7 +58,7 @@ public class Renderer{
 		//shows debug overlay
 		if(InputHandler.DEBUG){
 			//highlights zones
-			gameRes.getMap().drawDebug(sr);
+			gameRes.getMap().drawDebug(batch);
 		}		
 		
 		//draws scene2d stage

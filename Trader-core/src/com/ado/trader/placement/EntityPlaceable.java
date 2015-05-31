@@ -49,7 +49,7 @@ public class EntityPlaceable extends Placeable {
 		Chunk c = map.getChunk(mapX, mapY);
 		Vector2 tile = map.worldVecToTile(mapX, mapY);
 		
-		positionMapper.get(e).setPosition(mapX, mapY);
+		positionMapper.get(e).setPosition((int) tile.x, (int) tile.y);
 
 		rotateArea(e);
 		

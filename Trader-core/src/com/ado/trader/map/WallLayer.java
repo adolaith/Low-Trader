@@ -58,8 +58,7 @@ public class WallLayer implements Layer {
 			
 			Entity e = EntityFactory.createEntity(w.getString("n"));
 			
-			Vector2 worldVec = Map.tileToWorld(Integer.valueOf(xy[0]), Integer.valueOf(xy[1]), cX, cY, rX, rY);
-			posMap.get(e).setPosition((int)worldVec.x, (int)worldVec.y);
+			posMap.get(e).setPosition(Integer.valueOf(xy[0]), Integer.valueOf(xy[1]));
 			
 			addToMap(e.getId(), Integer.valueOf(xy[0]), Integer.valueOf(xy[1]));
 			

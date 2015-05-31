@@ -36,7 +36,7 @@ public class TilePlaceable extends Placeable {
 			c = createChunk(mapX, mapY);
 		}
 		
-		Vector2 tile = map.worldVecToTile(mapX, mapY);
+		Vector2 tile = Map.worldVecToTile(mapX, mapY);
 		TileMask m = null;
 		Tile t = c.getTiles().map[(int) tile.x][(int) tile.y];
 		
@@ -63,12 +63,42 @@ public class TilePlaceable extends Placeable {
 	}
 	
 	private void createRegion(int mapX, int mapY){
-		Vector2 regVec = map.worldVecToRegion(mapX, mapY);
+		Vector2 regVec = Map.worldVecToRegion(mapX, mapY);
 		MapRegion r = new MapRegion();
+		r.setId(map.getNextId());
+		map.setNextId(map.getNextId() + 1);
+		
 		map.getRegionMap()[(int) regVec.x][(int) regVec.y] = r;
+		
+		//search for neighbour regions
+		MapRegion n;
+		if((int) regVec.x + 1 < map.getRegionMap().length){
+			n = map.getRegionMap()[(int) regVec.x + 1][(int) regVec.y];
+			if(n != null){
+				r.addConnectedRegion("e", n.getId());
+			}
+		}
+		if((int) regVec.x - 1 >= 0){
+			n = map.getRegionMap()[(int) regVec.x - 1][(int) regVec.y];
+			if(n != null){
+				r.addConnectedRegion("w", n.getId());
+			}
+		}
+		if((int) regVec.y + 1 < map.getRegionMap()[(int) regVec.x].length){
+			n = map.getRegionMap()[(int) regVec.x][(int) regVec.y + 1];
+			if(n != null){
+				r.addConnectedRegion("n", n.getId());
+			}
+		}
+		if((int) regVec.y - 1 >= 0){
+			n = map.getRegionMap()[(int) regVec.x][(int) regVec.y - 1];
+			if(n != null){
+				r.addConnectedRegion("s", n.getId());
+			}
+		}
 	}
 	private Chunk createChunk(int mapX, int mapY){
-		Vector2 cVec = map.worldVecToChunk(mapX, mapY);
+		Vector2 cVec = Map.worldVecToChunk(mapX, mapY);
 		Chunk c = new Chunk(map.getWorld());
 		MapRegion r = map.getRegion(mapX, mapY);
 		r.setChunk((int) cVec.x, (int) cVec.y, c);
@@ -122,7 +152,7 @@ public class TilePlaceable extends Placeable {
 		if(mask != null){
 			Chunk c = map.getChunk((int) mousePos.x, (int) mousePos.y);
 			if(c != null){
-				Vector2 tile = map.worldVecToTile((int) mousePos.x, (int) mousePos.y);
+				Vector2 tile = Map.worldVecToTile((int) mousePos.x, (int) mousePos.y);
 				Tile t = c.getTiles().map[(int) tile.x][(int) tile.y];
 				if(t != null){
 					map.getTileMasks().drawMask(batch, mouseIso.x, mouseIso.y, mask, dir);

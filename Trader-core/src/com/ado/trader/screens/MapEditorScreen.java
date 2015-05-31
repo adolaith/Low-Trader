@@ -8,22 +8,19 @@ import com.ado.trader.gui.ToolTip;
 import com.ado.trader.gui.editor.MapEditorPanel;
 import com.ado.trader.input.InputHandler;
 import com.ado.trader.input.MapEditorInput;
-import com.ado.trader.map.Chunk;
-import com.ado.trader.map.MapRegion;
-import com.ado.trader.map.TileLayer;
+import com.ado.trader.map.EditorStreamer;
 import com.ado.trader.placement.PlacementManager;
 import com.ado.trader.systems.AnimationSystem;
 import com.ado.trader.systems.SaveSystem;
-import com.ado.trader.utils.FileLogger;
 import com.ado.trader.utils.GameServices;
 import com.artemis.Entity;
 import com.artemis.World;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.Json;
-import com.badlogic.gdx.utils.JsonValue;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 
 public class MapEditorScreen implements Screen {
 	static GameMain game;
@@ -32,28 +29,19 @@ public class MapEditorScreen implements Screen {
 	
 	static Vector2 velocity = new Vector2(); //camera velocity
 	Entity currentlySelected;
+	Label fps;
 
 	public MapEditorScreen(GameMain game) {
-		FileLogger.writeLog("MapEditor: [INIT]");
 		MapEditorScreen.game = game;
 		MapEditorInput input = new MapEditorInput();
 		gameServices = new GameServices(1280, 720, input, null);
 		
-		FileLogger.writeLog("MapEditor: gameServices started");
-		
 		initWorld();
-		
-		FileLogger.writeLog("MapEditor: world systems started");
-		
 		input.addPlacementManager(new PlacementManager(gameServices));
-		
-		FileLogger.writeLog("MapEditor: placementManager added");
 		
 		new ToolTip(gameServices.getFont(), gameServices.getSkin(), gameServices.getStage());
 		new CustomCursor(gameServices);
 		new MapEditorPanel(gameServices);
-		
-		FileLogger.writeLog("MapEditor: gui elements added");
 		
 		runLogic = true;
 		
@@ -63,9 +51,9 @@ public class MapEditorScreen implements Screen {
 		MapEditorScreen.game = game;
 		MapEditorInput input = new MapEditorInput();
 		gameServices = new GameServices(1280, 720, input, loadDir);
-		input.addPlacementManager(new PlacementManager(gameServices));
 		
 		initWorld();
+		input.addPlacementManager(new PlacementManager(gameServices));
 		
 		new ToolTip(gameServices.getFont(), gameServices.getSkin(), gameServices.getStage());
 		new CustomCursor(gameServices);
@@ -85,6 +73,13 @@ public class MapEditorScreen implements Screen {
 		world.setSystem(new AnimationSystem());
 		world.setSystem(new SaveSystem(gameServices), true);
 		world.initialize();
+		
+		LabelStyle style = new LabelStyle(gameServices.getFont(), Color.WHITE);
+		fps = new Label("", style);
+		fps.setPosition(Gdx.graphics.getWidth() - 100, Gdx.graphics.getHeight() - 20);
+		gameServices.getStage().addActor(fps);
+		
+		gameServices.setStreamer(new EditorStreamer(gameServices.getMap(), gameServices.getItems()));
 	}
 	@Override
 	public void show() {
@@ -97,10 +92,10 @@ public class MapEditorScreen implements Screen {
 		if(!runLogic){
 			//dont move camera or gui :P
 			InputHandler.getVelocity().setZero();
-			
 		}
 		
 		//LOGIC
+		((EditorStreamer)gameServices.getStreamer()).streamMap(gameServices.getCam());
 		gameServices.getWorld().setDelta(delta);
 		gameServices.getWorld().process();
 		
@@ -110,6 +105,7 @@ public class MapEditorScreen implements Screen {
 		gameServices.getStage().act(delta);
 		
 		gameServices.getRenderer().render(delta);
+		fps.setText("FPS: "+ Gdx.graphics.getFramesPerSecond());
 	}
 	
 	public static GameMain getGameMain(){

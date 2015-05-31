@@ -1,12 +1,8 @@
 package com.ado.trader.map;
 
-import com.ado.trader.entities.EntityFactory;
-import com.ado.trader.entities.components.Wall;
 import com.ado.trader.items.ItemFactory;
-import com.ado.trader.rendering.EntityRenderSystem.Direction;
-import com.ado.trader.systems.GameTime;
-import com.artemis.ComponentMapper;
-import com.artemis.Entity;
+import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
 
@@ -14,28 +10,22 @@ public class MapStreamer {
 	Map map;
 	ItemFactory items;
 	
+	FileHandle saveDir;
+	
 	public MapStreamer(Map map, ItemFactory items) {
 		this.map = map;
 		this.items = items;
 	}
-	public void loadMap(String dirName){
+
+	public void streamMap(){
 		
-//		if(data.first().containsKey("ToD")){
-//			ArrayMap<String, String> timeData = data.removeIndex(0);
-//			GameTime time = map.getWorld().getSystem(GameTime.class);
-//			time.loadSettings(Integer.valueOf(timeData.get("days")), GameTime.Time.valueOf(timeData.get("ToD")), Integer.valueOf(timeData.get("time")));
-//		}
 	}
 	
-	public void saveMap(String dir){
-		GameTime time = map.getWorld().getSystem(GameTime.class);
-		
-//		parser.addElement("ToD", String.valueOf(time.getTimeOfDay()));
-//		parser.addElement("time", String.valueOf(time.getTime()));
-//		parser.addElement("days", String.valueOf(time.getDays()));
-	}
 	public MapRegion loadRegion(JsonValue region, int rX, int rY){
 		MapRegion r = new MapRegion();
+		
+		r.setId(region.getInt("id"));
+		map.getRegionMap()[rX][rY] = r;
 		
 		JsonValue chunks = region.get("chunks");
 		for(JsonValue v = chunks.child; v != null; v = v.next){
@@ -68,9 +58,11 @@ public class MapStreamer {
 		
 		writer.writeObjectStart();
 		
+		writer.writeValue("id", r.getId());
+		
 		checkConnections(x, y, writer);
 		
-//		checkChunkAmt(r);
+		checkChunkAmt(r);
 		
 		checkBorderChunks(r, writer);
 		
@@ -89,22 +81,22 @@ public class MapStreamer {
 		
 		if(y + 1 < map.activeRegions[x].length){
 			if(map.activeRegions[x][y + 1] != null){
-				writer.writeValue("n", x +":"+ (y+1));
+				writer.writeValue("n", map.activeRegions[x][y + 1].getId());
 			}
 		}
 		if(y - 1 >= 0){
 			if(map.activeRegions[x][y - 1] != null){
-				writer.writeValue("s", x +":"+ (y-1));
+				writer.writeValue("s", map.activeRegions[x][y - 1].getId());
 			}
 		}
 		if(x + 1 < map.activeRegions.length){
 			if(map.activeRegions[x + 1][y] != null){
-				writer.writeValue("e", (x+1) +":"+ y);
+				writer.writeValue("e", map.activeRegions[x + 1][y].getId());
 			}
 		}
 		if(x - 1 >= 0){
 			if(map.activeRegions[x - 1][y] != null){
-				writer.writeValue("w", (x-1) +":"+ y);
+				writer.writeValue("w", map.activeRegions[x - 1][y].getId());
 			}
 		}
 		writer.writeObjectEnd();
@@ -124,25 +116,20 @@ public class MapStreamer {
 	}
 	
 	private void checkChunkAmt(MapRegion r){
-		//check if region has only 1 chunk
-		boolean single = true;
-		for(int j = 0; j < r.chunks.length; j++){
-			for(int k = 0; k < r.chunks[j].length; k++){
+		//check if region has only 1 chunk(in the centre)
+		for(int j = 0; j < 3; j++){
+			for(int k = 0; k < 3; k++){
 				if(r.isOccupied(j, k)){
-					if(j != 1 && k != 1){
-						single = false;
+					if(!(j == 1 && k == 1)){
+						return;
 					}
 				}
 			}
 		}
-
-		//if only 1 chunk and its centred, shift to outside
-		if(single){
-			r.setChunk(1, 0, r.getChunk(1, 1));
-			r.setChunk(1, 1, null);
-		}
+		r.setChunk(1, 0, r.getChunk(1, 1));
+		r.setChunk(1, 1, null);
 	}
-	
+
 	private void saveChunks(MapRegion r, Json writer){
 		//write chunk data
 		writer.writeObjectStart("chunks");
@@ -157,5 +144,7 @@ public class MapStreamer {
 		}
 		writer.writeObjectEnd();
 	}
-	
+	public void setSaveDir(FileHandle dir){
+		this.saveDir = dir;
+	}
 }

@@ -24,15 +24,8 @@ public class ItemPlaceable extends Placeable {
 	void place(int mapX, int mapY) {
 		Entity i = ItemFactory.createItem(itemId);
 		
-		Gdx.app.log("itemPlace: ", "mapVec: "+ mapX +", "+ mapY);
-		
 		Chunk c = map.getChunk(mapX, mapY);
-		Gdx.app.log("itemPlace: ", "=========");
 		Vector2 t = map.worldVecToTile(mapX, mapY);
-		
-		Gdx.app.log("itemPlace: ", "chunk: "+c);
-		Gdx.app.log("itemPlace: ", "tileVec: "+t);
-		Gdx.app.log("itemPlace: ", "entities: "+c.getEntities());
 		
 		if(c.getEntities().map[(int) t.x][(int) t.y][0] != null){
 			Entity e = map.getWorld().getEntity(c.getEntities().map[(int) t.x][(int) t.y][0]);

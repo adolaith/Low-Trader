@@ -201,7 +201,7 @@ public class EntityLayer extends IntMapLayer {
 					chunkJson.writeObjectStart();
 
 					Position p = positionMap.get(e);
-					chunkJson.writeValue("p", p.getMapX() +","+ p.getMapY() +","+ c);
+					chunkJson.writeValue("p", p.getTileX() +","+ p.getTileY() +","+ c);
 					chunkJson.writeValue("o", p.getIsoOffset().x +","+ p.getIsoOffset().y);
 					
 					chunkJson.writeValue("n", nameMap.get(e).getName());
@@ -264,8 +264,7 @@ public class EntityLayer extends IntMapLayer {
 			Entity ent = EntityFactory.createEntity(v.getString("n"));
 			
 			//place on map
-			Vector2 tVec = Map.worldVecToTile(Integer.valueOf(xy[0]), Integer.valueOf(xy[1]));
-			map[(int) tVec.x][(int) tVec.y][Integer.valueOf(xy[2])] = ent.getId();
+			map[Integer.valueOf(xy[0])][Integer.valueOf(xy[1])][Integer.valueOf(xy[2])] = ent.getId();
 			
 			//set entity's position
 			Position p = positionMap.get(ent);

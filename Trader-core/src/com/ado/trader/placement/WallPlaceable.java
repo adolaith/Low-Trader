@@ -45,7 +45,7 @@ public class WallPlaceable extends Placeable{
 				e.getComponent(Wall.class).secondSprite = second;
 			}
 			
-			e.getComponent(Position.class).setPosition(mapX, mapY);
+			e.getComponent(Position.class).setPosition((int) t.x, (int) t.y);
 			c.getWalls().map[(int) t.x][(int) t.y] = e.getId();
 			
 		}else{

@@ -12,23 +12,20 @@ import com.ado.trader.utils.IsoUtils;
 import com.artemis.Entity;
 import com.artemis.World;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.Json;
-import com.badlogic.gdx.utils.JsonValue;
 
 //Tile map class. Contain tile map array, world width/height, tile width/height
 public class Map implements TileBasedMap{
 	public static int tileWidth = 64*2;
 	public static int tileHeight = 32*2;
+	int nextRegionId;
 	
+	Sprite tileOutline;
 	Array<Sprite> tileSprites;
 	MapRegion[][] activeRegions;
 
@@ -49,6 +46,7 @@ public class Map implements TileBasedMap{
 		streamer.loadMap(loadName);
 	}
 	private void init(TextureAtlas atlas, World world, ItemFactory items){
+		tileOutline = atlas.createSprite("gui/highlightTile");
 		this.world = world;
 		activeRegions = new MapRegion[3][3];
 		world.setSystem(new GameTime(1.0f));
@@ -62,7 +60,8 @@ public class Map implements TileBasedMap{
 
 	//creates a map with tile in an isometric layout
 	private void createMap(){
-		MapRegion region = new MapRegion();
+		MapRegion region = new MapRegion(0);
+		nextRegionId++;
 		Chunk chunk = new Chunk(world);
 		
 		//set chunk to middle of region
@@ -162,52 +161,76 @@ public class Map implements TileBasedMap{
 		batch.end();
 	}
 	
-	public void drawDebug(ShapeRenderer sr){
-		sr.begin(ShapeType.Filled);
+	
+	public void drawDebug(SpriteBatch batch){
+		batch.begin();
+		
 		//draws debug grid(tiles)
 		//loops active regions
 		int sum = activeRegions.length + activeRegions[0].length;
 
 		for(int count = sum; count >= 0; count--){		//DEPTH COUNTER
-			for(int y = activeRegions[0].length - 1; y >= 0; y--){
-				for(int x = activeRegions.length - 1; x >= 0; x--){		//DIAGONAL MAP READ
+			for(int y = 2; y >= 0; y--){
+				for(int x = 2; x >= 0; x--){		//DIAGONAL MAP READ
 					if(x + y - count == 0){
 						
-						MapRegion region = activeRegions[x][y];
-						if(region == null) continue;
-
 						//loops chunks in a region
-						int regionSum = region.chunks.length + region.chunks[0].length;
+						int regionSum = 3 + 3;
 
 						for(int regionCount = regionSum; regionCount >= 0; regionCount--){		//DEPTH COUNTER
-							for(int regionY = region.chunks[0].length - 1; regionY >= 0; regionY--){
-								for(int regionX = region.chunks.length - 1; regionX >= 0; regionX--){		//DIAGONAL MAP READ
+							for(int regionY = 2; regionY >= 0; regionY--){
+								for(int regionX = 2; regionX >= 0; regionX--){		//DIAGONAL MAP READ
 									if(regionX + regionY - regionCount == 0){
 										
-										Chunk chunk = region.chunks[regionX][regionY];
-										if(chunk == null) continue;
-										
 										//loops tiles in a chunk
-										int chunkSum = chunk.getWidth() + chunk.getHeight();
+										int chunkSum = 32 + 32;
 
 										for(int chunkCount = chunkSum; chunkCount >= 0; chunkCount--){		//DEPTH COUNTER
-											for(int chunkY = chunk.getHeight() - 1; chunkY >= 0; chunkY--){
-												for(int chunkX = chunk.getWidth() - 1; chunkX >= 0; chunkX--){		//DIAGONAL MAP READ
+											for(int chunkY = 31; chunkY >= 0; chunkY--){
+												for(int chunkX = 31; chunkX >= 0; chunkX--){		//DIAGONAL MAP READ
 													if(chunkX + chunkY - chunkCount == 0){
 
 														//get tile vec
-														int tileX = x * region.getWidthInTiles() + regionX * chunk.getWidth() + chunkX;
-														int tileY = y * region.getHeightInTiles() + regionY * chunk.getHeight() + chunkY;
+														Vector2 tileVec= Map.tileToWorld(chunkX, chunkY, regionX, regionY, x, y);
 
-														Vector2 isoVec = IsoUtils.getIsoXY(tileX, tileY, tileWidth, tileHeight);
+														Vector2 isoVec = IsoUtils.getIsoXY((int) tileVec.x, (int) tileVec.y, tileWidth, tileHeight);
 														
-														sr.setColor(Color.YELLOW);
-														sr.rect(isoVec.x, isoVec.y, 4, 4);
-														if(chunk.entities.isOccupied(chunkX, chunkY)){
-															sr.setColor(Color.RED);
-															sr.rect(isoVec.x, isoVec.y, tileWidth, tileHeight);
+														if(chunkX == 0 || chunkY == 0 || chunkX == 31 || chunkY == 31){
+															batch.setColor(Color.MAGENTA);
 														}
-
+														
+														//colour region boundries
+														switch(regionX){
+														case 0:
+															if(chunkX == 0){
+																batch.setColor(Color.BLUE);
+															}
+															break;
+														case 2:
+															if(chunkX == 31){
+																batch.setColor(Color.BLUE);
+															}
+															break;
+														}
+														switch(regionY){
+														case 0:
+															if(chunkY == 0){
+																batch.setColor(Color.BLUE);
+															}
+															break;
+														case 2:
+															if(chunkY == 31){
+																batch.setColor(Color.BLUE);
+															}
+															break;
+														}
+														
+														batch.draw(tileOutline, isoVec.x, isoVec.y, tileWidth, tileHeight);
+														
+														if(batch.getColor() != Color.WHITE){
+															batch.setColor(Color.WHITE);
+														}
+														
 													}
 												}
 											}
@@ -220,7 +243,7 @@ public class Map implements TileBasedMap{
 				}
 			}
 		}
-		sr.end();
+		batch.end();
 	}
 	
 	public MapRegion getRegion(int mapX, int mapY){
@@ -361,6 +384,12 @@ public class Map implements TileBasedMap{
 		
 		return srcLayer.map[(int) srcVec.x][(int) srcVec.y].travelCost + tgtLayer.map[(int) tgtVec.x][(int) tgtVec.y].travelCost; 
 	}
+	public void setNextId(int id){
+		nextRegionId = id;
+	}
+	public int getNextId(){
+		return nextRegionId;
+	}
 	public int getWidthInTiles() {
 		//chunk tile width * (region chunk width * active region map width)
 		int w = 32 * (3 * activeRegions.length);
@@ -391,9 +420,6 @@ public class Map implements TileBasedMap{
 	}
 	public Array<Sprite> getTileSprites() {
 		return tileSprites;
-	}
-	public MapStreamer getMapLoader(){
-		return streamer;
 	}
 	public World getWorld(){
 		return world;

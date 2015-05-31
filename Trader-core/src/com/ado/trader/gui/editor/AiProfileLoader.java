@@ -194,7 +194,7 @@ public class AiProfileLoader extends SaveLoadMenu {
 	//splashes 'game saved' label across screen before fading
 	private void saveAlert(BitmapFont font){
 		LabelStyle lStyle = new LabelStyle(font, Color.WHITE);
-		Label l = new Label("Game Saved", lStyle);
+		Label l = new Label("Profile Saved", lStyle);
 		l.setFontScale(3);
 		l.setWidth(200);
 		l.setHeight(40);

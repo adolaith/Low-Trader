@@ -1,12 +1,21 @@
 package com.ado.trader.map;
 
+import com.badlogic.gdx.utils.ArrayMap;
 import com.badlogic.gdx.utils.Json;
 
 public class MapRegion {
+	ArrayMap<String, Integer> connections;
 	Chunk[][] chunks;
+	int id;
 
-	public MapRegion() {
+	public MapRegion(){
 		chunks = new Chunk[3][3];
+		connections = new ArrayMap<String, Integer>();
+	}
+	public MapRegion(int id) {
+		chunks = new Chunk[3][3];
+		this.id = id;
+		connections = new ArrayMap<String, Integer>();
 	}
 	
 	public void saveChunk(int chunkX, int chunkY, Json regionJson){
@@ -27,7 +36,24 @@ public class MapRegion {
 		}
 		return null;
 	}
-
+	public ArrayMap<String, Integer> getConnections(){
+		return connections;
+	}
+	public void addConnectedRegion(String dir, int id){
+		connections.put(dir, id);
+	}
+	public void removeConnectedRegion(String dir){
+		connections.removeKey(dir);
+	}
+	public void removeConnectedRegion(int id){
+		connections.removeValue(id, true);
+	}
+	public int getId() {
+		return id;
+	}
+	public void setId(int id) {
+		this.id = id;
+	}
 	public int getWidth(){
 		return chunks.length;
 	}
