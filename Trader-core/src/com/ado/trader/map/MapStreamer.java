@@ -2,7 +2,6 @@ package com.ado.trader.map;
 
 import com.ado.trader.items.ItemFactory;
 import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
 
@@ -26,6 +25,10 @@ public class MapStreamer {
 		
 		r.setId(region.getInt("id"));
 		map.getRegionMap()[rX][rY] = r;
+		
+		for(JsonValue c = region.get("conn").child; c != null; c = c.next()){
+			r.addConnectedRegion(c.name, c.asInt());
+		}
 		
 		JsonValue chunks = region.get("chunks");
 		for(JsonValue v = chunks.child; v != null; v = v.next){
@@ -53,14 +56,12 @@ public class MapStreamer {
 		return r;
 	}
 	//Json writer writes to tmp dir or straight to .zip
-	public void saveRegion(int x, int y, Json writer){
-		MapRegion r = map.activeRegions[x][y];
-		
+	public void saveRegion(MapRegion r, Json writer){
 		writer.writeObjectStart();
 		
 		writer.writeValue("id", r.getId());
 		
-		checkConnections(x, y, writer);
+		writeConnections(r, writer);
 		
 		checkChunkAmt(r);
 		
@@ -76,28 +77,11 @@ public class MapStreamer {
 		}
 	}
 	
-	private void checkConnections(int x, int y, Json writer){
+	private void writeConnections(MapRegion r, Json writer){
 		writer.writeObjectStart("conn");
 		
-		if(y + 1 < map.activeRegions[x].length){
-			if(map.activeRegions[x][y + 1] != null){
-				writer.writeValue("n", map.activeRegions[x][y + 1].getId());
-			}
-		}
-		if(y - 1 >= 0){
-			if(map.activeRegions[x][y - 1] != null){
-				writer.writeValue("s", map.activeRegions[x][y - 1].getId());
-			}
-		}
-		if(x + 1 < map.activeRegions.length){
-			if(map.activeRegions[x + 1][y] != null){
-				writer.writeValue("e", map.activeRegions[x + 1][y].getId());
-			}
-		}
-		if(x - 1 >= 0){
-			if(map.activeRegions[x - 1][y] != null){
-				writer.writeValue("w", map.activeRegions[x - 1][y].getId());
-			}
+		for(String dir: r.getConnections().keys()){
+			writer.writeValue(dir, r.getConnections().get(dir));
 		}
 		writer.writeObjectEnd();
 	}

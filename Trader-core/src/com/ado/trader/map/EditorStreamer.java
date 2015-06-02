@@ -9,12 +9,14 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.IntArray;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.JsonValue;
 
 public class EditorStreamer extends MapStreamer {
 	Json j;
 	FileHandle dir;
+	int shiftX, shiftY;
 
 	public EditorStreamer(Map map, ItemFactory items) {
 		super(map, items);
@@ -30,57 +32,64 @@ public class EditorStreamer extends MapStreamer {
 		
 		if(camRegion.x == 1 && camRegion.y == 1) return;
 		
-		int shiftX = 1 - (int) camRegion.x;
-		int shiftY = 1 - (int) camRegion.y;
-		Gdx.app.log("Streamer: ", "REGION SHIFT XY: "+ shiftX +", "+ shiftY);
+		shiftX = 1 - (int) camRegion.x;
+		shiftY = 1 - (int) camRegion.y;
+//		Gdx.app.log("Streamer: ", "========================");
+//		Gdx.app.log("Streamer: ", "SHIFT REGION XY BY: "+ shiftX +", "+ shiftY);
 		
-		for(int x = 0; x < 3; x++){
-			for(int y = 0; y < 3; y++){
-				if(map.getRegionMap()[x][y] == null) continue;
-				
-				Gdx.app.log("Streamer: ", "Map regions: "+ x +", "+ y + " = "+ map.getRegionMap()[x][y] + ". ID: "+ map.getRegionMap()[x][y].getId());
-			}
-		}
+		Array<MapRegion> unloadRegions = new Array<MapRegion>();
+		MapRegion[][] tmp = new MapRegion[3][3];
 		
-		//dont unload the last region
-		if(isLastRegion(shiftX, shiftY)) return;
-		
-		Gdx.app.log("Streamer: ", "Cam region:"+ camRegion.x +", "+camRegion.y);
-		
-		writeUnloadedRegions(shiftX, shiftY);
-		
-		//shift regions
-		IntArray shiftedRegions = new IntArray();
-		if(shiftX < 0 || shiftY < 0){
+		if(shiftX < 0){
 			for(int x = 0; x < 3; x++){
 				for(int y = 0; y < 3; y++){
-					if(x + shiftX < 0 || x + shiftX > 2 || y + shiftY < 0 || y + shiftY > 2) continue;
-					if(map.getRegionMap()[x][y] == null) continue;
-					if(shiftedRegions.contains(map.getRegionMap()[x][y].getId())) continue;
-					
-					Gdx.app.log("Streamer: ", "Shift region: "+ x +", "+ y +"...to..."+ (x + shiftX) +", "+ (y + shiftY));
-					
-					map.getRegionMap()[x + shiftX][y + shiftY] = map.getRegionMap()[x][y];
-					shiftedRegions.add(map.getRegionMap()[x + shiftX][y + shiftY].getId());
-					map.getRegionMap()[x][y] = null;
+					shiftRegion(x, y, unloadRegions, tmp);
 				}
 			}
-		}else if(shiftX > 0 || shiftY > 0){
+		}else if(shiftX > 0){
 			for(int x = 2; x >= 0; x--){
 				for(int y = 2; y >= 0; y--){
-					if(x + shiftX < 0 || x + shiftX > 2 || y + shiftY < 0 || y + shiftY > 2) continue;
-					if(map.getRegionMap()[x][y] == null) continue;
-					if(shiftedRegions.contains(map.getRegionMap()[x][y].getId())) continue;
-					
-					Gdx.app.log("Streamer: ", "Shift region: "+ x +", "+ y +"...to..."+ (x + shiftX) +", "+ (y + shiftY));
-					
-					map.getRegionMap()[x + shiftX][y + shiftY] = map.getRegionMap()[x][y];
-					shiftedRegions.add(map.getRegionMap()[x + shiftX][y + shiftY].getId());
-					map.getRegionMap()[x][y] = null;
+					shiftRegion(x, y, unloadRegions, tmp);
+				}
+			}
+		}else if(shiftY < 0){
+			for(int x = 0; x < 3; x++){
+				for(int y = 0; y < 3; y++){
+					shiftRegion(x, y, unloadRegions, tmp);
+				}
+			}
+		}else if(shiftY > 0){
+			for(int x = 2; x >= 0; x--){
+				for(int y = 2; y >= 0; y--){
+					shiftRegion(x, y, unloadRegions, tmp);
 				}
 			}
 		}
 		
+		//empty check
+		boolean isEmpty = true;
+		for(int x = 0; x < 3; x++){
+			for(int y = 0; y < 3; y++){
+				if(tmp[x][y] != null){
+					isEmpty = false;
+				}
+			}
+		}
+		
+		if(isEmpty){
+//			Gdx.app.log("Streamer: ", "DONT SHIFT"); 
+			return;
+		}
+		
+		//copy tmp to actual map
+		map.activeRegions = tmp;
+		
+//		Gdx.app.log("Streamer: ", "OLD Cam region:"+ camRegion.x +", "+camRegion.y);
+		
+		//write unloaded regions to file
+		writeUnloadedRegions(unloadRegions);
+		
+		JsonValue c;
 		//load connected regions
 		for(int x = 0; x < 3; x++){
 			for(int y = 0; y < 3; y++){
@@ -92,22 +101,98 @@ public class EditorStreamer extends MapStreamer {
 					switch(d){
 					case "n":
 						if(y + 1 < map.getRegionMap()[x].length){
-							writeRegion(x, y + 1, d, r);
+							if(map.getRegionMap()[x][y + 1] != null) continue;
+//							Gdx.app.log("Streamer: ", "loading NORTH");
+							
+							c = j.fromJson(null, dir.child(r.getConnections().get(d).toString()));
+							loadRegion(c, x, y + 1);
+							
+							MapRegion n = map.getRegionMap()[x][y + 1];
+							
+							if(x + 1 < map.getRegionMap().length){
+								if(map.getRegionMap()[x + 1][y + 1] != null || !n.getConnections().containsKey("e")) continue;
+								
+								c = j.fromJson(null, dir.child(n.getConnections().get("e").toString()));
+								loadRegion(c, x + 1, y + 1);
+							}
+							if(x - 1 > 0){
+								if(map.getRegionMap()[x - 1][y + 1] != null || !n.getConnections().containsKey("w")) continue;
+								
+								c = j.fromJson(null, dir.child(n.getConnections().get("w").toString()));
+								loadRegion(c, x - 1, y + 1);
+							}
 						}
 					break;
 					case "s":
 						if(y - 1 >= 0){
-							writeRegion(x, y - 1, d, r);
+							if(map.getRegionMap()[x][y - 1] != null) continue;
+//							Gdx.app.log("Streamer: ", "loading SOUTH"); 
+							
+							c = j.fromJson(null, dir.child(r.getConnections().get(d).toString()));
+							loadRegion(c, x, y - 1);
+							
+							MapRegion n = map.getRegionMap()[x][y - 1];
+							
+							if(x + 1 < map.getRegionMap().length){
+								if(map.getRegionMap()[x + 1][y - 1] != null || !n.getConnections().containsKey("e")) continue;
+								
+								c = j.fromJson(null, dir.child(n.getConnections().get("e").toString()));
+								loadRegion(c, x + 1, y - 1);
+							}
+							if(x - 1 > 0){
+								if(map.getRegionMap()[x - 1][y - 1] != null || !n.getConnections().containsKey("w")) continue;
+								
+								c = j.fromJson(null, dir.child(n.getConnections().get("w").toString()));
+								loadRegion(c, x - 1, y - 1);
+							}
 						}
 					break;
 					case "e":
 						if(x + 1 < map.getRegionMap().length){
-							writeRegion(x + 1, y, d, r);
+							if(map.getRegionMap()[x + 1][y] != null) continue;
+//							Gdx.app.log("Streamer: ", "loading EAST"); 
+							
+							c = j.fromJson(null, dir.child(r.getConnections().get(d).toString()));
+							loadRegion(c, x + 1, y);
+							
+							MapRegion n = map.getRegionMap()[x + 1][y];
+							
+							if(y + 1 < map.getRegionMap()[x].length){
+								if(map.getRegionMap()[x + 1][y + 1] != null || !n.getConnections().containsKey("n")) continue;
+								
+								c = j.fromJson(null, dir.child(n.getConnections().get("n").toString()));
+								loadRegion(c, x + 1, y + 1);
+							}
+							if(y - 1 > 0){
+								if(map.getRegionMap()[x + 1][y - 1] != null || !n.getConnections().containsKey("s")) continue;
+								
+								c = j.fromJson(null, dir.child(n.getConnections().get("s").toString()));
+								loadRegion(c, x + 1, y - 1);
+							}
 						}
 					break;
 					case "w":
 						if(x - 1 >= 0){
-							writeRegion(x - 1, y, d, r);
+							if(map.getRegionMap()[x - 1][y] != null) continue;
+//							Gdx.app.log("Streamer: ", "loading WEST"); 
+							
+							c = j.fromJson(null, dir.child(r.getConnections().get(d).toString()));
+							loadRegion(c, x - 1, y);
+							
+							MapRegion n = map.getRegionMap()[x - 1][y];
+							
+							if(y + 1 < map.getRegionMap()[x].length){
+								if(map.getRegionMap()[x - 1][y + 1] != null || !n.getConnections().containsKey("n")) continue;
+								
+								c = j.fromJson(null, dir.child(n.getConnections().get("n").toString()));
+								loadRegion(c, x - 1, y + 1);
+							}
+							if(y - 1 > 0){
+								if(map.getRegionMap()[x - 1][y - 1] != null || !n.getConnections().containsKey("s")) continue;
+								
+								c = j.fromJson(null, dir.child(n.getConnections().get("s").toString()));
+								loadRegion(c, x - 1, y - 1);
+							}
 						}
 					break;
 					}
@@ -116,6 +201,18 @@ public class EditorStreamer extends MapStreamer {
 		}
 		
 		repositionCamera(cam);
+	}
+	private void shiftRegion(int x, int y, Array<MapRegion> unloadRegions, MapRegion[][] tmp){
+		if(map.getRegionMap()[x][y] == null) return;
+		
+		if(x + shiftX < 0 || x + shiftX > 2 || y + shiftY < 0 || y + shiftY > 2){
+			unloadRegions.add(map.getRegionMap()[x][y]);
+			Gdx.app.log("Streamer: ", "Region to UNLOAD: "+ map.getRegionMap()[x][y].getId());
+			return;
+		}
+			
+		tmp[x + shiftX][y + shiftY] = map.getRegionMap()[x][y];
+//		Gdx.app.log("Streamer: ", "Map region: "+ x +", "+ y + ". to : "+ (x + shiftX) +", "+ (y + shiftY) + ". ID: "+ map.getRegionMap()[x][y].getId());
 	}
 	private void repositionCamera(OrthographicCamera cam){
 		Vector2 camRegion = IsoUtils.getColRow((int) cam.position.x, (int) cam.position.y, Map.tileWidth, Map.tileHeight);
@@ -127,20 +224,11 @@ public class EditorStreamer extends MapStreamer {
 		Vector2 tmp = IsoUtils.getIsoXY((int) camRegion.x, (int) camRegion.y, map.getTileWidth(), map.getTileHeight());
 		cam.position.x = tmp.x;
 		cam.position.y = tmp.y;
+		
+		Gdx.app.log("Streamer: ", "CAM RE-POS");
 	}
-	private void writeRegion(int x, int y, String d, MapRegion r){
-		if(map.getRegionMap()[x][y] == null){
-			try {
-				j.setWriter(new FileWriter(dir.file().getPath() + 
-						"/" + r.getConnections().get(d)));
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			
-			saveRegion(x, y, j);
-		}
-	}
-	private void writeUnloadedRegions(int shiftX, int shiftY){
+	private void writeUnloadedRegions(Array<MapRegion> regions){
+		if(regions.size == 0) return;
 		if(saveDir == null){
 			dir = Gdx.files.external("adoGame/maps/tmp");
 			if(!dir.exists()){
@@ -151,85 +239,18 @@ public class EditorStreamer extends MapStreamer {
 		}
 		
 		//write regions to be unloaded
-		for(int x = 0; x < 3; x++){
-			for(int y = 0; y < 3; y++){
-				if(x + shiftX < 0 || x + shiftX > 2 || y + shiftY < 0 || y + shiftY > 2){
-					if(map.getRegionMap()[x][y] == null) continue;
-					Gdx.app.log("Streamer: ", "writing region: "+ x +", "+ y + "...to file");
+		for(MapRegion r: regions){
+//			Gdx.app.log("Streamer: ", "writing region: "+ r.getId() + "...to file");
 
-					try {
-						j.setWriter(new FileWriter(dir.file().getPath() + 
-								"/" + map.getRegionMap()[x][y].getId()));
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
+			try {
+				j.setWriter(new FileWriter(dir.file().getPath() + 
+						"/" + r.getId()));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 
-					saveRegion(x, y, j);
-				}
-			}	
+			saveRegion(r, j);
 		}
 	}
 	
-	private boolean isLastRegion(int shiftX, int shiftY){
-		int regionCount = 0;
-		for(int x = 0; x < 3; x++){
-			for(int y = 0; y < 3; y++){
-				if(map.getRegionMap()[x][y] != null){
-					regionCount++;
-				}
-			}
-		}
-		
-		if(regionCount == 1){
-			for(int x = 0; x < 3; x++){
-				for(int y = 0; y < 3; y++){
-					if(map.getRegionMap()[x][y] != null){
-						Gdx.app.log("Streamer: ", "LAST REGION!");
-						if(x + shiftX < 0 || x + shiftX > 2 || y + shiftY < 0 || y + shiftY > 2){
-//						if(x == 0 || x == 2 || y == 0 || y == 2){
-							Gdx.app.log("Streamer: ", "DONT SHIFT REGIONS!");
-							return true;
-						}
-					}
-				}
-			}
-		}
-		
-		MapRegion[][] tmp = new MapRegion[3][3];
-		IntArray shiftedRegions = new IntArray();
-		if(shiftX < 0){
-			for(int x = 0; x < 3; x++){
-				for(int y = 0; y < 3; y++){
-					if(x + shiftX < 0 || x + shiftX > 2 || y + shiftY < 0 || y + shiftY > 2) continue;
-					if(map.getRegionMap()[x][y] == null) continue;
-					if(shiftedRegions.contains(map.getRegionMap()[x][y].getId())) continue;
-
-					tmp[x + shiftX][y + shiftY] = map.getRegionMap()[x][y];
-					shiftedRegions.add(tmp[x + shiftX][y + shiftY].getId());
-				}
-			}
-		}else if(shiftX > 0){
-			for(int x = 2; x >= 0; x--){
-				for(int y = 2; y >= 0; y--){
-					if(x + shiftX < 0 || x + shiftX > 2 || y + shiftY < 0 || y + shiftY > 2) continue;
-					if(map.getRegionMap()[x][y] == null) continue;
-					if(shiftedRegions.contains(map.getRegionMap()[x][y].getId())) continue;
-
-					tmp[x + shiftX][y + shiftY] = map.getRegionMap()[x][y];
-					shiftedRegions.add(tmp[x + shiftX][y + shiftY].getId());
-				}
-			}
-		}
-		
-		for(int x = 0; x < 3; x++){
-			for(int y = 0; y < 3; y++){
-				if(tmp[x][y] != null){
-					Gdx.app.log("Streamer: ", "DONT SHIFT REGIONS!");
-					return true;
-				}
-			}
-		}
-		
-		return false;
-	}
 }

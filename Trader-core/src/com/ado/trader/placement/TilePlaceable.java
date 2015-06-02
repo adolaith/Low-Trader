@@ -76,24 +76,28 @@ public class TilePlaceable extends Placeable {
 			n = map.getRegionMap()[(int) regVec.x + 1][(int) regVec.y];
 			if(n != null){
 				r.addConnectedRegion("e", n.getId());
+				n.addConnectedRegion("w", r.getId());
 			}
 		}
 		if((int) regVec.x - 1 >= 0){
 			n = map.getRegionMap()[(int) regVec.x - 1][(int) regVec.y];
 			if(n != null){
 				r.addConnectedRegion("w", n.getId());
+				n.addConnectedRegion("e", r.getId());
 			}
 		}
 		if((int) regVec.y + 1 < map.getRegionMap()[(int) regVec.x].length){
 			n = map.getRegionMap()[(int) regVec.x][(int) regVec.y + 1];
 			if(n != null){
 				r.addConnectedRegion("n", n.getId());
+				n.addConnectedRegion("s", r.getId());
 			}
 		}
 		if((int) regVec.y - 1 >= 0){
 			n = map.getRegionMap()[(int) regVec.x][(int) regVec.y - 1];
 			if(n != null){
 				r.addConnectedRegion("s", n.getId());
+				n.addConnectedRegion("n", r.getId());
 			}
 		}
 	}

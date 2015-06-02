@@ -98,7 +98,7 @@ public class SaveLoadMap extends SaveLoadMenu {
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
-				gameRes.getStreamer().saveRegion(x, y, j);
+				gameRes.getStreamer().saveRegion(gameRes.getMap().getRegionMap()[x][y], j);
 			}
 		}
 		
