@@ -23,9 +23,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.SpriteDrawable;
 import com.badlogic.gdx.utils.ArrayMap;
 import com.badlogic.gdx.utils.JsonValue;
 
-
 public class ObjectMenu extends BasicWindow {
-	
 	ArrayMap<String, Table> tableList;
 	float buttonSize = 32 * 1.2f;
 
@@ -122,6 +120,7 @@ public class ObjectMenu extends BasicWindow {
 //		t.setDebug(true);
 		
 		ScrollPane pane = GuiUtils.createScrollTable(gameRes.getSkin());
+//		pane.setDebug(true, true);
 		
 		Table entityMenu = new Table();
 		entityMenu.setFillParent(false);
@@ -173,6 +172,7 @@ public class ObjectMenu extends BasicWindow {
 			addToTable(butt, entityMenu);
 		}
 		
+		pane.setOverscroll(false, false);
 		pane.setWidget(entityMenu);
 		t.add(pane).fill().expand().left();
 		
@@ -293,14 +293,17 @@ public class ObjectMenu extends BasicWindow {
 	}
 	@Override
 	public void hideWindow(){
-		root.clear();
+		body.clear();
 		super.hideWindow();
 	}
 	public void setCurrentTable(Table t){
-		if(isVisible() && root.getChildren().first() == t){
-			hideWindow();
+		if(isVisible() && body.getChildren().size > 0){
+			if(body.getChildren().first() == t){
+				hideWindow();
+				return;
+			}
 		}
-		root.clear();
-		root.add(t).expand().fill();
+		body.clear();
+		body.add(t).expand().fill();
 	}
 }

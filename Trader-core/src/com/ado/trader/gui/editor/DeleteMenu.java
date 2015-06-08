@@ -20,6 +20,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
@@ -46,7 +47,10 @@ public class DeleteMenu extends ContextMenu {
 		
 		tileClicked = new Vector2();
 		
-		gameRes.getStage().addActor(this);
+		nameMap = gameRes.getWorld().getMapper(Name.class);
+		
+		Group layer = gameRes.getStage().getRoot().findActor("guiLayer");
+		layer.addActor(this);
 	}
 	
 	private Button createButton(final String key, final String name){

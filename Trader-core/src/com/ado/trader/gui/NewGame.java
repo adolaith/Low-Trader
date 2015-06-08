@@ -33,12 +33,12 @@ public class NewGame extends BasicWindow {
 	String externalPath = "adoGame/maps/";
 	
 	static int width = (int) (Gdx.graphics.getWidth() * 0.5);
-	static int height = (int) (Gdx.graphics.getHeight() * 0.6);
+	static int height = (int) (Gdx.graphics.getHeight() * 0.4);
 
 	public NewGame(final GameMain game, BitmapFont font, Skin skin, Stage stage) {
 		super("Select map", width, height, font, skin, stage);
 		setName("newGame");
-		root.top();
+		body.top();
 		
 		getTitle().clearListeners();
 		
@@ -59,7 +59,7 @@ public class NewGame extends BasicWindow {
 		ScrollPane sP = new ScrollPane(mapList, spS);
 		sP.setScrollBarPositions(true, true);
 		
-		root.add(sP).width((float) (width * 0.95)).height((float)(height * 0.7)).row();
+		body.add(sP).width((float) (width * 0.95)).height((float)(height * 0.7)).row();
 		
 		//start game button
 		LabelStyle labelStyle = new LabelStyle(font, Color.WHITE);
@@ -77,7 +77,7 @@ public class NewGame extends BasicWindow {
 			}
 		});
 		
-		root.add(start).padTop(2).width(width / 2).height((float)(height * 0.08)).row();;
+		body.add(start).padTop(2).width(width / 2).height((float)(height * 0.08)).row();;
 		
 		//back to main menu
 		Button back = GuiUtils.createButton("gui/button", null, skin);
@@ -89,7 +89,7 @@ public class NewGame extends BasicWindow {
 			}
 		});
 		
-		root.add(back).padTop(2).width(width / 2).height((float)(height * 0.08)).row();
+		body.add(back).padTop(2).width(width / 2).height((float)(height * 0.08)).row();
 	}
 
 	@Override

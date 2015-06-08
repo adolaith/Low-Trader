@@ -51,8 +51,6 @@ public class Map implements TileBasedMap{
 		activeRegions = new MapRegion[3][3];
 		world.setSystem(new GameTime(1.0f));
 		
-		streamer = new MapStreamer(this, items);
-		
 		overlay = new TileMaskCollection(atlas, tileWidth, tileHeight+(tileHeight/2));
 		tileSprites = loadTileSprites(atlas);
 		tilePool = new TileCollection(); 

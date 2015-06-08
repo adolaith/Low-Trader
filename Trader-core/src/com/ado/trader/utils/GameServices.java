@@ -18,9 +18,11 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
 
 public class GameServices {
 	Stage stage;
@@ -48,12 +50,19 @@ public class GameServices {
 		
 		this.font = new BitmapFont(Gdx.files.internal("font/white.fnt"), new TextureRegion(texture), false);
 		
-		font.getData().setScale(0.6f);
+		font.setScale(0.6f);
 		
 		cam = new OrthographicCamera(camWidth, camHeight);
 		this.skin = new Skin(atlas);
 		
 		this.stage = new Stage(new ExtendViewport(camWidth, camHeight));
+		
+		Group layer = new Group();
+		layer.setName("guiLayer");
+		Viewport view = stage.getViewport();
+		layer.setPosition(view.getScreenX(), view.getScreenY());
+		layer.setSize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+		stage.addActor(layer);
 		
 		world = new World();
 		world.setManager(new TagManager());

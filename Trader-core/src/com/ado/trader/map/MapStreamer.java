@@ -1,19 +1,16 @@
 package com.ado.trader.map;
 
-import com.ado.trader.items.ItemFactory;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
 
 public class MapStreamer {
 	Map map;
-	ItemFactory items;
 	
 	FileHandle saveDir;
 	
-	public MapStreamer(Map map, ItemFactory items) {
+	public MapStreamer(Map map) {
 		this.map = map;
-		this.items = items;
 	}
 
 	public void streamMap(){

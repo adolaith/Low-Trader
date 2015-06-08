@@ -18,6 +18,7 @@ public class MenuGroup extends Group {
 
 	public MenuGroup(final GameServices gameRes) {
 		cam = gameRes.getCam();
+//		debugAll();
 		
 		width = gameRes.getStage().getViewport().getScreenWidth() * 0.25f;
 		height = gameRes.getStage().getViewport().getScreenHeight() * 0.50f;
@@ -48,7 +49,8 @@ public class MenuGroup extends Group {
 		background.setBackground(gameRes.getSkin().getDrawable("gui/bGround"));
 		background.add(new Image(gameRes.getSkin().getDrawable("gui/fGround"))).pad(4).fill().expand();
 		
-		gameRes.getStage().addActor(this);
+		Group layer = gameRes.getStage().getRoot().findActor("guiLayer");
+		layer.addActor(this);
 	}
 	
 	public void show(){

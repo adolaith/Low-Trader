@@ -3,7 +3,6 @@ package com.ado.trader.map;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import com.ado.trader.items.ItemFactory;
 import com.ado.trader.utils.IsoUtils;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
@@ -18,8 +17,8 @@ public class EditorStreamer extends MapStreamer {
 	FileHandle dir;
 	int shiftX, shiftY;
 
-	public EditorStreamer(Map map, ItemFactory items) {
-		super(map, items);
+	public EditorStreamer(Map map) {
+		super(map);
 		j = new Json();
 		FileHandle tmpDir = Gdx.files.external("adoGame/maps/tmp");
 		if(tmpDir.exists()){
@@ -207,7 +206,7 @@ public class EditorStreamer extends MapStreamer {
 		
 		if(x + shiftX < 0 || x + shiftX > 2 || y + shiftY < 0 || y + shiftY > 2){
 			unloadRegions.add(map.getRegionMap()[x][y]);
-			Gdx.app.log("Streamer: ", "Region to UNLOAD: "+ map.getRegionMap()[x][y].getId());
+//			Gdx.app.log("Streamer: ", "Region to UNLOAD: "+ map.getRegionMap()[x][y].getId());
 			return;
 		}
 			
@@ -225,7 +224,7 @@ public class EditorStreamer extends MapStreamer {
 		cam.position.x = tmp.x;
 		cam.position.y = tmp.y;
 		
-		Gdx.app.log("Streamer: ", "CAM RE-POS");
+//		Gdx.app.log("Streamer: ", "CAM RE-POS");
 	}
 	private void writeUnloadedRegions(Array<MapRegion> regions){
 		if(regions.size == 0) return;

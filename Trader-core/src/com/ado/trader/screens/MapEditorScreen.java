@@ -6,6 +6,7 @@ import com.ado.trader.entities.EntityLoader;
 import com.ado.trader.gui.CustomCursor;
 import com.ado.trader.gui.ToolTip;
 import com.ado.trader.gui.editor.MapEditorPanel;
+import com.ado.trader.gui.editor.MiniMap;
 import com.ado.trader.input.InputHandler;
 import com.ado.trader.input.MapEditorInput;
 import com.ado.trader.map.EditorStreamer;
@@ -31,23 +32,7 @@ public class MapEditorScreen implements Screen {
 	Entity currentlySelected;
 	Label fps;
 
-	public MapEditorScreen(GameMain game) {
-		MapEditorScreen.game = game;
-		MapEditorInput input = new MapEditorInput();
-		gameServices = new GameServices(1280, 720, input, null);
-		
-		initWorld();
-		input.addPlacementManager(new PlacementManager(gameServices));
-		
-		new ToolTip(gameServices.getFont(), gameServices.getSkin(), gameServices.getStage());
-		new CustomCursor(gameServices);
-		new MapEditorPanel(gameServices);
-		
-		runLogic = true;
-		
-	}
-	
-	public MapEditorScreen(GameMain game, String loadDir){
+	public MapEditorScreen(GameMain game, String loadDir) {
 		MapEditorScreen.game = game;
 		MapEditorInput input = new MapEditorInput();
 		gameServices = new GameServices(1280, 720, input, loadDir);
@@ -55,14 +40,23 @@ public class MapEditorScreen implements Screen {
 		initWorld();
 		input.addPlacementManager(new PlacementManager(gameServices));
 		
-		new ToolTip(gameServices.getFont(), gameServices.getSkin(), gameServices.getStage());
+		LabelStyle style = new LabelStyle(gameServices.getFont(), Color.WHITE);
+		fps = new Label("", style);
+		fps.setPosition(Gdx.graphics.getWidth() - 100, Gdx.graphics.getHeight() - 20);
+		gameServices.getStage().addActor(fps);
+		
+		style = new LabelStyle(style);
+		style.fontColor = Color.BLACK;
+		
+		new ToolTip(style, gameServices.getSkin(), gameServices.getStage());
 		new CustomCursor(gameServices);
 		new MapEditorPanel(gameServices);
+		new MiniMap(gameServices);
 		
-		input.addPlacementManager(new PlacementManager(gameServices));
-		
-		EntityLoader loader = gameServices.getEntities().getLoader();
-		loader.loadSavedEntities(loadDir, gameServices);
+		if(loadDir != null){
+			EntityLoader loader = gameServices.getEntities().getLoader();
+			loader.loadSavedEntities(loadDir, gameServices);
+		}
 		
 		runLogic = true;
 	}
@@ -74,12 +68,9 @@ public class MapEditorScreen implements Screen {
 		world.setSystem(new SaveSystem(gameServices), true);
 		world.initialize();
 		
-		LabelStyle style = new LabelStyle(gameServices.getFont(), Color.WHITE);
-		fps = new Label("", style);
-		fps.setPosition(Gdx.graphics.getWidth() - 100, Gdx.graphics.getHeight() - 20);
-		gameServices.getStage().addActor(fps);
+		gameServices.setStreamer(new EditorStreamer(gameServices.getMap()));
 		
-		gameServices.setStreamer(new EditorStreamer(gameServices.getMap(), gameServices.getItems()));
+//		gameServices.getStage().setDebugAll(true);
 	}
 	@Override
 	public void show() {
@@ -103,6 +94,7 @@ public class MapEditorScreen implements Screen {
 		gameServices.getCam().translate(InputHandler.getVelocity().x, InputHandler.getVelocity().y);
 		
 		gameServices.getStage().act(delta);
+		
 		
 		gameServices.getRenderer().render(delta);
 		fps.setText("FPS: "+ Gdx.graphics.getFramesPerSecond());

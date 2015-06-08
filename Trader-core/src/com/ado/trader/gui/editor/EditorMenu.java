@@ -112,8 +112,7 @@ public class EditorMenu extends MenuGroup {
 		});
 		functionTable.add(b);
 		
-		gameRes.getStage().addActor(this);
-		setZIndex(500);
+		toFront();
 	}
 	
 	@Override

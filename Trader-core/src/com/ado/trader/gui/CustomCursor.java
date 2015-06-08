@@ -4,6 +4,7 @@ import com.ado.trader.utils.GameServices;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 
@@ -14,7 +15,10 @@ public class CustomCursor extends Image{
 		skin = gameRes.getSkin();
 		setName("customCursor");
 		setSize(28, 28);
-		gameRes.getStage().addActor(this);
+		
+		Group layer = gameRes.getStage().getRoot().findActor("guiLayer");
+		layer.addActor(this);
+		
 		hide();
 	}
 	

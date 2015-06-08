@@ -25,12 +25,12 @@ public class LoadGame extends BasicWindow {
 	String externalPath = "adoGame/saves/";
 	
 	static int width = (int) (Gdx.graphics.getWidth() * 0.5);
-	static int height = (int) (Gdx.graphics.getHeight() * 0.6);
+	static int height = (int) (Gdx.graphics.getHeight() * 0.4);
 
 	public LoadGame(final GameMain game, BitmapFont font, Skin skin, Stage stage) {
 		super("Load game", width, height, font, skin, stage);
 		setName("loadGame");
-		root.top();
+		body.top();
 		
 		getTitle().clearListeners();
 
@@ -48,7 +48,7 @@ public class LoadGame extends BasicWindow {
 		ScrollPane sP = new ScrollPane(saveList, spS);
 		sP.setScrollBarPositions(true, true);
 
-		root.add(sP).width((float) (width * 0.95)).height((float)(height * 0.6)).row();
+		body.add(sP).width((float) (width * 0.95)).height((float)(height * 0.6)).row();
 
 		//start game button
 		LabelStyle labelStyle = new LabelStyle(font, Color.WHITE);
@@ -62,7 +62,7 @@ public class LoadGame extends BasicWindow {
 			}
 		});
 
-		root.add(start).padTop(2).width(width / 2).height((float)(height * 0.08)).row();
+		body.add(start).padTop(2).width(width / 2).height((float)(height * 0.08)).row();
 		
 		Button delete = GuiUtils.createButton("gui/button", null, skin);
 		delete.add(new Label("Delete save",labelStyle));
@@ -77,7 +77,7 @@ public class LoadGame extends BasicWindow {
 			}
 		});
 
-		root.add(delete).padTop(2).width(width / 2).height((float)(height * 0.08)).row();
+		body.add(delete).padTop(2).width(width / 2).height((float)(height * 0.08)).row();
 		
 		//back to main menu
 		Button back = GuiUtils.createButton("gui/button", null, skin);
@@ -89,7 +89,7 @@ public class LoadGame extends BasicWindow {
 			}
 		});
 
-		root.add(back).padTop(2).width(width / 2).height((float)(height * 0.08)).row();
+		body.add(back).padTop(2).width(width / 2).height((float)(height * 0.08)).row();
 		
 	}
 	@Override

@@ -125,6 +125,7 @@ public class ItemFactory {
 	
 	public static void deleteItem(Chunk chunk, int tileX, int tileY, String name){
 		for(int c = 0; c < chunk.getItems().map[tileX][tileY].length; c++){
+			if(chunk.getItems().map[tileX][tileY][c] == null) continue;
 			Entity e = world.getEntity(chunk.getItems().map[tileX][tileY][c]);
 			if(nameMap.get(e).getName().matches(name)){
 				chunk.getItems().map[tileX][tileY][c] = null;

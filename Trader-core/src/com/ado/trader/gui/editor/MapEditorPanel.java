@@ -5,6 +5,7 @@ import com.ado.trader.gui.ToolTip;
 import com.ado.trader.utils.GameServices;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
@@ -39,7 +40,9 @@ public class MapEditorPanel extends Table{
 		float y = view.getScreenY() + 2;
 		
 		setPosition(x, y);
-		gameRes.getStage().addActor(this);
+		
+		Group layer = gameRes.getStage().getRoot().findActor("guiLayer");
+		layer.addActor(this);
 	}
 	
 	//UPDATE
@@ -65,6 +68,24 @@ public class MapEditorPanel extends Table{
 		final AiEditorWindow aiWin = new AiEditorWindow(gameRes);
 		final ToolTip toolTip = (ToolTip)(gameRes.getStage().getRoot().findActor("tooltip"));
 		
+		ImageButton mapButton = GuiUtils.createImageButton("gui/mapIcon", null, "gui/button", null, gameRes.getSkin());
+		mapButton.addListener(new ClickListener() {
+			public void enter (InputEvent event, float x, float y, int pointer, Actor fromActor) {
+				toolTip.show("MiniMap");
+			}
+			public void exit (InputEvent event, float x, float y, int pointer, Actor fromActor) {
+				toolTip.hide();
+			}
+			public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+				Viewport view = gameRes.getStage().getViewport();
+				Group layer = getStage().getRoot().findActor("guiLayer");
+				MiniMap map = layer.findActor("map");
+				map.showWindow(view.getScreenWidth() - map.getWidth() - 4, view.getScreenHeight() - map.getHeight() - 4);
+				return true;
+			}
+		});
+		t.add(mapButton).row();
+		
 		ImageButton aiButton = GuiUtils.createImageButton("gui/iconImportant", null, "gui/button", null, gameRes.getSkin());
 		aiButton.addListener(new ClickListener() {
 			public void enter (InputEvent event, float x, float y, int pointer, Actor fromActor) {
@@ -77,7 +98,6 @@ public class MapEditorPanel extends Table{
 				Viewport view = gameRes.getStage().getViewport();
 				aiWin.showWindow((view.getScreenX() + view.getScreenWidth() / 2) - aiWin.getWidth() / 2,
 						(view.getScreenY() + view.getScreenHeight() / 2) - aiWin.getHeight() / 2);
-				Gdx.app.log("editorPanel: ", "w: "+ getWidth());
 				return true;
 			}
 		});

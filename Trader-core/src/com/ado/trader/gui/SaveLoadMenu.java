@@ -59,7 +59,7 @@ public class SaveLoadMenu extends Group {
 		background.setSize(width, height);
 		functionTable.setSize(width, height);
 		
-		new OverwriteDialog(gameRes, width, height * 0.3f);
+		new OverwriteDialog(gameRes, width, height * 0.2f);
 		
 		//bg imgs
 		background.setBackground(gameRes.getSkin().getDrawable("gui/bGround"));
@@ -142,7 +142,8 @@ public class SaveLoadMenu extends Group {
 		addActor(background);
 		addActor(functionTable);
 		
-		gameRes.getStage().addActor(this);
+		Group layer = gameRes.getStage().getRoot().findActor("guiLayer");
+		layer.addActor(this);
 	}
 	public void show(boolean loading){
 		activeButton.clearActor();
@@ -188,7 +189,7 @@ public class SaveLoadMenu extends Group {
 					return true;
 				}
 			});
-			root.add(b);
+			body.add(b).padRight(3);
 			
 			b = GuiUtils.createButton("gui/button", null, gameRes.getSkin());
 			b.add(new Label("Cancel",labelStyle));
@@ -198,8 +199,9 @@ public class SaveLoadMenu extends Group {
 					return true;
 				}
 			});
-			root.add(b);
+			body.add(b);
 		}
+		
 	}
 	public void save(GameServices gameRes){
 	}

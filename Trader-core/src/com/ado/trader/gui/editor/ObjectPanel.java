@@ -65,7 +65,9 @@ public class ObjectPanel extends Table {
 			}
 			public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
 				panel.setChildTable("main");
-				
+				if(objectMenus.isVisible()){
+					objectMenus.hideWindow();
+				}
 				return true;
 			}
 		});
@@ -83,19 +85,14 @@ public class ObjectPanel extends Table {
 			public void exit (InputEvent event, float x, float y, int pointer, Actor fromActor) {
 				toolTip.hide();
 			}
-			@Override
-			public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+			public void clicked (InputEvent event, float x, float y) {
 				Table t = objectMenus.getTable(menuName);
-				if(objectMenus.isVisible()){
-					objectMenus.setCurrentTable(t);
-					objectMenus.getTitle().setText(tooltip);
-				}else{
-					objectMenus.setCurrentTable(t);
-					objectMenus.getTitle().setText(tooltip);
-					Viewport view = gameRes.getStage().getViewport();
-					objectMenus.showWindow(view.getScreenX() + view.getScreenWidth() - getWidth() - objectMenus.getWidth() - 2, getY());
-				}
-				return true;
+				
+				objectMenus.setCurrentTable(t);
+				objectMenus.getTitle().setText(tooltip);
+				Viewport view = gameRes.getStage().getViewport();
+				objectMenus.showWindow((view.getScreenX() + view.getScreenWidth()) - getWidth() - (objectMenus.getWidth() + 8), getY());
+				
 			}
 		});
 		add(b).row();

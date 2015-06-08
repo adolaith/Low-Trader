@@ -145,18 +145,19 @@ public class EntityFactory{
 	}
 	public static void deleteEntity(Chunk chunk, int tileX, int tileY, String name){
 		for(int c = 0; c < chunk.getEntities().map[tileX][tileY].length; c++){
+			if(chunk.getEntities().map[tileX][tileY][c] == null) continue; 
 			Entity e = map.getWorld().getEntity(chunk.getEntities().map[tileX][tileY][c]);
-//			if(nameMap.get(e).getName().matches(name)){
-//
-//				chunk.getEntities().map[tileX][tileY][c] = null;
-//
-//				if(areaMap.has(e)){
-//					for(Vector2 vec: areaMap.get(e).area){
-//						chunk.getEntities().map[(int)(tileX + vec.x)][(int)(tileY + vec.y)][c] = null;
-//					}
-//				}
-//				e.deleteFromWorld();
-//			}
+			if(nameMap.get(e).getName().matches(name)){
+
+				chunk.getEntities().map[tileX][tileY][c] = null;
+
+				if(areaMap.has(e)){
+					for(Vector2 vec: areaMap.get(e).area){
+						chunk.getEntities().map[(int)(tileX + vec.x)][(int)(tileY + vec.y)][c] = null;
+					}
+				}
+				e.deleteFromWorld();
+			}
 		}
 	}
 	public ArrayMap<String, JsonValue> getEntityData(){

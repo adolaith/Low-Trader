@@ -36,7 +36,7 @@ public class AiEditorWindow extends BasicWindow {
 		//menu bar
 		Table menu = createMenu(gameRes);
 		 
-		root.add(menu).width(480).height(25).row();
+		body.add(menu).width(480).height(25).row();
 		
 		//body
 		ScrollPane pane = GuiUtils.createScrollTable(gameRes.getSkin());
@@ -48,7 +48,13 @@ public class AiEditorWindow extends BasicWindow {
 		pane.setFadeScrollBars(false);
 		pane.setScrollBarPositions(true, true);
 		pane.setScrollingDisabled(false, false);
-		root.add(pane).fill().expand();
+		body.add(pane).fill().expand();
+		
+	}
+	
+	@Override
+	public void act(float delta){
+		super.act(delta);
 		
 	}
 	

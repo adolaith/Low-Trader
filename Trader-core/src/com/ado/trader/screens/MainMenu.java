@@ -1,29 +1,13 @@
 package com.ado.trader.screens;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.Writer;
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.util.HashMap;
-import java.util.Map;
-
 import com.ado.trader.GameMain;
 import com.ado.trader.gui.GameOptions;
 import com.ado.trader.gui.LoadGame;
 import com.ado.trader.gui.NewGame;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.GL30;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
@@ -36,7 +20,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
-import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.scenes.scene2d.utils.Align;
 
 //old code from a tutorial. Used purely for utility. TO be replaced.
 public class MainMenu implements Screen {
@@ -53,29 +37,29 @@ public class MainMenu implements Screen {
 	public MainMenu(GameMain game){
 		this.game = game;
 		
-		long t = System.nanoTime();
-		try{
+//		long t = System.nanoTime();
+//		try{
 //			FileOutputStream oS = new FileOutputStream(System.getProperty("user.home") + "/adoGame/test.zip");
 //			ZipOutputStream zipOut = new ZipOutputStream(oS);
 			
-			Map<String, String> env = new HashMap<>(); 
-			env.put("create", "true");
-			
-			Path path = Paths.get(System.getProperty("user.home") + "/adoGame/test.zip");
-			
-			URI uri = URI.create("jar:" + path.toUri());
-			try (FileSystem fs = FileSystems.newFileSystem(uri, env))
-			{
-			    Path nf = fs.getPath("new.txt");
-			    try (Writer writer = Files.newBufferedWriter(nf, StandardCharsets.UTF_8, StandardOpenOption.CREATE)) {
-			        writer.write("hello");
-			    }
-			    
-			    nf = fs.getPath("test/vapeTest.txt");
-			    try (Writer writer = Files.newBufferedWriter(nf, StandardCharsets.UTF_8, StandardOpenOption.CREATE)) {
-			        writer.write("hello");
-			    }
-			}
+//			Map<String, String> env = new HashMap<>(); 
+//			env.put("create", "true");
+//			
+//			Path path = Paths.get(System.getProperty("user.home") + "/adoGame/test.zip");
+//			
+//			URI uri = URI.create("jar:" + path.toUri());
+//			try (FileSystem fs = FileSystems.newFileSystem(uri, env))
+//			{
+//			    Path nf = fs.getPath("new.txt");
+//			    try (Writer writer = Files.newBufferedWriter(nf, StandardCharsets.UTF_8, StandardOpenOption.CREATE)) {
+//			        writer.write("hello");
+//			    }
+//			    
+//			    nf = fs.getPath("test/vapeTest.txt");
+//			    try (Writer writer = Files.newBufferedWriter(nf, StandardCharsets.UTF_8, StandardOpenOption.CREATE)) {
+//			        writer.write("hello");
+//			    }
+//			}
 			
 			
 //			ZipFile zip = new ZipFile(System.getProperty("user.home") + "/adoGame/test.zip");
@@ -92,10 +76,10 @@ public class MainMenu implements Screen {
 //				System.out.println("FileName: "+filename);
 //				System.out.println("FileSize: "+entry.getSize());
 //			}
-		}catch(Exception ex){
-			System.out.println("Zip error! : "+ex);
-		}
-	    System.out.println((System.nanoTime() - t) / 1e9);
+//		}catch(Exception ex){
+//			System.out.println("Zip error! : "+ex);
+//		}
+//	    System.out.println((System.nanoTime() - t) / 1e9);
 		
 	    
 		//create temp dir
@@ -150,11 +134,10 @@ public class MainMenu implements Screen {
 		white = new BitmapFont(Gdx.files.internal("font/white.fnt"), false);
 //		white.setScale(1f);
 		stage = new Stage();
-		options = new GameOptions(white, skin, stage);
+		
+//		options = new GameOptions(white, skin, stage);
 		
 		Gdx.input.setInputProcessor(stage);
-		
-		new LoadGame(game, white, skin, stage);
 		
 		Table root = new Table();
 		root.setName("mainMenu");
@@ -162,6 +145,7 @@ public class MainMenu implements Screen {
 		
 		setStyle("gui/panelButton", "gui/panelButton2", white);
 		new NewGame(game, white, skin, stage);
+		new LoadGame(game, white, skin, stage);
 		
 		//Prompts map selection then starts new game
 		TextButton newGame = new TextButton("New Game", style);
@@ -196,21 +180,21 @@ public class MainMenu implements Screen {
 			}
 			public void touchUp(InputEvent e, float x, float y, int pointer, int button){
 				System.out.println("Starting Map Editor...");
-				game.setScreen(new MapEditorScreen(game));
+				game.setScreen(new MapEditorScreen(game, null));
 			}
 		});
 		
-		//change game options
-		TextButton optionsButton = new TextButton("Options", style);
-		optionsButton.addListener(new InputListener(){
-			public boolean touchDown(InputEvent e, float x, float y, int pointer, int button){
-				return true;
-			}
-			public void touchUp(InputEvent e, float x, float y, int pointer, int button){
-				System.out.println("Game options coming soon...");
-				options.showWindow(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() / 2);
-			}
-		});
+//		//change game options
+//		TextButton optionsButton = new TextButton("Options", style);
+//		optionsButton.addListener(new InputListener(){
+//			public boolean touchDown(InputEvent e, float x, float y, int pointer, int button){
+//				return true;
+//			}
+//			public void touchUp(InputEvent e, float x, float y, int pointer, int button){
+//				System.out.println("Game options coming soon...");
+//				options.showWindow(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() / 2);
+//			}
+//		});
 		
 		//Quit game to desktop
 		TextButton quit = new TextButton("Quit", style);
@@ -232,7 +216,7 @@ public class MainMenu implements Screen {
 		root.add(newGame).row();
 		root.add(load).row();
 		root.add(mapEditor).row();
-		root.add(optionsButton).row();
+//		root.add(optionsButton).row();
 		root.add(quit);
 		root.setX(Gdx.graphics.getWidth() / 2);
 		root.setY(Gdx.graphics.getHeight() / 2);

@@ -239,41 +239,6 @@ public class SaveLoadMap extends SaveLoadMenu {
 		l.addAction(Actions.sequence(Actions.alpha(0, 2), Actions.removeActor()));
 	}
 	
-	private void testData(Map map){
-		
-		for(int x = 0; x < 3; x++){
-			for(int y = 0; y < 3; y++){
-				if(x == 1 && y == 1){
-					continue;
-				}
-
-				MapRegion region = new MapRegion();
-
-				for(int i = 0; i < 3; i++){
-					for(int k = 0; k < 3; k++){
-						Chunk chunk = new Chunk(map.getWorld());
-
-						//set chunk to middle of region
-						region.setChunk(i, k, chunk);
-
-						TileLayer layer = chunk.getTiles();
-
-						for(int m = 0; m < layer.getWidth(); m++){
-							for(int n = 0; n < layer.getHeight(); n++){
-								if(x % 2 == 0 && y % 2 == 0){
-									layer.map[m][n] = map.getTilePool().createTile(6);
-								}else{
-									layer.map[m][n] = map.getTilePool().createTile(0);
-								}
-							}
-						}
-					}
-				}
-
-				map.getRegionMap()[x][y] = region;
-			}
-		}
-	}
 	@Override
 	public void show(boolean loading){
 		super.show(loading);

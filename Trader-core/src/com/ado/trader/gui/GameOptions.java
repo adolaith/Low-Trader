@@ -16,7 +16,6 @@ public class GameOptions extends BasicWindow {
 	
 	public GameOptions(BitmapFont font, Skin skin, Stage stage) {
 		super("Game Options", 500, 360, font, skin, stage);
-		root.top().center();
 		
 		style = new TextButtonStyle();
 		style.up = skin.getDrawable("gui/panelButton");
@@ -65,8 +64,8 @@ public class GameOptions extends BasicWindow {
 		body = new Table();
 		body.add(main);
 		
-		root.add(body).expand().row();
-		root.add(buttons);
+		body.add(body).expand().row();
+		body.add(buttons);
 	}
 	private void initTables(){
 		main = new Table();
@@ -116,7 +115,5 @@ public class GameOptions extends BasicWindow {
 
 	public void showWindow(float x, float y){
 		super.showWindow(x, y);
-		bgTable.toFront();
-		functionTable.toFront();
 	}
 }
