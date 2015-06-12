@@ -92,7 +92,7 @@ public class AiEditorWindow extends BasicWindow {
 		b.add(l);
 		b.addListener(new ClickListener(){
 			public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-				loader.show(true);
+				loader.showWindow(getX() + loader.getWidth() / 8, getY(), true);
 				return true;
 			}
 		});
@@ -104,7 +104,7 @@ public class AiEditorWindow extends BasicWindow {
 		b.add(l);
 		b.addListener(new ClickListener(){
 			public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-				loader.show(false);
+				loader.showWindow(getX() + loader.getWidth() / 8, getY(), false);
 				return true;
 			}
 		});

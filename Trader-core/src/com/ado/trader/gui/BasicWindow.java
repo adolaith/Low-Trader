@@ -1,10 +1,12 @@
 package com.ado.trader.gui;
 
+import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -48,7 +50,7 @@ public class BasicWindow extends Table{
 		titleBar.add(this.title).left().fill().expand().padLeft(2);
 		
 		ImageButton closeButton = GuiUtils.createImageButton("gui/exitIcon", null, "gui/button", null, skin);
-		closeButton.addListener(new ClickListener() {
+		closeButton.addListener(new InputListener() {
 			public void enter (InputEvent event, float x, float y, int pointer, Actor fromActor) {
 				ToolTip toolTip = (ToolTip)(getStage().getRoot().findActor("tooltip"));
 				if(toolTip != null){
@@ -73,6 +75,7 @@ public class BasicWindow extends Table{
 		add(titleBar).top().height(24).padTop(2).padLeft(2).padRight(2).fill().row();
 		
 		body = new Table();
+		body.top();
 		body.setBackground(skin.getDrawable("gui/fGround"));
 		
 		add(body).pad(2).top().fill().expand();

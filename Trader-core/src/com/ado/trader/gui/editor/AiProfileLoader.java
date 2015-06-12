@@ -5,15 +5,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 import com.ado.trader.gui.SaveLoadMenu;
+import com.ado.trader.systems.AiSystem;
 import com.ado.trader.utils.GameServices;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.actions.Actions;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Json;
@@ -24,7 +20,7 @@ public class AiProfileLoader extends SaveLoadMenu {
 	Json json;
 
 	public AiProfileLoader(final GameServices gameRes, final AiEditorWindow editor) {
-		super(gameRes, "adoGame/ai/", "data/ai/", 400, 400);
+		super(gameRes, "adoGame/editor/ai/", "data/ai/", 400, 400);
 		this.editor = editor;
 		json = new Json();
 		
@@ -45,7 +41,7 @@ public class AiProfileLoader extends SaveLoadMenu {
 				try {
 					json.setWriter(new FileWriter(file.file()));
 				} catch (IOException e) {
-					Gdx.app.log("SaveSystem: ", "Error writing file!");
+					Gdx.app.log("AiLoader: ", "Error writing file!");
 					e.printStackTrace();
 				}
 				
@@ -60,11 +56,14 @@ public class AiProfileLoader extends SaveLoadMenu {
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
+
+				AiSystem aiSys = gameRes.getWorld().getSystem(AiSystem.class);
+				aiSys.getAllAiProfiles().put(file.name(), json.fromJson(null, file));
 				
 				populateList(false);
 				
 				//splash confirmation on screen
-				saveAlert(gameRes.getFont());
+				saveAlert("Profile Saved");
 				
 				return true;
 			}
@@ -90,30 +89,13 @@ public class AiProfileLoader extends SaveLoadMenu {
 					
 					AiEditorWindow.refreshLayout();
 					
-					hide();
+					hideWindow();
 				}
 				
 				return true;
 			}
 		});
 		
-		delete.addListener(new ClickListener() {
-			public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-				if(folderList.getSelected() != null){
-					if(!folderList.getSelected().startsWith("*")){
-						FileHandle file = Gdx.files.external(externalPath + folderList.getSelected());
-						file.delete();
-						
-						if(activeButton.getActor() == save){
-							populateList(false);	
-						}else{
-							populateList(true);
-						}
-					}
-				}
-				return true;
-			}
-		});
 	}
 	
 	private void loadProfile(JsonValue profile, final GameServices gameRes){
@@ -191,25 +173,14 @@ public class AiProfileLoader extends SaveLoadMenu {
 		file.writeObjectEnd();
 	}
 	
-	//splashes 'game saved' label across screen before fading
-	private void saveAlert(BitmapFont font){
-		LabelStyle lStyle = new LabelStyle(font, Color.WHITE);
-		Label l = new Label("Profile Saved", lStyle);
-		l.setFontScale(3);
-		l.setWidth(200);
-		l.setHeight(40);
-		getStage().addActor(l);
-		l.toFront();
-		l.setPosition((Gdx.graphics.getWidth() / 2) - (l.getWidth()), Gdx.graphics.getHeight() / 2);
-		l.addAction(Actions.sequence(Actions.alpha(0, 2), Actions.removeActor()));
-	}
-	
 	@Override
-	public void show(boolean loading){
-		super.show(loading);
+	public void showWindow(float x, float y, boolean loading){
+		super.showWindow(x, y, loading);
+		
 		populateList(loading);
 	}
-	private void populateList(boolean loading){
+	@Override
+	protected void populateList(boolean loading){
 		Array<String> arr = new Array<String>();
 		FileHandle file;
 		

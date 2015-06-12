@@ -7,6 +7,7 @@ import com.ado.trader.map.Map;
 import com.ado.trader.map.MapStreamer;
 import com.ado.trader.pathfinding.AStarPathFinder;
 import com.ado.trader.rendering.Renderer;
+import com.ado.trader.systems.EntityDeletionManager;
 import com.artemis.World;
 import com.artemis.managers.GroupManager;
 import com.artemis.managers.TagManager;
@@ -65,6 +66,7 @@ public class GameServices {
 		stage.addActor(layer);
 		
 		world = new World();
+		world.setManager(new EntityDeletionManager());
 		world.setManager(new TagManager());
 		world.setManager(new GroupManager());
 		

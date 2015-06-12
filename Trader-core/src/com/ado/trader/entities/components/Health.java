@@ -3,16 +3,26 @@ package com.ado.trader.entities.components;
 import com.artemis.Component;
 
 public class Health extends Component {
-	public int value, max;
+	int current, max;
 
 	public Health() {
 	}
-	public void setMax(int i){
-		value = i;
-		max = i;
+	
+	public Health(int max){
+		this.max = max;
+		current = max;
 	}
-	public void loadValues(int value, int max){
-		this.value = value;
+	public int getCurrent() {
+		return current;
+	}
+	public void setCurrent(int current) {
+		this.current = current;
+	}
+	public int getMax() {
+		return max;
+	}
+	public void setMax(int max) {
 		this.max = max;
 	}
+
 }

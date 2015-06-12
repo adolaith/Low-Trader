@@ -27,6 +27,7 @@ import com.badlogic.gdx.utils.JsonValue;
 
 public class MiniMap extends BasicWindow {
 	final int NULL_COLOUR = 99;
+	final int CAMERA_COLOUR = 98;
 	final int TILE_MODE = 0;
 	final int CHUNK_MODE = 1;
 	final int REGION_MODE = 2;
@@ -104,6 +105,7 @@ public class MiniMap extends BasicWindow {
 			
 			tLayer = c.getTiles();
 			
+			//draw tiles
 			for(int x = 0; x < tLayer.getWidth(); x++){
 				for(int y = 0; y < tLayer.getHeight(); y++){
 					Tile t = tLayer.map[x][y];
@@ -115,6 +117,11 @@ public class MiniMap extends BasicWindow {
 					}
 				}
 			}
+			
+			//draw camera dot
+			camMap = Map.worldVecToTile((int) camMap.x, (int) camMap.y);
+			batch.draw(mapColours.get(CAMERA_COLOUR), getX() + 4 + (camMap.x * pxWidth), getY() + 4 + (camMap.y * pxHeight), pxWidth, pxHeight);
+			
 			break;
 		case 1:
 			pxWidth = 2;
@@ -123,6 +130,7 @@ public class MiniMap extends BasicWindow {
 			
 			if(r == null) return;
 			
+			Vector2 tmp = Map.worldVecToChunk((int) camMap.x, (int) camMap.y);
 			for(int rX = 0; rX < 3; rX++){
 				for(int rY = 0; rY < 3; rY++){
 					if(r.getChunk(rX, rY) == null){
@@ -152,17 +160,26 @@ public class MiniMap extends BasicWindow {
 				}
 			}
 			
+			//draw camera dot
+			tmp = Map.worldVecToChunk((int) camMap.x, (int) camMap.y);
+			camMap = Map.worldVecToTile((int) camMap.x, (int) camMap.y);
+			isoX = getX() + 4 + (camMap.x * pxWidth) + (tmp.x * 32) * pxWidth;
+			isoY = getY() + 4 + (camMap.y * pxHeight) + (tmp.y * 32) * pxHeight;
+
+			batch.draw(mapColours.get(CAMERA_COLOUR), isoX, isoY, pxWidth, pxHeight);
 			break;
 		case 2:
 			pxWidth = 21;
 			pxHeight = 21;
 			
+			tmp = Map.worldVecToRegion((int) camMap.x, (int) camMap.y);
 			for(int rX = 0; rX < 3; rX++){
 				for(int rY = 0; rY < 3; rY++){
 					if(map.getRegionMap()[rX][rY] == null){
 						isoX = getX() + 4 + (rX * (pxWidth * 3));
 						isoY = getY() + 4 + (rY * (pxHeight * 3));
 						batch.draw(mapColours.get(NULL_COLOUR), isoX, isoY, pxWidth * 3, pxHeight * 3);
+						
 						continue;
 					}
 					
@@ -193,9 +210,17 @@ public class MiniMap extends BasicWindow {
 						}
 					}
 					
+					
 				}
 			}
 			
+			//draw camera dot
+			camMap = Map.worldVecToChunk((int) camMap.x, (int) camMap.y);
+
+			isoX = getX() + 4 + (tmp.x * (pxWidth * 3)) + (camMap.x * pxWidth);
+			isoY = getY() + 4 + (tmp.y * (pxHeight * 3)) + (camMap.y * pxHeight);
+
+			batch.draw(mapColours.get(CAMERA_COLOUR), isoX, isoY, pxWidth, pxHeight);
 			break;
 		}
 	}
@@ -224,5 +249,13 @@ public class MiniMap extends BasicWindow {
 		pix.dispose();
 		
 		mapColours.put(NULL_COLOUR, tex);
+		
+		pix = new Pixmap(4, 4, Format.RGBA8888);
+		pix.setColor(1, 1, 0, 1);
+		pix.fill();
+		tex = new Texture(pix);
+		pix.dispose();
+		
+		mapColours.put(CAMERA_COLOUR, tex);
 	}
 }

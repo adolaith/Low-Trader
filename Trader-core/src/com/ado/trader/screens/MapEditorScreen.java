@@ -11,6 +11,7 @@ import com.ado.trader.input.InputHandler;
 import com.ado.trader.input.MapEditorInput;
 import com.ado.trader.map.EditorStreamer;
 import com.ado.trader.placement.PlacementManager;
+import com.ado.trader.systems.AiSystem;
 import com.ado.trader.systems.AnimationSystem;
 import com.ado.trader.systems.SaveSystem;
 import com.ado.trader.utils.GameServices;
@@ -38,6 +39,9 @@ public class MapEditorScreen implements Screen {
 		gameServices = new GameServices(1280, 720, input, loadDir);
 		
 		initWorld();
+		
+		gameServices.setStreamer(new EditorStreamer(gameServices.getMap()));
+		
 		input.addPlacementManager(new PlacementManager(gameServices));
 		
 		LabelStyle style = new LabelStyle(gameServices.getFont(), Color.WHITE);
@@ -59,16 +63,15 @@ public class MapEditorScreen implements Screen {
 		}
 		
 		runLogic = true;
+		
 	}
 	
 	private void initWorld(){
 		World world = gameServices.getWorld();
-//		world.setSystem(new AiSystem(gameServices)); //TEST USE
+		world.setSystem(new AiSystem(gameServices)); //TEST USE
 		world.setSystem(new AnimationSystem());
 		world.setSystem(new SaveSystem(gameServices), true);
 		world.initialize();
-		
-		gameServices.setStreamer(new EditorStreamer(gameServices.getMap()));
 		
 //		gameServices.getStage().setDebugAll(true);
 	}
@@ -81,10 +84,9 @@ public class MapEditorScreen implements Screen {
 	@Override
 	public void render(float delta) {
 		if(!runLogic){
-			//dont move camera or gui :P
+			//dont move camera or gui
 			InputHandler.getVelocity().setZero();
 		}
-		
 		//LOGIC
 		((EditorStreamer)gameServices.getStreamer()).streamMap(gameServices.getCam());
 		gameServices.getWorld().setDelta(delta);

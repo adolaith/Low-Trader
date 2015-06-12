@@ -166,6 +166,10 @@ public class EntityFactory{
 	public ArrayMap<String, Archetype> getEntityProfiles() {
 		return entityArchetypes;
 	}
+	public static ArrayMap<String, AnimationStateData> getAnimationPool() {
+		return animationPool;
+	}
+
 	public EntityLoader getLoader() {
 		return loader;
 	}

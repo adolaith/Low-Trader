@@ -30,7 +30,7 @@ public class InputHandler implements InputProcessor{
 	static Vector2 dragDir;
 	Sprite highlight;
 	
-	InputMultiplexer inputSystem;
+	static InputMultiplexer inputMultiplexer;
 	
 	Stage stage;
 	Map map;
@@ -191,8 +191,8 @@ public class InputHandler implements InputProcessor{
 		batch.end();
 	}
 	public void setInputSystems(InputProcessor... processors) {
-		inputSystem = new InputMultiplexer(processors);
-		Gdx.input.setInputProcessor(inputSystem);
+		inputMultiplexer = new InputMultiplexer(processors);
+		Gdx.input.setInputProcessor(inputMultiplexer);
 	}
 	public InputHandler addMap(Map map){
 		this.map = map;
@@ -217,6 +217,9 @@ public class InputHandler implements InputProcessor{
 	}
 	public static Vector2 getIsoClicked() {
 		return isoClicked;
+	}
+	public static InputMultiplexer getMultiplexer(){
+		return inputMultiplexer;
 	}
 	public static Vector2 getMapClicked() {
 		return mapClicked;

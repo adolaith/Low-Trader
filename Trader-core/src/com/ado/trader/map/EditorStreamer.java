@@ -20,7 +20,7 @@ public class EditorStreamer extends MapStreamer {
 	public EditorStreamer(Map map) {
 		super(map);
 		j = new Json();
-		FileHandle tmpDir = Gdx.files.external("adoGame/maps/tmp");
+		FileHandle tmpDir = Gdx.files.external("adoGame/editor/maps/tmp");
 		if(tmpDir.exists()){
 			tmpDir.deleteDirectory();
 		}
@@ -229,7 +229,7 @@ public class EditorStreamer extends MapStreamer {
 	private void writeUnloadedRegions(Array<MapRegion> regions){
 		if(regions.size == 0) return;
 		if(saveDir == null){
-			dir = Gdx.files.external("adoGame/maps/tmp");
+			dir = Gdx.files.external("adoGame/editor/maps/tmp");
 			if(!dir.exists()){
 				dir.mkdirs();
 			}

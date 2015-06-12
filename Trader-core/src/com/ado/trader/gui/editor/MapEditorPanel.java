@@ -3,7 +3,6 @@ package com.ado.trader.gui.editor;
 import com.ado.trader.gui.GuiUtils;
 import com.ado.trader.gui.ToolTip;
 import com.ado.trader.utils.GameServices;
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -28,6 +27,7 @@ public class MapEditorPanel extends Table{
 		
 		new DeleteMenu(gameRes);
 		new EditorMenu(gameRes);
+		new NpcEditor(gameRes);
 		
 		tables.put("main", createMainPanel(gameRes));
 		tables.put("objects", new ObjectPanel(gameRes, this));
@@ -85,6 +85,25 @@ public class MapEditorPanel extends Table{
 			}
 		});
 		t.add(mapButton).row();
+		
+		ImageButton entityButton = GuiUtils.createImageButton("gui/headIcon", null, "gui/button", null, gameRes.getSkin());
+		entityButton.addListener(new ClickListener() {
+			public void enter (InputEvent event, float x, float y, int pointer, Actor fromActor) {
+				toolTip.show("Entity Editor");
+			}
+			public void exit (InputEvent event, float x, float y, int pointer, Actor fromActor) {
+				toolTip.hide();
+			}
+			public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+				Viewport view = gameRes.getStage().getViewport();
+				Group layer = getStage().getRoot().findActor("guiLayer");
+				NpcEditor entEdit = layer.findActor("entityEditor");
+				entEdit.showWindow((view.getScreenX() + view.getScreenWidth() / 2) - entEdit.getWidth() / 2,
+						(view.getScreenY() + view.getScreenHeight() / 2) - entEdit.getHeight() / 2);
+				return true;
+			}
+		});
+		t.add(entityButton).row();
 		
 		ImageButton aiButton = GuiUtils.createImageButton("gui/iconImportant", null, "gui/button", null, gameRes.getSkin());
 		aiButton.addListener(new ClickListener() {

@@ -68,7 +68,7 @@ public class AiSystem extends EntityProcessingSystem{
 			}
 			
 			//external profiles
-			FileHandle e = Gdx.files.external("adoGame/ai/");
+			FileHandle e = Gdx.files.external("adoGame/editor/ai/");
 			
 			for(FileHandle c: e.list()){
 				JsonValue p = j.fromJson(null, Gdx.files.external(c.path()));

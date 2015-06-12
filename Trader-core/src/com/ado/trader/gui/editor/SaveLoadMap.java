@@ -2,13 +2,13 @@ package com.ado.trader.gui.editor;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.time.LocalDateTime;
 
 import com.ado.trader.gui.SaveLoadMenu;
 import com.ado.trader.gui.ToolTip;
-import com.ado.trader.map.Chunk;
 import com.ado.trader.map.Map;
 import com.ado.trader.map.MapRegion;
-import com.ado.trader.map.TileLayer;
+import com.ado.trader.systems.EntityDeletionManager;
 import com.ado.trader.utils.GameServices;
 import com.ado.trader.utils.IsoUtils;
 import com.badlogic.gdx.Gdx;
@@ -27,12 +27,14 @@ import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
 
 public class SaveLoadMap extends SaveLoadMenu {
-	Map map;
+	GameServices gameRes;
+	int  lastSave;
 	
 	public SaveLoadMap(final GameServices gameRes) {
 		super(gameRes, "adoGame/maps/", 400, 400);
 		setName("saveMenu");
-		this.map = gameRes.getMap();
+		this.gameRes = gameRes;
+		lastSave = LocalDateTime.now().getMinute();
 		
 		final ToolTip toolTip = (ToolTip)(gameRes.getStage().getRoot().findActor("tooltip"));
 
@@ -44,7 +46,7 @@ public class SaveLoadMap extends SaveLoadMenu {
 				toolTip.hide();
 			}
 			public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-				save(gameRes);
+				save(field.getText());
 				return true;
 			}
 		});
@@ -74,19 +76,73 @@ public class SaveLoadMap extends SaveLoadMenu {
 				toolTip.hide();
 			}
 			public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-				load(gameRes);
+				load();
 				return true;
 			}
 		});
 	}
-	public void save(GameServices gameRes){
-		FileHandle file = Gdx.files.external(externalPath + field.getText() + "/");
+	
+	@Override
+	public void act(float delta){
+		super.act(delta);
+		
+		int now = LocalDateTime.now().getMinute();
+		//autosave
+		if(now - lastSave >= 5){
+			lastSave = LocalDateTime.now().getMinute();
+			
+			//if more than 3 autosaves, deletes oldest autosave
+			FileHandle saveDir = Gdx.files.external(externalPath);
+			FileHandle[] saves = saveDir.list();
+			int count = 0;
+			for(FileHandle f: saves){
+				if(f.name().contains("autosave")){
+					count++;
+				}
+			}
+			if(count >= 3){
+				FileHandle old = null;
+				for(FileHandle f: saves){
+					if(!f.name().contains("autosave")) continue;
+					if(old == null){
+						old = f;
+						continue;
+					}
+					
+					LocalDateTime o = LocalDateTime.parse(old.name().substring(old.name().indexOf("_")));
+					LocalDateTime n = LocalDateTime.parse(f.name().substring(f.name().indexOf("_")));
+					if(o.compareTo(n) > 0){
+						old = f;
+					}
+				}
+				old.deleteDirectory();
+			}
+			
+			//autosave
+			save(""+ LocalDateTime.now());
+		}
+	}
+	
+	public void save(String saveName){
+		//create map folder
+		FileHandle file = Gdx.files.external(externalPath + saveName + "/");
 		if(file.exists()){
 			file.emptyDirectory();
 		}else{
 			file.mkdirs();
 		}
 		
+		//copy tmp files to map folder
+		FileHandle tmp = Gdx.files.external("adoGame/editor/maps/tmp");
+		if(tmp.list().length > 0){
+			for(FileHandle f: tmp.list()){
+				FileHandle d = Gdx.files.external(file.file() +"/"+ f.name());
+				f.moveTo(d);
+			}
+			tmp.emptyDirectory();
+		}
+		
+		//write active regions to map folder
 		Json j = new Json();
 		
 		for(int x = 0; x < 3; x++){
@@ -102,6 +158,7 @@ public class SaveLoadMap extends SaveLoadMenu {
 			}
 		}
 		
+		//write meta file 
 		try {
 			j.setWriter(new FileWriter(file.file().getPath() + "/" + "meta"));
 		} catch (IOException e) {
@@ -134,12 +191,22 @@ public class SaveLoadMap extends SaveLoadMenu {
 //		gameRes.getMap().saveGameState(externalPath+field.getText());
 //		Gdx.app.log("SaveMap: ", "MAP SAVED!");
 	}
-	public void load(GameServices gameRes){
+	
+	
+	public void load(){
+		
+		//clear existing data
+		FileHandle tmp = Gdx.files.external("adoGame/editor/maps/tmp");
+		tmp.emptyDirectory();
+		gameRes.getWorld().getManager(EntityDeletionManager.class).deleteAllEntities();
+		
 		for(int x = 0; x < 3; x++){
 			for(int y = 0; y < 3; y++){
-				map.getRegionMap()[x][y] = null;
+				gameRes.getMap().getRegionMap()[x][y] = null;
 			}
 		}
+		
+		//read map
 		FileHandle dir = Gdx.files.external(externalPath + field.getText());
 		Json j = new Json();
 
@@ -168,11 +235,11 @@ public class SaveLoadMap extends SaveLoadMenu {
 					gameRes.getStreamer().loadRegion(m, 1, 2);
 					
 					m = m.get("conn");
-					if(m.has("e") && map.getRegionMap()[2][2] == null){
+					if(m.has("e") && gameRes.getMap().getRegionMap()[2][2] == null){
 						JsonValue e = j.fromJson(null, dir.child(m.getString("e")));
 						gameRes.getStreamer().loadRegion(e, 2, 2);
 					}
-					if(m.has("w") && map.getRegionMap()[0][2] == null){
+					if(m.has("w") && gameRes.getMap().getRegionMap()[0][2] == null){
 						JsonValue w = j.fromJson(null, dir.child(m.getString("w")));
 						gameRes.getStreamer().loadRegion(w, 0, 2);
 					}
@@ -183,11 +250,11 @@ public class SaveLoadMap extends SaveLoadMenu {
 					gameRes.getStreamer().loadRegion(m, 1, 0);
 					
 					m = m.get("conn");
-					if(m.has("e") && map.getRegionMap()[2][0] == null){
+					if(m.has("e") && gameRes.getMap().getRegionMap()[2][0] == null){
 						JsonValue e = j.fromJson(null, dir.child(m.getString("e")));
 						gameRes.getStreamer().loadRegion(e, 2, 0);
 					}
-					if(m.has("w") && map.getRegionMap()[0][0] == null){
+					if(m.has("w") && gameRes.getMap().getRegionMap()[0][0] == null){
 						JsonValue w = j.fromJson(null, dir.child(m.getString("w")));
 						gameRes.getStreamer().loadRegion(w, 0, 0);
 					}
@@ -198,11 +265,11 @@ public class SaveLoadMap extends SaveLoadMenu {
 					gameRes.getStreamer().loadRegion(m, 0, 1);
 					
 					m = m.get("conn");
-					if(m.has("n") && map.getRegionMap()[0][2] == null){
+					if(m.has("n") && gameRes.getMap().getRegionMap()[0][2] == null){
 						JsonValue n = j.fromJson(null, dir.child(m.getString("n")));
 						gameRes.getStreamer().loadRegion(n, 0, 2);
 					}
-					if(m.has("s") && map.getRegionMap()[0][0] == null){
+					if(m.has("s") && gameRes.getMap().getRegionMap()[0][0] == null){
 						JsonValue s = j.fromJson(null, dir.child(m.getString("s")));
 						gameRes.getStreamer().loadRegion(s, 0, 0);
 					}
@@ -212,11 +279,11 @@ public class SaveLoadMap extends SaveLoadMenu {
 					gameRes.getStreamer().loadRegion(m, 2, 1);
 					
 					m = m.get("conn");
-					if(m.has("n") && map.getRegionMap()[2][2] == null){
+					if(m.has("n") && gameRes.getMap().getRegionMap()[2][2] == null){
 						JsonValue n = j.fromJson(null, dir.child(m.getString("n")));
 						gameRes.getStreamer().loadRegion(n, 2, 2);
 					}
-					if(m.has("s") && map.getRegionMap()[2][0] == null){
+					if(m.has("s") && gameRes.getMap().getRegionMap()[2][0] == null){
 						JsonValue s = j.fromJson(null, dir.child(m.getString("s")));
 						gameRes.getStreamer().loadRegion(s, 2, 0);
 					}
@@ -240,8 +307,9 @@ public class SaveLoadMap extends SaveLoadMenu {
 	}
 	
 	@Override
-	public void show(boolean loading){
-		super.show(loading);
+	public void showWindow(float x, float y, boolean loading){
+		super.showWindow(x, y, loading);
+		
 		populateList();
 	}
 	private void populateList(){

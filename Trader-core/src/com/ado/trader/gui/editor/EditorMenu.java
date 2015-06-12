@@ -38,7 +38,7 @@ public class EditorMenu extends MenuGroup {
 			}
 			public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
 				SaveLoadMap file = (SaveLoadMap) gameRes.getStage().getRoot().findActor("saveMenu");
-				file.show(true);
+				file.showWindow(getX(), getY(), true);
 				file.toFront();
 				return true;
 			}
@@ -56,7 +56,7 @@ public class EditorMenu extends MenuGroup {
 			}
 			public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
 				SaveLoadMap file = (SaveLoadMap) gameRes.getStage().getRoot().findActor("saveMenu");
-				file.show(false);
+				file.showWindow(getX(), getY(), false);
 				file.toFront();
 				return true;
 			}
