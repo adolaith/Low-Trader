@@ -1,4 +1,6 @@
-Trader
+Project Trader
+======
+website here: https://adolaith.github.io/Trader/
 ======
 a game using:
 
