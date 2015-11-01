@@ -121,6 +121,7 @@ public class EntityEditor extends BasicWindow {
 		});
 		
 //		scroll.add(createEntry(componentList.get("name"))).expand().fillX().row();
+		
 		scroll.layout();
 		
 		for(JsonValue c = componentList.child; c != null; c = c.next){
@@ -200,7 +201,6 @@ public class EntityEditor extends BasicWindow {
 			for(String s: render.getSprites().keys()){
 				sprites.add(s);
 			}
-			
 			spriteBox.setItems(sprites);
 			spriteBox.setName(input.getString("name"));
 			t.add(spriteBox).padRight(4);

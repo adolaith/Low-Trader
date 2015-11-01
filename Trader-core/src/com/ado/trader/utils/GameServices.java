@@ -69,8 +69,6 @@ public class GameServices {
 			map = new Map(loadDir, this);
 		}
 		
-		FileLogger.writeLog("GameServices: map loaded");
-		
 		renderer = new Renderer(this);
 		
 		this.stage = new Stage(new StretchViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(),
@@ -92,12 +90,13 @@ public class GameServices {
 		layer.setSize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 		stage.addActor(layer);
 		
+		FileLogger.writeLog("GameServices: basics started");
+		
+		FileLogger.writeLog("GameServices: map loaded");
 		
 		this.input = input;
 		//configure input
 		this.input.addCamera(cam).addMap(map).addStage(stage).addTileHighlight(atlas.createSprite("gui/highlightTile"));
-		
-		FileLogger.writeLog("GameServices: basics started");
 		
 		entities = new EntityFactory(atlas);
 		

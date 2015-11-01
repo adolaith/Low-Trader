@@ -1,5 +1,6 @@
 package com.ado.trader.gui.editor;
 
+import com.ado.trader.gui.BasicWindow;
 import com.ado.trader.gui.GuiUtils;
 import com.ado.trader.gui.ToolTip;
 import com.ado.trader.utils.GameServices;

@@ -10,9 +10,10 @@ import com.ado.trader.entities.components.WallSprite;
 import com.artemis.ComponentMapper;
 import com.artemis.Entity;
 import com.artemis.World;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
-import com.sun.javafx.scene.traversal.Direction;
 
 public class WallLayer implements Layer {
 	ComponentMapper<Name> nameMap;

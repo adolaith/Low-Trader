@@ -83,7 +83,7 @@ public class MapStreamer {
 		try{
 			writer.getWriter().close();
 		}catch(Exception ex){
-			System.out.println("Error saving region:" +ex);
+			System.out.println("Error:" +ex);
 		}
 	}
 	

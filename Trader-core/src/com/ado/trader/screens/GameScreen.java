@@ -66,7 +66,7 @@ public class GameScreen implements Screen{
 		
 	}
 	private void initWorld(){
-		World world = GameServices.getWorld();
+		World world = gameServices.getWorld();
 		world.setSystem(new AnimationSystem());
 		world.setSystem(new AiSystem(gameServices));
 		world.setSystem(new MovementSystem(gameServices));
@@ -105,8 +105,8 @@ public class GameScreen implements Screen{
 		}
 		long start = TimeUtils.nanoTime();
 		
-		GameServices.getWorld().setDelta(delta);
-		GameServices.getWorld().process();
+		gameServices.getWorld().setDelta(delta);
+		gameServices.getWorld().process();
 		
 		updateTime = TimeUtils.nanosToMillis(TimeUtils.timeSinceNanos(start));
 //		Gdx.app.log(GameMain.LOG, "===========END-LOOP==========");

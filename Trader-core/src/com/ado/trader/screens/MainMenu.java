@@ -93,7 +93,7 @@ public class MainMenu implements Screen {
 		
 		setStyle("gui/panelButton", "gui/panelButton2", white);
 		new NewGame(game, white, skin, stage);
-		new LoadGame(game, white, skin, stage);
+		LoadGame loadWin = new LoadGame(game, white, skin, stage);
 		
 		//Prompts map selection then starts new game
 		TextButton newGame = new TextButton("New Game", style);

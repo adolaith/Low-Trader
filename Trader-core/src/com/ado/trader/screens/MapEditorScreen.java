@@ -19,6 +19,7 @@ import com.artemis.World;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 
@@ -27,6 +28,7 @@ public class MapEditorScreen implements Screen {
 	GameServices gameServices;
 	BuildingCollection buildings;
 	
+	static Vector2 velocity = new Vector2(); //camera velocity
 	Entity currentlySelected;
 	Label fps;
 
@@ -55,8 +57,6 @@ public class MapEditorScreen implements Screen {
 		new MiniMap(gameServices);
 		
 		runLogic = true;
-		
-		gameServices.getStage().setDebugAll(true);
 	}
 	
 	private void initWorld(){
@@ -65,8 +65,9 @@ public class MapEditorScreen implements Screen {
 		world.setSystem(new AnimationSystem());
 		world.setSystem(new SaveSystem(gameServices), true);
 		world.initialize();
+		
+//		gameServices.getStage().setDebugAll(true);
 	}
-	
 	@Override
 	public void show() {
 		
@@ -84,10 +85,10 @@ public class MapEditorScreen implements Screen {
 		GameServices.getWorld().setDelta(delta);
 		GameServices.getWorld().process();
 		
+		//RENDER
 		gameServices.getCam().translate(InputHandler.getVelocity().x, InputHandler.getVelocity().y);
 		gameServices.getCam().update();
 		
-		//RENDER
 		gameServices.getRenderer().render(delta);
 		
 		gameServices.getStage().act(delta);
