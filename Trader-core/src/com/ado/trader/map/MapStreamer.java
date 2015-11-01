@@ -1,5 +1,6 @@
 package com.ado.trader.map;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
@@ -7,10 +8,24 @@ import com.badlogic.gdx.utils.JsonValue;
 public class MapStreamer {
 	Map map;
 	
+	Json j;
 	FileHandle saveDir;
 	
 	public MapStreamer(Map map) {
 		this.map = map;
+		this.j = new Json();
+
+		JsonValue cfg = j.fromJson(null, Gdx.files.internal("data/entities/classTags.lst"));
+		
+		//load entity component class tags
+		for(JsonValue v = cfg.child; v != null; v = v.next){
+			try {
+				j.addClassTag(v.name, Class.forName(v.asString()));
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			}
+		}
+		
 	}
 
 	public void streamMap(){
@@ -38,15 +53,13 @@ public class MapStreamer {
 			c.getTiles().loadLayer(v.get("tiles"), map);
 			
 			//walls
-			c.getWalls().loadLayer(v.get("walls"), rX, rY, 
-					Integer.valueOf(xy[0]).intValue(), Integer.valueOf(xy[1]).intValue());
+//			c.getWalls().loadLayer(v.get("walls"));
 			
 			//items
-			c.getItems().loadLayer(v.get("items"), map);
+//			c.getItems().loadLayer(v.get("items"), map);
 			
 			//entities
-			c.getEntities().loadLayer(v.get("entities"), rX, rY, 
-					Integer.valueOf(xy[0]).intValue(), Integer.valueOf(xy[1]).intValue());
+//			c.getEntities().loadLayer(v.get("entities"));
 			
 		}
 		

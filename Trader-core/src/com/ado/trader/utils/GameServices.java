@@ -1,8 +1,8 @@
 package com.ado.trader.utils;
 
+import com.ado.trader.GameMain;
 import com.ado.trader.entities.EntityFactory;
 import com.ado.trader.input.InputHandler;
-import com.ado.trader.items.ItemFactory;
 import com.ado.trader.map.Map;
 import com.ado.trader.map.MapStreamer;
 import com.ado.trader.pathfinding.AStarPathFinder;
@@ -12,17 +12,19 @@ import com.artemis.World;
 import com.artemis.managers.GroupManager;
 import com.artemis.managers.TagManager;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.utils.viewport.ExtendViewport;
+import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 public class GameServices {
@@ -32,14 +34,13 @@ public class GameServices {
 	BitmapFont font;
 	TextureAtlas atlas;
 	
-	World world;
+	static World world;
 	Map map;
 	MapStreamer streamer;
 	InputHandler input;
 	Renderer renderer;
 	
 	EntityFactory entities;
-	ItemFactory items;
 	
 	AStarPathFinder pathfinder;
 	//God class containing objects needed globally
@@ -51,12 +52,36 @@ public class GameServices {
 		
 		this.font = new BitmapFont(Gdx.files.internal("font/white.fnt"), new TextureRegion(texture), false);
 		
-		font.setScale(0.6f);
+//		this.font = new BitmapFont(Gdx.files.internal("font/white.fnt"));
+		font.getData().setScale(0.6f);
 		
 		cam = new OrthographicCamera(camWidth, camHeight);
 		this.skin = new Skin(atlas);
 		
-		this.stage = new Stage(new ExtendViewport(camWidth, camHeight));
+		world = new World();
+		world.setManager(new EntityDeletionManager());
+		world.setManager(new TagManager());
+		world.setManager(new GroupManager());
+		
+		if(loadDir == null){
+			map = new Map(this);
+		}else{
+			map = new Map(loadDir, this);
+		}
+		
+		renderer = new Renderer(this);
+		
+		this.stage = new Stage(new StretchViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(),
+				new OrthographicCamera()), renderer.getBatch()){
+			@Override
+			public void draw () {
+				super.draw();
+				getBatch().setColor(Color.WHITE);
+			}
+		};
+		
+		stage.setShapeRenderer(new ShapeRenderer(5000, GameMain.createShapeShader()));
+		stage.getShapeRenderer().setAutoShapeType(true);
 		
 		Group layer = new Group();
 		layer.setName("guiLayer");
@@ -65,20 +90,7 @@ public class GameServices {
 		layer.setSize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 		stage.addActor(layer);
 		
-		world = new World();
-		world.setManager(new EntityDeletionManager());
-		world.setManager(new TagManager());
-		world.setManager(new GroupManager());
-		
 		FileLogger.writeLog("GameServices: basics started");
-		
-		items = new ItemFactory("data/ItemProfiles", this);
-		
-		if(loadDir == null){
-			map = new Map(this);
-		}else{
-			map = new Map(loadDir, this);
-		}
 		
 		FileLogger.writeLog("GameServices: map loaded");
 		
@@ -86,9 +98,7 @@ public class GameServices {
 		//configure input
 		this.input.addCamera(cam).addMap(map).addStage(stage).addTileHighlight(atlas.createSprite("gui/highlightTile"));
 		
-		renderer = new Renderer(this);
-		
-		entities = new EntityFactory(this);
+		entities = new EntityFactory(atlas);
 		
 		FileLogger.writeLog("GameServices: entities loaded");
 		
@@ -110,7 +120,7 @@ public class GameServices {
 	public TextureAtlas getAtlas() {
 		return atlas;
 	}
-	public World getWorld() {
+	public static World getWorld() {
 		return world;
 	}
 	public Map getMap() {
@@ -124,9 +134,6 @@ public class GameServices {
 	}
 	public EntityFactory getEntities() {
 		return entities;
-	}
-	public ItemFactory getItems() {
-		return items;
 	}
 	public AStarPathFinder getPathfinder() {
 		return pathfinder;

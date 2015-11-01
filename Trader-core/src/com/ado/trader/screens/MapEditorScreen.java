@@ -2,7 +2,6 @@ package com.ado.trader.screens;
 
 import com.ado.trader.GameMain;
 import com.ado.trader.buildings.BuildingCollection;
-import com.ado.trader.entities.EntityLoader;
 import com.ado.trader.gui.CustomCursor;
 import com.ado.trader.gui.ToolTip;
 import com.ado.trader.gui.editor.MapEditorPanel;
@@ -57,17 +56,11 @@ public class MapEditorScreen implements Screen {
 		new MapEditorPanel(gameServices);
 		new MiniMap(gameServices);
 		
-		if(loadDir != null){
-			EntityLoader loader = gameServices.getEntities().getLoader();
-			loader.loadSavedEntities(loadDir, gameServices);
-		}
-		
 		runLogic = true;
-		
 	}
 	
 	private void initWorld(){
-		World world = gameServices.getWorld();
+		World world = GameServices.getWorld();
 		world.setSystem(new AiSystem(gameServices)); //TEST USE
 		world.setSystem(new AnimationSystem());
 		world.setSystem(new SaveSystem(gameServices), true);
@@ -89,16 +82,18 @@ public class MapEditorScreen implements Screen {
 		}
 		//LOGIC
 		((EditorStreamer)gameServices.getStreamer()).streamMap(gameServices.getCam());
-		gameServices.getWorld().setDelta(delta);
-		gameServices.getWorld().process();
+		GameServices.getWorld().setDelta(delta);
+		GameServices.getWorld().process();
 		
 		//RENDER
 		gameServices.getCam().translate(InputHandler.getVelocity().x, InputHandler.getVelocity().y);
-		
-		gameServices.getStage().act(delta);
-		
+		gameServices.getCam().update();
 		
 		gameServices.getRenderer().render(delta);
+		
+		gameServices.getStage().act(delta);
+		gameServices.getStage().draw();
+		
 		fps.setText("FPS: "+ Gdx.graphics.getFramesPerSecond());
 	}
 	
@@ -108,7 +103,7 @@ public class MapEditorScreen implements Screen {
 
 	@Override
 	public void resize(int width, int height) {
-		gameServices.getStage().getViewport().update(width, height, true);
+		gameServices.getStage().getViewport().update(width, height, false);
 	}
 
 	@Override

@@ -1,7 +1,7 @@
 package com.ado.trader.placement;
 
+import com.ado.trader.entities.EntityFactory;
 import com.ado.trader.entities.components.Inventory;
-import com.ado.trader.items.ItemFactory;
 import com.ado.trader.map.Chunk;
 import com.ado.trader.map.Map;
 import com.artemis.ComponentMapper;
@@ -22,10 +22,11 @@ public class ItemPlaceable extends Placeable {
 
 	@Override
 	void place(int mapX, int mapY) {
-		Entity i = ItemFactory.createItem(itemId);
+		
+		Entity i = EntityFactory.createItem(itemId);
 		
 		Chunk c = map.getChunk(mapX, mapY);
-		Vector2 t = map.worldVecToTile(mapX, mapY);
+		Vector2 t = Map.worldVecToTile(mapX, mapY);
 		
 		if(c.getEntities().map[(int) t.x][(int) t.y][0] != null){
 			Entity e = map.getWorld().getEntity(c.getEntities().map[(int) t.x][(int) t.y][0]);

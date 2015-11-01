@@ -11,7 +11,6 @@ import com.ado.trader.entities.components.Movement;
 import com.ado.trader.entities.components.Name;
 import com.ado.trader.entities.components.Position;
 import com.ado.trader.entities.components.SpriteComp;
-import com.ado.trader.items.ItemFactory;
 import com.artemis.ComponentMapper;
 import com.artemis.Entity;
 import com.artemis.World;
@@ -256,7 +255,7 @@ public class EntityLayer extends IntMapLayer {
 		}
 		chunkJson.writeArrayEnd();
 	}
-	public void loadLayer(JsonValue e, int rX, int rY, int cX, int cY){
+	public void loadLayer(JsonValue e){
 		String[] xy;
 		for(JsonValue v = e.child; v != null; v = v.next){
 			xy = v.getString("p").split(",");

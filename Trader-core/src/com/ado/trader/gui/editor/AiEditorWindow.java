@@ -17,7 +17,6 @@ import com.badlogic.gdx.utils.JsonValue;
 
 //uses ai component descriptions from the file 'aiConfig' to generate an entity ai profile file 
 public class AiEditorWindow extends BasicWindow {
-	JsonValue aiConfig;
 	static TaskListTable tasksTable;
 	static ParentEntry rootNode;
 	static Table bodyTable;
@@ -27,14 +26,14 @@ public class AiEditorWindow extends BasicWindow {
 		super("Ai Profile Editor", 500, 400, gameRes.getFont(), gameRes.getSkin(), gameRes.getStage());
 		
 		Json json = new Json();
-		aiConfig = json.fromJson(null, Gdx.files.internal("data/ai/aiConfig"));
+		JsonValue aiConfig = json.fromJson(null, Gdx.files.internal("data/ai/aiEditor.cfg"));
 		
 		loader = new AiProfileLoader(gameRes, this);
 		
 		tasksTable = new TaskListTable(aiConfig, gameRes);
 		
 		//menu bar
-		Table menu = createMenu(gameRes);
+		Table menu = createMenu(aiConfig, gameRes);
 		 
 		body.add(menu).width(480).height(25).row();
 		
@@ -52,13 +51,7 @@ public class AiEditorWindow extends BasicWindow {
 		
 	}
 	
-	@Override
-	public void act(float delta){
-		super.act(delta);
-		
-	}
-	
-	private Table createMenu(final GameServices gameRes){
+	private Table createMenu(final JsonValue aiConfig, final GameServices gameRes){
 		Table t = new Table();
 		t.left();
 		

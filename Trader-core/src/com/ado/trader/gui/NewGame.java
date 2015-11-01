@@ -97,13 +97,13 @@ public class NewGame extends BasicWindow {
 		super.showWindow(x, y);
 		populate();
 		toFront();
-		getStage().getRoot().findActor("mainMenu").setTouchable(Touchable.disabled);
+//		getStage().getRoot().findActor("mainMenu").setTouchable(Touchable.disabled);
 	}
 	
 	@Override
 	public void hideWindow(){
 		super.hideWindow();
-		getStage().getRoot().findActor("mainMenu").setTouchable(Touchable.enabled);
+//		getStage().getRoot().findActor("mainMenu").setTouchable(Touchable.enabled);
 	}
 	
 	private void populate(){

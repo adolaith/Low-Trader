@@ -1,8 +1,8 @@
 package com.ado.trader.placement;
 
 import com.ado.trader.entities.EntityFactory;
+import com.ado.trader.entities.WallDirection;
 import com.ado.trader.input.InputHandler;
-import com.ado.trader.rendering.EntityRenderSystem.Direction;
 import com.ado.trader.utils.FileLogger;
 import com.ado.trader.utils.GameServices;
 import com.badlogic.gdx.Gdx;
@@ -26,17 +26,15 @@ public class PlacementManager {
 		
 		this.entities = gameRes.getEntities();
 		
-		FileLogger.writeLog("PlacementManager: basics added");
-		
 		entityPl = new EntityPlaceable(gameRes);
 		tilePl = new TilePlaceable(gameRes.getMap());
-		wallPl = new WallPlaceable(gameRes.getMap(), gameRes.getEntities(), gameRes.getRenderer().getRenderEntitySystem());
-		FileLogger.writeLog("PlacementManager: WallPlaceable added");
+		wallPl = new WallPlaceable(gameRes.getMap(), gameRes.getRenderer().getRenderEntitySystem());
 		
 		featurePl = new FeaturePlaceable(gameRes);
-		FileLogger.writeLog("PlacementManager: FeaturePlaceable added");
 		
 		itemPl = new ItemPlaceable(gameRes.getMap());
+		
+		FileLogger.writeLog("PlacementManager: started.");
 	}
 	
 	public boolean handleClick(Vector2 mapUp){
@@ -91,8 +89,7 @@ public class PlacementManager {
 			placementSelection = wallPl;
 			wallPl.entityName = name;
 
-			wallPl.firstSprite = 0;
-			wallPl.first = Direction.SW;
+			wallPl.first = WallDirection.SW;
 			break;
 		}
 	}

@@ -4,7 +4,6 @@ import com.ado.trader.gui.BasicWindow;
 import com.ado.trader.gui.GuiUtils;
 import com.ado.trader.gui.ToolTip;
 import com.ado.trader.input.MapEditorInput;
-import com.ado.trader.items.ItemFactory;
 import com.ado.trader.placement.PlacementManager;
 import com.ado.trader.utils.GameServices;
 import com.badlogic.gdx.graphics.Color;
@@ -25,17 +24,19 @@ import com.badlogic.gdx.utils.JsonValue;
 
 public class ObjectMenu extends BasicWindow {
 	ArrayMap<String, Table> tableList;
+	ArrayMap<String, JsonValue> entityProfiles;
 	float buttonSize = 32 * 1.2f;
 
 	public ObjectMenu(GameServices gameRes) {
 		super("Object menu", 310, 200, gameRes.getFont(), gameRes.getSkin(), gameRes.getStage());
 
 		tableList = new ArrayMap<String, Table>();
+		entityProfiles = new ArrayMap<String, JsonValue>();
 		
 		tableList.put("tileMenu", tileMenu(gameRes));
-		tableList.put("entityMenu", entityMenu(gameRes));
-		tableList.put("wallMenu", wallMenu(gameRes));
-		tableList.put("itemsMenu", itemsMenu(gameRes));
+//		tableList.put("entityMenu", entityMenu(gameRes));
+//		tableList.put("wallMenu", wallMenu(gameRes));
+//		tableList.put("itemsMenu", itemsMenu(gameRes));
 		
 		for(Table t: tableList.values()){
 			t.top();
@@ -50,7 +51,7 @@ public class ObjectMenu extends BasicWindow {
 		
 		Table itemsMenu = new Table();
 		itemsMenu.setFillParent(false);
-		itemsMenu.defaults().size(buttonSize);
+		itemsMenu.defaults().size(buttonSize); 
 		
 		gameRes.getItems();
 		ArrayMap<String, Sprite> spriteList = ItemFactory.getItemSprites();
@@ -117,10 +118,8 @@ public class ObjectMenu extends BasicWindow {
 		
 		Table t = new Table();
 		t.setFillParent(false);
-//		t.setDebug(true);
 		
 		ScrollPane pane = GuiUtils.createScrollTable(gameRes.getSkin());
-//		pane.setDebug(true, true);
 		
 		Table entityMenu = new Table();
 		entityMenu.setFillParent(false);

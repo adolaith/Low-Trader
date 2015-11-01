@@ -1,25 +1,25 @@
 package com.ado.trader.map;
 
 import com.ado.trader.entities.EntityFactory;
-import com.ado.trader.entities.components.Feature;
+import com.ado.trader.entities.components.FeatureSprite;
 import com.ado.trader.entities.components.Mask;
 import com.ado.trader.entities.components.Name;
 import com.ado.trader.entities.components.Position;
 import com.ado.trader.entities.components.SpriteComp;
-import com.ado.trader.entities.components.Wall;
-import com.ado.trader.rendering.EntityRenderSystem.Direction;
+import com.ado.trader.entities.components.WallSprite;
 import com.artemis.ComponentMapper;
 import com.artemis.Entity;
 import com.artemis.World;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
 
 public class WallLayer implements Layer {
 	ComponentMapper<Name> nameMap;
-	ComponentMapper<Wall> wallMap;
+	ComponentMapper<WallSprite> wallMap;
 	ComponentMapper<Mask> maskMap;
-	ComponentMapper<Feature> featureMap;
+	ComponentMapper<FeatureSprite> featureMap;
 	ComponentMapper<SpriteComp> spriteMap;
 	ComponentMapper<Position> posMap;
 	public Integer[][] map;
@@ -29,9 +29,9 @@ public class WallLayer implements Layer {
 		map = new Integer[w][h];
 		this.world = world;
 		nameMap = world.getMapper(Name.class);
-		wallMap = world.getMapper(Wall.class);
+		wallMap = world.getMapper(WallSprite.class);
 		maskMap = world.getMapper(Mask.class);
-		featureMap = world.getMapper(Feature.class);
+		featureMap = world.getMapper(FeatureSprite.class);
 		spriteMap = world.getMapper(SpriteComp.class);
 		posMap = world.getMapper(Position.class);
 	}
@@ -51,8 +51,9 @@ public class WallLayer implements Layer {
 	public boolean isOccupied(int x, int y) {
 		return map[x][y]!=null;
 	}
-	public void loadLayer(JsonValue walls, int rX, int rY, int cX, int cY){
+	public void loadLayer(JsonValue walls){
 		String[] xy;
+		System.out.println("WallLayer LOAD: json: "+walls);
 		for(JsonValue w = walls.child; w != null; w = w.next){
 			xy = w.getString("p").split(",");
 			
@@ -95,7 +96,7 @@ public class WallLayer implements Layer {
 				
 				chunkJson.writeValue("n", nameMap.get(e).getName());
 
-				Wall w = wallMap.get(e);
+				WallSprite w = wallMap.get(e);
 				chunkJson.writeArrayStart("w");
 				chunkJson.writeValue(w.firstSprite.name());
 				if(w.secondSprite != null){
@@ -120,7 +121,7 @@ public class WallLayer implements Layer {
 				}
 
 				if(featureMap.has(e)){
-					Feature f = featureMap.get(e);
+					FeatureSprite f = featureMap.get(e);
 					chunkJson.writeArrayStart("f");
 					chunkJson.writeValue(f.featureName);
 					chunkJson.writeValue(f.spriteIndex);

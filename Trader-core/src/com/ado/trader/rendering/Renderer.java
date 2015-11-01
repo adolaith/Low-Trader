@@ -1,5 +1,6 @@
 package com.ado.trader.rendering;
 
+import com.ado.trader.GameMain;
 import com.ado.trader.input.InputHandler;
 import com.ado.trader.utils.GameServices;
 import com.badlogic.gdx.Gdx;
@@ -26,13 +27,13 @@ public class Renderer{
 		
 		cam = gameRes.getCam();
 		
-		batch = new SpriteBatch();
+		batch = new SpriteBatch(1000, GameMain.createSpriteShader());
 		batch.setProjectionMatrix(cam.combined);
 		
 		sr = new ShapeRenderer();
 		
-		MaskingSystem masks = new MaskingSystem(gameRes.getSkin(), gameRes.getMap());
-		renderEntity = new EntityRenderSystem(gameRes.getMap(), masks);
+		MaskingSystem masks = new MaskingSystem(gameRes.getAtlas(), gameRes.getMap());
+		renderEntity = new EntityRenderSystem(gameRes.getAtlas(), gameRes.getMap(), masks);
 	}
 	
 	public static long renderTime;
@@ -41,7 +42,6 @@ public class Renderer{
 		Gdx.gl.glClearColor(0,0,0,1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-		cam.update();
 		
 		//draws the world
 		sr.setProjectionMatrix(cam.combined);
@@ -60,9 +60,10 @@ public class Renderer{
 			//highlights zones
 			gameRes.getMap().drawDebug(batch);
 		}		
-		
 		//draws scene2d stage
-		gameRes.getStage().draw();
+		if(batch.isDrawing()){
+			batch.end();
+		}
 		
 		renderTime = TimeUtils.nanosToMillis(TimeUtils.timeSinceNanos(start));
 	}

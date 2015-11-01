@@ -2,15 +2,14 @@ package com.ado.trader.entities.components;
 
 import com.artemis.Component;
 
-public class Health extends Component {
+public class Tool extends Component {
 	public int current, max;
 
-	public Health() {
+	public Tool() {
 	}
-	
-	public Health(int max){
-		this.max = max;
+	public void init(int max){
 		current = max;
+		this.max = max;
 	}
 
 }

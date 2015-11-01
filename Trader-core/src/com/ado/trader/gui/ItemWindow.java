@@ -1,11 +1,11 @@
 package com.ado.trader.gui;
 
+import com.ado.trader.entities.components.Farmable;
+import com.ado.trader.entities.components.Food;
 import com.ado.trader.entities.components.Name;
+import com.ado.trader.entities.components.Tool;
+import com.ado.trader.entities.components.Value;
 import com.ado.trader.items.Description;
-import com.ado.trader.items.Farmable;
-import com.ado.trader.items.Food;
-import com.ado.trader.items.Tool;
-import com.ado.trader.items.Value;
 import com.ado.trader.utils.GameServices;
 import com.artemis.ComponentMapper;
 import com.artemis.Entity;

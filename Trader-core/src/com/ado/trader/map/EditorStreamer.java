@@ -11,21 +11,22 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
+import com.badlogic.gdx.utils.TimeUtils;
 
 public class EditorStreamer extends MapStreamer {
-	Json j;
 	FileHandle dir;
 	int shiftX, shiftY;
 
 	public EditorStreamer(Map map) {
 		super(map);
-		j = new Json();
 		FileHandle tmpDir = Gdx.files.external("adoGame/editor/maps/tmp");
 		if(tmpDir.exists()){
 			tmpDir.deleteDirectory();
 		}
 	}
 	public void streamMap(OrthographicCamera cam){
+//		long t = TimeUtils.nanoTime();
+		
 		Vector2 camRegion = IsoUtils.getColRow((int) cam.position.x, (int) cam.position.y, Map.tileWidth, Map.tileHeight);
 		camRegion = Map.worldVecToRegion((int) camRegion.x, (int) camRegion.y);
 		
@@ -200,6 +201,8 @@ public class EditorStreamer extends MapStreamer {
 		}
 		
 		repositionCamera(cam);
+		
+//		System.out.println("MapStream TIME: " + TimeUtils.timeSinceNanos(t));
 	}
 	private void shiftRegion(int x, int y, Array<MapRegion> unloadRegions, MapRegion[][] tmp){
 		if(map.getRegionMap()[x][y] == null) return;

@@ -6,31 +6,46 @@ import com.ado.trader.input.InputHandler;
 import com.ado.trader.map.Map;
 import com.ado.trader.utils.IsoUtils;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.GL30;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ArrayMap;
 
 public class MaskingSystem {
 	ArrayMap<String, Sprite[]> maskSprites;
 	Map map;
 	
-	public MaskingSystem(Skin skin, Map map){
+	public MaskingSystem(TextureAtlas atlas, Map map){
 		this.map = map;
 		maskSprites = new ArrayMap<String, Sprite[]>();
 		
-		//load wall masks
-		Sprite[] wallList = new Sprite[2];
-		Sprite firstMask = new Sprite(skin.getSprite("wallMask_se"));
-		firstMask.scale(1f);
-		wallList[0] = firstMask;
-		Sprite secondMask = new Sprite(skin.getSprite("wallMask_sw"));
-		secondMask.scale(1f);
-		wallList[1] = secondMask;
-		
-		maskSprites.put("wallMask", wallList);
+		Array<AtlasRegion> regions = atlas.getRegions();
+		for(AtlasRegion a: regions){
+			if(a.name.startsWith("masks")){
+				//load masks
+				String name = a.name.substring(a.name.indexOf('/') + 1);
+				name = name.split("_")[0];
+				
+				if(maskSprites.containsKey(name)){
+					Sprite[] list = maskSprites.get(name);
+					Sprite secondMask = new Sprite(a);
+					secondMask.scale(1f);
+					list[1] = secondMask;
+					continue;
+				}
+				
+				Sprite[] list = new Sprite[2];
+				Sprite firstMask = new Sprite(a);
+				firstMask.scale(1f);
+				list[0] = firstMask;
+				
+				maskSprites.put(name, list);
+			}
+		}
 	}
 	public void drawMask(SpriteBatch batch, int spriteIndex, Vector2 vec, float height, Position p, Mask mask){
 		Vector2 tmp = IsoUtils.getColRow((int)InputHandler.getMousePos().x, (int)InputHandler.getMousePos().y, map.getTileWidth(), map.getTileHeight());
@@ -61,13 +76,13 @@ public class MaskingSystem {
 		//disable RGB color, only enable ALPHA to the frame buffer
 		Gdx.gl.glColorMask(false, false, false, true);
 		//change the blending function for our alpha map
-		batch.setBlendFunction(GL20.GL_ONE, GL20.GL_ZERO);
+		batch.setBlendFunction(GL30.GL_ONE, GL30.GL_ZERO);
 	}
 	private void setGlBlend(SpriteBatch batch){
 		batch.flush();
 		//now that the buffer has our alpha, we simply draw the sprite with the mask applied
 		Gdx.gl.glColorMask(true, true, true, true);
-		batch.setBlendFunction(GL20.GL_DST_ALPHA, GL20.GL_ONE_MINUS_DST_ALPHA);
+		batch.setBlendFunction(GL30.GL_DST_ALPHA, GL30.GL_ONE_MINUS_DST_ALPHA);
 	}
 	public void loadMaskSet(String key, Sprite[] sprites){
 		maskSprites.put(key, sprites);

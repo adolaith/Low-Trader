@@ -3,7 +3,7 @@ package com.ado.trader.screens;
 import com.ado.trader.GameMain;
 import com.ado.trader.buildings.BuildingCollection;
 import com.ado.trader.entities.EntityFeatures;
-import com.ado.trader.entities.EntityLoader;
+import com.ado.trader.entities.EntityDataLoader;
 import com.ado.trader.gui.CustomCursor;
 import com.ado.trader.gui.RightClickMenu;
 import com.ado.trader.gui.ToolTip;
@@ -60,7 +60,7 @@ public class GameScreen implements Screen{
 		
 		//load saved entities
 		if(loadDir != null){
-			EntityLoader loader = gameServices.getEntities().getLoader();
+			EntityDataLoader loader = gameServices.getEntities().getLoader();
 			loader.loadSavedEntities(loadDir, gameServices);
 		}
 		

@@ -1,13 +1,10 @@
 package com.ado.trader.map;
 
-import com.ado.trader.entities.EntityFactory;
 import com.ado.trader.entities.components.Name;
-import com.ado.trader.items.ItemFactory;
 import com.artemis.Component;
 import com.artemis.ComponentMapper;
 import com.artemis.Entity;
 import com.artemis.World;
-import com.artemis.annotations.Wire;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;

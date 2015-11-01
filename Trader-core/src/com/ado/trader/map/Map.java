@@ -1,17 +1,14 @@
 package com.ado.trader.map;
 
-import com.ado.trader.entities.components.Wall;
-import com.ado.trader.items.ItemFactory;
+import com.ado.trader.entities.components.WallSprite;
 import com.ado.trader.pathfinding.Mover;
 import com.ado.trader.pathfinding.TileBasedMap;
-import com.ado.trader.rendering.EntityRenderSystem.Direction;
 import com.ado.trader.systems.GameTime;
 import com.ado.trader.systems.SaveSystem;
 import com.ado.trader.utils.GameServices;
 import com.ado.trader.utils.IsoUtils;
 import com.artemis.Entity;
 import com.artemis.World;
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -36,16 +33,15 @@ public class Map implements TileBasedMap{
 	World world;
 	
 	public Map(GameServices gameRes) {
-		init(gameRes.getAtlas(), gameRes.getWorld(), gameRes.getItems());
+		init(gameRes.getAtlas(), GameServices.getWorld());
 		
 		createMap();
 	}
 	
 	public Map(String loadName, GameServices gameRes) {
-		init(gameRes.getAtlas(), gameRes.getWorld(), gameRes.getItems());
-		streamer.loadMap(loadName);
+		init(gameRes.getAtlas(), GameServices.getWorld());
 	}
-	private void init(TextureAtlas atlas, World world, ItemFactory items){
+	private void init(TextureAtlas atlas, World world){
 		tileOutline = atlas.createSprite("gui/highlightTile");
 		this.world = world;
 		activeRegions = new MapRegion[3][3];
@@ -253,7 +249,7 @@ public class Map implements TileBasedMap{
 	public Chunk getChunk(int mapX, int mapY){
 		MapRegion region = getRegion(mapX, mapY);
 		if(region == null){
-			Gdx.app.log("Map(getChunk): ", "Region==null");
+//			Gdx.app.log("Map(getChunk): ", "Region==null");
 			return null;
 		}
 		
@@ -316,7 +312,7 @@ public class Map implements TileBasedMap{
 		
 		if(tgtChunk.getWalls().isOccupied(x, y)){
 			Entity wall = world.getEntity(tgtChunk.getWalls().map[x][y]);
-			Wall wC = wall.getComponent(Wall.class);
+			WallSprite wC = wall.getComponent(WallSprite.class);
 			int lenX = (int) Math.signum(x - srcX);
 			int lenY = (int) Math.signum(y - srcY);
 			if(lenX!=0){
@@ -352,7 +348,7 @@ public class Map implements TileBasedMap{
 	}
 	
 
-	private boolean checkWallDirection(Wall w, Direction dir){
+	private boolean checkWallDirection(WallSprite w, Direction dir){
 		if(w.firstSprite.equals(dir)){
 			return true;
 		}else if(w.secondSprite != null){

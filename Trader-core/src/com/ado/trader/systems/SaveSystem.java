@@ -8,7 +8,7 @@ import com.ado.trader.entities.components.AiProfile;
 import com.ado.trader.entities.components.Animation;
 import com.ado.trader.entities.components.Area;
 import com.ado.trader.entities.components.AttributeTable;
-import com.ado.trader.entities.components.Feature;
+import com.ado.trader.entities.components.FeatureSprite;
 import com.ado.trader.entities.components.Inventory;
 import com.ado.trader.entities.components.Mask;
 import com.ado.trader.entities.components.Money;
@@ -17,7 +17,7 @@ import com.ado.trader.entities.components.Name;
 import com.ado.trader.entities.components.Position;
 import com.ado.trader.entities.components.SpriteComp;
 import com.ado.trader.entities.components.Type;
-import com.ado.trader.entities.components.Wall;
+import com.ado.trader.entities.components.WallSprite;
 import com.ado.trader.utils.GameServices;
 import com.artemis.Aspect;
 import com.artemis.ComponentMapper;
@@ -40,9 +40,9 @@ public class SaveSystem extends EntityProcessingSystem {
 	ComponentMapper<AttributeTable> attributeMap;
 	ComponentMapper<Position> positionMap;
 	ComponentMapper<Money> moneyMap;
-	ComponentMapper<Wall> wallMap;
+	ComponentMapper<WallSprite> wallMap;
 	ComponentMapper<Mask> maskMap;
-	ComponentMapper<Feature> featureMap;
+	ComponentMapper<FeatureSprite> featureMap;
 	
 	Json json;
 	GameServices gameRes;
@@ -134,7 +134,7 @@ public class SaveSystem extends EntityProcessingSystem {
 		}
 		
 		if(wallMap.has(e)){			//wall props
-			Wall w = wallMap.get(e);
+			WallSprite w = wallMap.get(e);
 			json.writeArrayStart("wall");
 			json.writeValue(w.firstSprite.name());
 			if(w.secondSprite != null){
@@ -152,7 +152,7 @@ public class SaveSystem extends EntityProcessingSystem {
 		}
 		
 		if(featureMap.has(e)){
-			Feature f = featureMap.get(e);
+			FeatureSprite f = featureMap.get(e);
 			json.writeArrayStart("feature");
 			json.writeValue(f.featureName);
 			json.writeValue(f.spriteIndex);

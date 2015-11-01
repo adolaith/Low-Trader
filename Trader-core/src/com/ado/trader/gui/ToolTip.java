@@ -6,7 +6,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.utils.Align;
+import com.badlogic.gdx.utils.Align;
 
 public class ToolTip extends Label{
 	final int delay = 1; //sec
@@ -45,7 +45,7 @@ public class ToolTip extends Label{
 		
 		addAction(Actions.sequence(Actions.delay(1), Actions.visible(true)));
 	}
-	public void autoSize(){
+	private void autoSize(){
 		int maxLength = 12;
 		int textHeight = 24;
 		if(getText().length <= maxLength){
@@ -60,12 +60,15 @@ public class ToolTip extends Label{
 	private void autoPosition(){
 		float x = Gdx.input.getX() + 6;
 		float y = Gdx.input.getY();
+		y = Gdx.graphics.getHeight() - y;
 		//tooltip trying to display offscreen width ways
 		if(x + getWidth() > getStage().getWidth() / 2){
 			x = Gdx.input.getX() - getWidth() - 6;	
 		}
 		Vector2 tmp = getStage().screenToStageCoordinates(new Vector2(x, y));
 		setPosition(tmp.x, tmp.y);
+		
+		setPosition(x, y);
 	}
 	public void hide(){
 		//timer started but not finished

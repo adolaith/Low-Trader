@@ -1,13 +1,13 @@
 package com.ado.trader.placement;
 
 import com.ado.trader.entities.EntityFactory;
+import com.ado.trader.entities.WallDirection;
 import com.ado.trader.entities.components.Position;
 import com.ado.trader.entities.components.SpriteComp;
-import com.ado.trader.entities.components.Wall;
+import com.ado.trader.entities.components.WallSprite;
 import com.ado.trader.map.Chunk;
 import com.ado.trader.map.Map;
 import com.ado.trader.rendering.EntityRenderSystem;
-import com.ado.trader.rendering.EntityRenderSystem.Direction;
 import com.artemis.ComponentMapper;
 import com.artemis.Entity;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -15,34 +15,30 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 
 public class WallPlaceable extends Placeable{
-	ComponentMapper<SpriteComp> spriteMap;
-	ComponentMapper<Wall> wallMap;
+	ComponentMapper<WallSprite> wallMap;
 	String entityName;
-	Integer firstSprite, secondSprite;
-	Direction first, second;
-	EntityFactory entities;
+	WallDirection first, second;
 	
-	public WallPlaceable(Map map, EntityFactory entities, EntityRenderSystem entityRenderer) {
+	public WallPlaceable(Map map, EntityRenderSystem entityRenderer) {
 		super(map, entityRenderer);
-		this.entities = entities;
 		
-		spriteMap = map.getWorld().getMapper(SpriteComp.class);
-		wallMap = map.getWorld().getMapper(Wall.class);
+		wallMap = map.getWorld().getMapper(WallSprite.class);
 	}
 
 	public void place(int mapX, int mapY) {
 		Chunk c = map.getChunk(mapX, mapY);
-		Vector2 t = map.worldVecToTile(mapX, mapY);
+		Vector2 t = Map.worldVecToTile(mapX, mapY);
 		
 		if(!c.getWalls().isOccupied((int) t.x, (int) t.y)){
-			Entity e = EntityFactory.createEntity(entityName, firstSprite);
-			Wall w = e.getComponent(Wall.class);
+			
+			Entity e = EntityFactory.createEntity(entityName);
+			
+			WallSprite w = e.getComponent(WallSprite.class);
 			
 			w.firstSprite = first;
 			
-			if(secondSprite!=null){
-				e.getComponent(SpriteComp.class).secondSprite = secondSprite;
-				e.getComponent(Wall.class).secondSprite = second;
+			if(second!=null){
+				e.getComponent(WallSprite.class).secondSprite = second;
 			}
 			
 			e.getComponent(Position.class).setPosition((int) t.x, (int) t.y);
@@ -62,13 +58,6 @@ public class WallPlaceable extends Placeable{
 					
 					selectCorrectDirection(x,y,start,widthHeight);
 					place(x, y);
-//					
-//					if(!map.getWallLayer().isOccupied(x, y, map.currentLayer)){
-//						selectCorrectDirection(x,y,start,widthHeight);
-//						place(x, y);
-//					}else{
-//						changeExistingSprite(x, y);
-//					}
 				}
 			}
 		}
@@ -78,78 +67,58 @@ public class WallPlaceable extends Placeable{
 		
 		Entity e = map.getWorld().getEntity(c.getWalls().map[tileX][tileX]);
 		
-		SpriteComp s = spriteMap.get(e);
-		Wall w = wallMap.get(e);
+		WallSprite w = wallMap.get(e);
 		
-		if(s.secondSprite == null){
-			s.secondSprite = firstSprite;
+		if(w.secondSprite == null){
 			w.secondSprite = first;
 		}else{
-			s.mainSprite = s.secondSprite;
 			w.firstSprite = w.secondSprite;
-			s.secondSprite = firstSprite;
 			w.secondSprite = first;
 		}
 	}
 	
 	//maps click-dragged square to proper sprites
 	private void selectCorrectDirection(int x,int y,Vector2 start,Vector2 widthHeight){
-		Sprite[] sprites = entityRenderer.getSprites().get(entityName);
+		Sprite[] sprites = entityRenderer.getSpriteManager().getWallSprites(key);
 		
 		if(sprites[1] == null)return;
 		
 		if(x==start.x&&y==start.y){		//s
-			firstSprite = 0;
-			first = Direction.SW;
-			secondSprite = 1;
-			second = Direction.SE;
+			first = WallDirection.SW;
+			second = WallDirection.SE;
 		}else if(x==start.x&&y==widthHeight.y){		//w
-			firstSprite = 0;
-			first = Direction.SW;
-			secondSprite = 1;
-			second = Direction.NW;
+			first = WallDirection.SW;
+			second = WallDirection.NW;
 		}else if(x==widthHeight.x&&y==widthHeight.y){		//n
-			firstSprite = 0;
-			first = Direction.NE;
-			secondSprite = 1;
-			second = Direction.NW;
+			first = WallDirection.NE;
+			second = WallDirection.NW;
 		}else if(x==widthHeight.x&&y==start.y){		//e
-			firstSprite = 0;
-			first = Direction.NE;
-			secondSprite = 1;
-			second = Direction.SE;
+			first = WallDirection.NE;
+			second = WallDirection.SE;
 		}else if(x<=widthHeight.x&&y==start.y){		//se
-			firstSprite = 1;
-			first = Direction.SE;
+			first = WallDirection.SE;
 		}else if(x<=widthHeight.x&&y==widthHeight.y){		//nw
-			firstSprite = 1;
-			first = Direction.NW;
+			first = WallDirection.NW;
 		}else if(y<=widthHeight.y&&x==start.x){				//sw
-			firstSprite = 0;
-			first = Direction.SW;
+			first = WallDirection.SW;
 		}else if(y<=widthHeight.y&&x==widthHeight.x){		//ne
-			firstSprite = 0;
-			first = Direction.NE;
+			first = WallDirection.NE;
 		}
 	}
 	
 	public void rotateSelection(){
 		switch(first){
 		case NE:
-			firstSprite = 1;
-			first = Direction.SE;
+			first = WallDirection.SE;
 			break;
 		case NW:
-			firstSprite = 0;
-			first = Direction.SW;
+			first = WallDirection.SW;
 			break;
 		case SW:
-			firstSprite = 0;
-			first = Direction.NE;
+			first = WallDirection.NE;
 			break;
 		case SE:
-			firstSprite = 1;
-			first = Direction.NW;
+			first = WallDirection.NW;
 			break;
 		}
 	}
@@ -163,10 +132,8 @@ public class WallPlaceable extends Placeable{
 //		}
 	}
 	public void clearSettings(){
-		first = Direction.SW;
-		firstSprite = 0;
+		first = WallDirection.SW;
 		second = null;
-		secondSprite = null;
 	}
 	public void renderPreview(SpriteBatch batch) {
 		

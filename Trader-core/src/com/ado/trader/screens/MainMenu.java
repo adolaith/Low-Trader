@@ -8,9 +8,11 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -20,120 +22,65 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
-import com.badlogic.gdx.scenes.scene2d.utils.Align;
+import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.viewport.StretchViewport;
 
-//old code from a tutorial. Used purely for utility. TO be replaced.
 public class MainMenu implements Screen {
 	
 	GameMain game;
 	Stage stage;
 	BitmapFont white;
 	TextureAtlas atlas;
-	Skin skin;
 	SpriteBatch batch;
+	Skin skin;
 	TextButtonStyle style;
 	GameOptions options;
 	
 	public MainMenu(GameMain game){
 		this.game = game;
 		
-//		long t = System.nanoTime();
-//		try{
-//			FileOutputStream oS = new FileOutputStream(System.getProperty("user.home") + "/adoGame/test.zip");
-//			ZipOutputStream zipOut = new ZipOutputStream(oS);
-			
-//			Map<String, String> env = new HashMap<>(); 
-//			env.put("create", "true");
-//			
-//			Path path = Paths.get(System.getProperty("user.home") + "/adoGame/test.zip");
-//			
-//			URI uri = URI.create("jar:" + path.toUri());
-//			try (FileSystem fs = FileSystems.newFileSystem(uri, env))
-//			{
-//			    Path nf = fs.getPath("new.txt");
-//			    try (Writer writer = Files.newBufferedWriter(nf, StandardCharsets.UTF_8, StandardOpenOption.CREATE)) {
-//			        writer.write("hello");
-//			    }
-//			    
-//			    nf = fs.getPath("test/vapeTest.txt");
-//			    try (Writer writer = Files.newBufferedWriter(nf, StandardCharsets.UTF_8, StandardOpenOption.CREATE)) {
-//			        writer.write("hello");
-//			    }
-//			}
-			
-			
-//			ZipFile zip = new ZipFile(System.getProperty("user.home") + "/adoGame/test.zip");
-//			ZipEntry e = zip.getEntry("test/1234");
-//			
-//			System.out.println("FileName: "+e.getName());
-//			System.out.println("FileSize: "+e.getSize());
-			
-//			Enumeration<? extends ZipEntry> entries = zip.entries();
-//			while (entries.hasMoreElements()) {
-//				ZipEntry entry = entries.nextElement();
-//
-//				String filename = entry.getName();
-//				System.out.println("FileName: "+filename);
-//				System.out.println("FileSize: "+entry.getSize());
-//			}
-//		}catch(Exception ex){
-//			System.out.println("Zip error! : "+ex);
-//		}
-//	    System.out.println((System.nanoTime() - t) / 1e9);
-		
-	    
-		//create temp dir
-//		try {
-//			//mk tmp dir
-//			final Path tmpP = Files.createTempDirectory("adoGameTmp");
-//			Gdx.app.log("editorScreen(tmpDir): ", "tmp dir: "+tmpP);
-//			
-//			//get file + path
-//			FileHandle f = Gdx.files.absolute(tmpP.toString() + "/daBuddha");
-//			//write and create file
-//			f.writeString("TEST TEST TEST", true);
-//			Gdx.app.log("editorScreen(tmpDir): ", "tmp file: "+f);
-//			
-//			
-//		} catch (IOException e) {
-//			Gdx.app.log("editorScreen(tmpDir): ", "error creating tmp dir");
-//			e.printStackTrace();
-//		}
-	    
 	}
 	
 	@Override
 	public void render(float delta) {
-		Gdx.gl.glClearColor(0, 0, 0, 1);
+		Gdx.gl.glClearColor(0, 0, 0, 1F);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+		Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 		
 		stage.act(delta);
 		
-		batch.begin();
 		stage.draw();
-		batch.end();
 	}
 
 	@Override
 	public void resize(int width, int height) {
-		//creates stage if there is none
-		if(stage == null){
-			stage = new Stage();
-		}
-		
+		stage.getViewport().update(width, height);
 	}
 
 	@Override
 	public void show() {
-
+		
 		//init call
-		batch = new SpriteBatch();
+		batch = new SpriteBatch(1000, GameMain.createSpriteShader());
+		
 		atlas = new TextureAtlas(Gdx.files.internal("img/master.pack")); 
 		skin = new Skin();
 		skin.addRegions(atlas);
 		white = new BitmapFont(Gdx.files.internal("font/white.fnt"), false);
 //		white.setScale(1f);
-		stage = new Stage();
+		stage = new Stage(new StretchViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(),
+				new OrthographicCamera()), batch){
+			@Override
+			public void draw () {
+				super.draw();
+				getBatch().setColor(Color.WHITE);
+			}
+		};
+		
+		stage.setShapeRenderer(new ShapeRenderer(5000, GameMain.createShapeShader()));
+		stage.getShapeRenderer().setAutoShapeType(true);
+		
+		stage.setDebugAll(true);
 		
 //		options = new GameOptions(white, skin, stage);
 		
@@ -141,11 +88,12 @@ public class MainMenu implements Screen {
 		
 		Table root = new Table();
 		root.setName("mainMenu");
+		stage.addActor(root);
 		root.defaults().width(400).height(60);
 		
 		setStyle("gui/panelButton", "gui/panelButton2", white);
 		new NewGame(game, white, skin, stage);
-		new LoadGame(game, white, skin, stage);
+		LoadGame loadWin = new LoadGame(game, white, skin, stage);
 		
 		//Prompts map selection then starts new game
 		TextButton newGame = new TextButton("New Game", style);
@@ -167,8 +115,9 @@ public class MainMenu implements Screen {
 				return true;
 			}
 			public void touchUp(InputEvent e, float x, float y, int pointer, int button){
-				LoadGame load = (LoadGame) stage.getRoot().findActor("loadGame");
-				load.showWindow(Gdx.graphics.getWidth() / 4, Gdx.graphics.getHeight() / 7);
+				LoadGame load = (LoadGame) root.findActor("loadGame");
+				
+				load.showWindow(0 - load.getWidth() / 2, 0 - load.getHeight() / 2);
 			}
 		});
 		
@@ -221,8 +170,6 @@ public class MainMenu implements Screen {
 		root.setX(Gdx.graphics.getWidth() / 2);
 		root.setY(Gdx.graphics.getHeight() / 2);
 		
-		stage.addActor(root);
-		
 	}
 
 	@Override
@@ -240,17 +187,17 @@ public class MainMenu implements Screen {
 
 	@Override
 	public void dispose() {
-		batch.dispose();
 		skin.dispose();
+		batch.dispose();
 		atlas.dispose();
 		stage.dispose();
 		white.dispose();
 	}
 	
-	public void setStyle(String styleUp, String styleDown, BitmapFont font){
+	private void setStyle(String styleUp, String styleDown, BitmapFont font){
 		style = new TextButtonStyle();
-		style.up = skin.getDrawable(styleUp);
-		style.down = skin.getDrawable(styleDown);
+		style.up = skin.newDrawable(styleUp);
+		style.down = skin.newDrawable(styleDown);
 		style.font=font;
 		style.fontColor = Color.BLACK;
 	}

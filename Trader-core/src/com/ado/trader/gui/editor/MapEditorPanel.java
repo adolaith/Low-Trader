@@ -1,11 +1,13 @@
 package com.ado.trader.gui.editor;
 
+import com.ado.trader.gui.BasicWindow;
 import com.ado.trader.gui.GuiUtils;
 import com.ado.trader.gui.ToolTip;
 import com.ado.trader.utils.GameServices;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
@@ -15,24 +17,26 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 public class MapEditorPanel extends Table{
 	int stageWidth;
 	ArrayMap<String, Table> tables;
+	Cell<Actor> body;
 
 	public MapEditorPanel(final GameServices gameRes) {
 		setName("editorPanel");
-		setVisible(true);
+//		setVisible(true);
 		setWidth(38);
 		setHeight(6 * 36);
-		setBackground(gameRes.getSkin().getDrawable("gui/bGround"));
+		setBackground(gameRes.getSkin().newDrawable("gui/bGround"));
 		
 		tables = new ArrayMap<String, Table>();
 		
 		new DeleteMenu(gameRes);
 		new EditorMenu(gameRes);
-		new NpcEditor(gameRes);
+		new EntityEditor(gameRes);
 		
 		tables.put("main", createMainPanel(gameRes));
 		tables.put("objects", new ObjectPanel(gameRes, this));
 
-		add(tables.get("main"));
+		body = add();
+		body.setActor(tables.get("main"));
 		
 		Viewport view = gameRes.getStage().getViewport();
 		stageWidth = (int) view.getScreenWidth();
@@ -43,9 +47,10 @@ public class MapEditorPanel extends Table{
 		
 		Group layer = gameRes.getStage().getRoot().findActor("guiLayer");
 		layer.addActor(this);
+//		gameRes.getStage().addActor(this);
 	}
 	
-	//UPDATE
+//	//UPDATE
 	public void act(float delta){
 		//screen has been resized
 		if(getStage().getWidth() != stageWidth){
@@ -79,7 +84,7 @@ public class MapEditorPanel extends Table{
 			public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
 				Viewport view = gameRes.getStage().getViewport();
 				Group layer = getStage().getRoot().findActor("guiLayer");
-				MiniMap map = layer.findActor("map");
+				MiniMap map = getStage().getRoot().findActor("map");
 				map.showWindow(view.getScreenWidth() - map.getWidth() - 4, view.getScreenHeight() - map.getHeight() - 4);
 				return true;
 			}
@@ -97,7 +102,7 @@ public class MapEditorPanel extends Table{
 			public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
 				Viewport view = gameRes.getStage().getViewport();
 				Group layer = getStage().getRoot().findActor("guiLayer");
-				NpcEditor entEdit = layer.findActor("entityEditor");
+				EntityEditor entEdit = getStage().getRoot().findActor("entityEditor");
 				entEdit.showWindow((view.getScreenX() + view.getScreenWidth() / 2) - entEdit.getWidth() / 2,
 						(view.getScreenY() + view.getScreenHeight() / 2) - entEdit.getHeight() / 2);
 				return true;
@@ -158,7 +163,6 @@ public class MapEditorPanel extends Table{
 	}
 	
 	public void setChildTable(String tableName){
-		clearChildren();
-		add(tables.get(tableName));
+		body.setActor(tables.get(tableName));
 	}
 }

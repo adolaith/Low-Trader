@@ -1,7 +1,6 @@
 package com.ado.trader.gui.editor;
 
 import com.ado.trader.gui.BasicWindow;
-import com.ado.trader.gui.GuiUtils;
 import com.ado.trader.map.Chunk;
 import com.ado.trader.map.Map;
 import com.ado.trader.map.MapRegion;
@@ -9,7 +8,6 @@ import com.ado.trader.map.Tile;
 import com.ado.trader.map.TileLayer;
 import com.ado.trader.utils.GameServices;
 import com.ado.trader.utils.IsoUtils;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Pixmap.Format;
 import com.badlogic.gdx.graphics.Texture;
@@ -17,10 +15,8 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.ui.Button;
-import com.badlogic.gdx.scenes.scene2d.ui.Button.ButtonStyle;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.ArrayMap;
 import com.badlogic.gdx.utils.JsonValue;
@@ -41,17 +37,13 @@ public class MiniMap extends BasicWindow {
 	public MiniMap(GameServices gameRes) {
 		super("MiniMap", 200, 252, gameRes.getFont(), gameRes.getSkin(), gameRes.getStage());
 		setName("map");
-		body.top();
 		this.map = gameRes.getMap();
 		this.gameRes = gameRes;
 		
 		createTextures();
 		
-		ButtonStyle bStyle = GuiUtils.setButtonStyle("gui/button", null, gameRes.getSkin());
-		Button b = new Button(bStyle);
-		LabelStyle ls = new LabelStyle(gameRes.getFont(), Color.BLACK);
-		Label l = new Label("R", ls);
-		b.add(l);
+		TextButtonStyle bStyle = new TextButtonStyle(gameRes.getSkin().newDrawable("gui/button"), null, null, gameRes.getFont());
+		TextButton b = new TextButton("R", bStyle);
 		b.addListener(new ClickListener(){
 			public void clicked (InputEvent event, float x, float y) {
 				mapMode = REGION_MODE;
@@ -60,9 +52,7 @@ public class MiniMap extends BasicWindow {
 		
 		body.add(b).center().padRight(2).size(24);
 		
-		b = new Button(bStyle);
-		l = new Label("C", ls);
-		b.add(l);
+		b = new TextButton("C", bStyle);
 		b.addListener(new ClickListener(){
 			public void clicked (InputEvent event, float x, float y) {
 				mapMode = CHUNK_MODE;
@@ -71,9 +61,7 @@ public class MiniMap extends BasicWindow {
 		
 		body.add(b).center().padRight(2).size(24);
 		
-		b = new Button(bStyle);
-		l = new Label("T", ls);
-		b.add(l);
+		b = new TextButton("T", bStyle);
 		b.addListener(new ClickListener(){
 			public void clicked (InputEvent event, float x, float y) {
 				mapMode = TILE_MODE;

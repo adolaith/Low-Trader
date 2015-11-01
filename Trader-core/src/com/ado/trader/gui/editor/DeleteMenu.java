@@ -6,7 +6,6 @@ import com.ado.trader.gui.ContextMenu;
 import com.ado.trader.gui.CustomCursor;
 import com.ado.trader.gui.GuiUtils;
 import com.ado.trader.input.InputHandler;
-import com.ado.trader.items.ItemFactory;
 import com.ado.trader.map.Chunk;
 import com.ado.trader.map.Map;
 import com.ado.trader.utils.GameServices;

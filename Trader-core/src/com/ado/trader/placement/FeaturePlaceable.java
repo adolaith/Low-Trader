@@ -3,6 +3,7 @@ package com.ado.trader.placement;
 import com.ado.trader.entities.EntityFeatures;
 import com.ado.trader.input.InputHandler;
 import com.ado.trader.map.Chunk;
+import com.ado.trader.map.Map;
 import com.ado.trader.utils.GameServices;
 import com.ado.trader.utils.IsoUtils;
 import com.artemis.Entity;
@@ -24,7 +25,7 @@ public class FeaturePlaceable extends Placeable {
 	@Override
 	void place(int mapX, int mapY) {
 		Chunk c = map.getChunk(mapX, mapY);
-		Vector2 tile = map.worldVecToTile(mapX, mapY);
+		Vector2 tile = Map.worldVecToTile(mapX, mapY);
 		
 		String decorates = features.getFeature(featureName).get("decorates").asString();
 		switch(decorates){
@@ -40,7 +41,7 @@ public class FeaturePlaceable extends Placeable {
 	}
 
 	public void rotateSelection(){
-		Sprite[] sprites = entityRenderer.getSprites().get(featureName);
+		Sprite[] sprites = entityRenderer.getSpriteManager().getFeatureSprites(featureName);
 		
 		if(spriteIndex <= sprites.length){
 			if(sprites[spriteIndex + 1] != null){
@@ -58,7 +59,7 @@ public class FeaturePlaceable extends Placeable {
 		mousePos = IsoUtils.getIsoXY((int)mousePos.x, (int)mousePos.y, 
 				map.getTileWidth(), map.getTileHeight());
 		
-		Sprite sprite = entityRenderer.getSprites().get(featureName)[spriteIndex];
+		Sprite sprite = entityRenderer.getSpriteManager().getFeatureSprites(featureName)[spriteIndex];
 		
 		batch.begin();
 		

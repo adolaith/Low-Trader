@@ -6,6 +6,7 @@ import com.ado.trader.entities.components.Position;
 import com.ado.trader.gui.CreateNpcWindow;
 import com.ado.trader.input.InputHandler;
 import com.ado.trader.map.Chunk;
+import com.ado.trader.map.Map;
 import com.ado.trader.utils.GameServices;
 import com.ado.trader.utils.IsoUtils;
 import com.artemis.ComponentMapper;
@@ -23,7 +24,6 @@ public class EntityPlaceable extends Placeable {
 	ComponentMapper<Area> areaMapper;
 	ComponentMapper<Position> positionMapper;
 	
-	CreateNpcWindow createNpcWindow;
 	EntityFactory entities;
 	
 	public EntityPlaceable(GameServices gameRes) {
@@ -33,21 +33,15 @@ public class EntityPlaceable extends Placeable {
 		areaMapper = map.getWorld().getMapper(Area.class);
 		positionMapper = map.getWorld().getMapper(Position.class);
 		
-//		this.createNpcWindow = new CreateNpcWindow(gameRes);
 	}
 	
 	public void place(int mapX,int mapY){
 		JsonValue profile = entities.getEntityData().get(entityName);
 		
-//		if(profile.has("animation")){
-//			createNpcWindow.showWindow((int)InputHandler.getIsoClicked().x, (int)InputHandler.getIsoClicked().y);
-//			return;
-//		}
-		
 		Entity e = EntityFactory.createEntity(entityName, spriteIndex);
 		
 		Chunk c = map.getChunk(mapX, mapY);
-		Vector2 tile = map.worldVecToTile(mapX, mapY);
+		Vector2 tile = Map.worldVecToTile(mapX, mapY);
 		
 		positionMapper.get(e).setPosition((int) tile.x, (int) tile.y);
 

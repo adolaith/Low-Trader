@@ -1,15 +1,15 @@
 package com.ado.trader.rendering;
 
+import com.ado.trader.entities.WallDirection;
 import com.ado.trader.entities.components.Animation;
 import com.ado.trader.entities.components.Area;
-import com.ado.trader.entities.components.Feature;
+import com.ado.trader.entities.components.FeatureSprite;
 import com.ado.trader.entities.components.Mask;
 import com.ado.trader.entities.components.Name;
 import com.ado.trader.entities.components.Position;
 import com.ado.trader.entities.components.SpriteComp;
 import com.ado.trader.entities.components.Status;
-import com.ado.trader.entities.components.Wall;
-import com.ado.trader.items.ItemFactory;
+import com.ado.trader.entities.components.WallSprite;
 import com.ado.trader.map.Chunk;
 import com.ado.trader.map.Map;
 import com.ado.trader.map.MapRegion;
@@ -17,26 +17,26 @@ import com.ado.trader.systems.StatusIconSystem.StatusIcon;
 import com.ado.trader.utils.IsoUtils;
 import com.artemis.ComponentMapper;
 import com.artemis.Entity;
-import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.GL30;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.ArrayMap;
 import com.esotericsoftware.spine.Skeleton;
 import com.esotericsoftware.spine.SkeletonBounds;
 import com.esotericsoftware.spine.SkeletonRenderer;
 import com.esotericsoftware.spine.SkeletonRendererDebug;
 
-//Handles rendering of all active Entities. 
+//Handles rendering of all active Entities.
 //Renders next entity selected for placement at the mouses location.
 public class EntityRenderSystem{
 	ComponentMapper<Position> posMapper;
 	ComponentMapper<SpriteComp> spriteMapper;
-	ComponentMapper<Wall> wallMapper;
+	ComponentMapper<WallSprite> wallMapper;
 	ComponentMapper<Area> areaMapper;
 	ComponentMapper<Mask> maskMapper;
-	ComponentMapper<Feature> featureMapper;
+	ComponentMapper<FeatureSprite> featureMapper;
 	ComponentMapper<Animation> animMapper;
 	ComponentMapper<Status> statusMapper;
 	ComponentMapper<Name> nameMapper;
@@ -44,20 +44,25 @@ public class EntityRenderSystem{
 	Map map;
 	SkeletonRenderer skeletonRenderer;
 	SkeletonRendererDebug debugRenderer;
-	ArrayMap<String, Sprite[]> entitySprites;
 	MaskingSystem masks;
+	SpriteManager spriteManager;
+	
+	Vector2 isoVec;
+	SkeletonBounds bounds = new SkeletonBounds();
 
-	public EntityRenderSystem(Map map, MaskingSystem masks) {
+	public EntityRenderSystem(TextureAtlas atlas, Map map, MaskingSystem masks) {
 		this.map = map;
 		this.masks = masks;
+		
+		spriteManager = new SpriteManager(atlas);
 		
 		nameMapper = map.getWorld().getMapper(Name.class);
 		spriteMapper = map.getWorld().getMapper(SpriteComp.class);
 		animMapper = map.getWorld().getMapper(Animation.class);
 		areaMapper = map.getWorld().getMapper(Area.class);
-		wallMapper = map.getWorld().getMapper(Wall.class);
+		wallMapper = map.getWorld().getMapper(WallSprite.class);
 		maskMapper = map.getWorld().getMapper(Mask.class);
-		featureMapper = map.getWorld().getMapper(Feature.class);
+		featureMapper = map.getWorld().getMapper(FeatureSprite.class);
 		statusMapper = map.getWorld().getMapper(Status.class);
 		posMapper = map.getWorld().getMapper(Position.class);
 		
@@ -65,9 +70,6 @@ public class EntityRenderSystem{
 		debugRenderer = new SkeletonRendererDebug();
 		skeletonRenderer.setPremultipliedAlpha(true);
 	}
-	
-	Vector2 isoVec;
-	SkeletonBounds bounds = new SkeletonBounds();
 	
 	//renders entities from the rear of the map to front, avoiding sprite overlap caused by isometric view
 	public void renderEntities(SpriteBatch batch, OrthographicCamera camera){
@@ -115,6 +117,7 @@ public class EntityRenderSystem{
 														int tileY = y * region.getHeightInTiles() + regionY * chunk.getHeight() + chunkY;
 
 														isoVec = IsoUtils.getIsoXY(tileX, tileY, map.getTileWidth(), map.getTileHeight());
+														
 														//drawWide
 //														if(drawWideEntity(chunkX, chunkY, chunk, batch))continue;
 														
@@ -122,43 +125,11 @@ public class EntityRenderSystem{
 														renderNorthernWall(chunkX, chunkY, chunk, batch);
 														
 														//draw items
-														if(chunk.getItems().isOccupied(chunkX, chunkY)){
-															Entity i = map.getWorld().getEntity(chunk.getItems().map[chunkX][chunkY][0]);
-															
-															String name = nameMapper.get(i).getName();
-															Sprite s = ItemFactory.getItemSprites().get(name);
-															
-															batch.draw(s, (isoVec.x + map.getTileWidth() / 2) - s.getWidth(), isoVec.y + map.getTileHeight() / 3, 
-																	s.getWidth() * s.getScaleX(), s.getHeight() * s.getScaleY());
-														}
+														renderItems(chunkX, chunkY, chunk, batch);
 														
 														//draw entities
-														if(chunk.getEntities().isOccupied(chunkX, chunkY)){
-															
-															for(int c = 0; c < chunk.getEntities().map[chunkX][chunkY].length; c++){
-																
-																if(chunk.getEntities().map[chunkX][chunkY][c] == null) continue;
-																
-																Entity e = map.getWorld().getEntity(chunk.getEntities().map[chunkX][chunkY][c]);
-
-																if(spriteMapper.has(e)){		//RENDER STATIC ENTITY
-																	drawSprite(e,batch);
-																	
-																}else if(animMapper.has(e)){		//RENDER ANIMATED(NPC) ENTITY
-																	Skeleton skel = animMapper.get(e).getSkeleton();
-																	skeletonRenderer.draw(batch,skel);
-																	
-																	//render status icons
-																	if(statusMapper.has(e)){
-																		StatusIcon icon = statusMapper.get(e).getStatusIcon();
-																		Vector2 iconPos = new Vector2(skel.getX(), skel.getY());
-																		bounds.update(skel, true);
-																		iconPos.y += bounds.getHeight() + 4;
-																		icon.drawIcon(batch, iconPos);
-																	}
-																}
-															}
-														}
+														renderEntity(chunkX, chunkY, chunk, batch);
+														
 														//draw south wall
 														renderSouthernWall(chunkX, chunkY, chunk, batch);
 													}
@@ -250,6 +221,47 @@ public class EntityRenderSystem{
 		return false;
 	}
 	
+	private void renderEntity(int tileX, int tileY, Chunk chunk, SpriteBatch batch){
+		if(chunk.getEntities().isOccupied(tileX, tileY)){
+			
+			for(int c = 0; c < chunk.getEntities().map[tileX][tileY].length; c++){
+				
+				if(chunk.getEntities().map[tileX][tileY][c] == null) continue;
+				
+				Entity e = map.getWorld().getEntity(chunk.getEntities().map[tileX][tileY][c]);
+
+				if(spriteMapper.has(e)){		//RENDER STATIC ENTITY
+					drawSprite(e,batch);
+					
+				}else if(animMapper.has(e)){		//RENDER ANIMATED(NPC) ENTITY
+					Skeleton skel = animMapper.get(e).getSkeleton();
+					skeletonRenderer.draw(batch,skel);
+					
+					//render status icons
+					if(statusMapper.has(e)){
+						StatusIcon icon = statusMapper.get(e).getStatusIcon();
+						Vector2 iconPos = new Vector2(skel.getX(), skel.getY());
+						bounds.update(skel, true);
+						iconPos.y += bounds.getHeight() + 4;
+						icon.drawIcon(batch, iconPos);
+					}
+				}
+			}
+		}
+	}
+	
+	private void renderItems(int tileX, int tileY, Chunk chunk, SpriteBatch batch){
+		if(chunk.getItems().isOccupied(tileX, tileY)){
+			Entity i = map.getWorld().getEntity(chunk.getItems().map[tileX][tileY][0]);
+			
+			String name = nameMapper.get(i).getName();
+			Sprite s = spriteManager.getItemSprite(name);
+			
+			batch.draw(s, (isoVec.x + map.getTileWidth() / 2) - s.getWidth(), isoVec.y + map.getTileHeight() / 3, 
+					s.getWidth() * s.getScaleX(), s.getHeight() * s.getScaleY());
+		}
+	}
+	
 	private void renderNorthernWall(int tileX, int tileY, Chunk chunk, SpriteBatch batch){
 		if(!chunk.getWalls().isOccupied(tileX, tileY)) return;
 		
@@ -258,18 +270,17 @@ public class EntityRenderSystem{
 		
 		if(e == null) return;
 		
-		Wall w = wallMapper.get(e);
+		WallSprite w = wallMapper.get(e);
 		
 		//check if walls are north facing
-		if(!(w.firstSprite==Direction.NE||w.firstSprite==Direction.NW)&&!
-				(w.secondSprite==Direction.NE||w.secondSprite==Direction.NW))return;
+		if(!(w.firstSprite == WallDirection.NE || w.firstSprite == WallDirection.NW) && 
+				!(w.secondSprite == WallDirection.NE || w.secondSprite == WallDirection.NW))return;
 				
-		SpriteComp sC = spriteMapper.get(e);
-		
-		drawNorthSprite(w.firstSprite, sC.mainSprite, e, batch);
-		if(sC.secondSprite != null){
-			drawNorthSprite(w.secondSprite, sC.secondSprite, e, batch);
+		drawNorthSprite(w.firstSprite, e, batch);
+		if(w.secondSprite != null){
+			drawNorthSprite(w.secondSprite, e, batch);
 		}
+		
 		drawFeature(e, batch);
 	}
 	
@@ -281,18 +292,17 @@ public class EntityRenderSystem{
 		
 		if(e == null) return;
 		
-		Wall w = wallMapper.get(e);
+		WallSprite w = wallMapper.get(e);
 		
 		//check if walls are south facing
-		if(!(w.firstSprite==Direction.SE||w.firstSprite==Direction.SW)&&!
-				(w.secondSprite==Direction.SE||w.secondSprite==Direction.SW))return;
+		if(!(w.firstSprite == WallDirection.SE || w.firstSprite == WallDirection.SW) && 
+				!(w.secondSprite == WallDirection.SE || w.secondSprite == WallDirection.SW))return;
 		
-		SpriteComp sC = spriteMapper.get(e);
-		
-		drawSouthSprite(w.firstSprite, sC.mainSprite, e, batch);
-		if(sC.secondSprite != null){
-			drawSouthSprite(w.secondSprite, sC.secondSprite, e, batch);
+		drawSouthSprite(w.firstSprite, e, batch);
+		if(w.secondSprite != null){
+			drawSouthSprite(w.secondSprite, e, batch);
 		}
+		
 		drawFeature(e, batch);
 	}
 	
@@ -300,13 +310,13 @@ public class EntityRenderSystem{
 	private void drawFeature(Entity e, SpriteBatch batch){
 		if(!featureMapper.has(e))return;
 		
-		Feature f = featureMapper.get(e);
-		Sprite s = entitySprites.get(f.featureName)[f.spriteIndex];
+		FeatureSprite f = featureMapper.get(e);
+		Sprite s = spriteManager.getFeatureSprites(f.featureName)[f.spriteIndex];
 				
 		batch.draw(s, isoVec.x, isoVec.y, s.getWidth() * s.getScaleX(), s.getHeight() * s.getScaleY());
 	}
 
-	private void drawNorthSprite(Direction dir, int spriteIndex, Entity e, SpriteBatch batch){
+	private void drawNorthSprite(WallDirection dir, Entity e, SpriteBatch batch){
 		if(dir==null)return;
 		
 		Position p = posMapper.get(e);
@@ -316,7 +326,7 @@ public class EntityRenderSystem{
 			m = maskMapper.get(e);
 		}
 		
-		Sprite s = entitySprites.get(nameMapper.get(e).getName())[spriteIndex];
+		Sprite s = spriteManager.getWallSprites(nameMapper.get(e).getName())[dir.index()];
 		
 		Vector2 vec = null;
 		
@@ -335,10 +345,10 @@ public class EntityRenderSystem{
 			break;
 		}
 		batch.flush();
-		batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+		batch.setBlendFunction(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA);
 	}
 	
-	private void drawSouthSprite(Direction dir, int spriteIndex, Entity e, SpriteBatch batch){
+	private void drawSouthSprite(WallDirection dir, Entity e, SpriteBatch batch){
 		if(dir==null)return;
 		
 		Position p = posMapper.get(e);
@@ -348,7 +358,7 @@ public class EntityRenderSystem{
 			m = maskMapper.get(e);
 		}
 		
-		Sprite s = entitySprites.get(nameMapper.get(e).getName())[spriteIndex];
+		Sprite s = spriteManager.getWallSprites(nameMapper.get(e).getName())[dir.index()];
 		
 		Vector2 vec = null;
 		
@@ -368,19 +378,16 @@ public class EntityRenderSystem{
 		}
 		
 		batch.flush();
-		batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+		batch.setBlendFunction(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA);
 	}
 	
 	private void drawSprite(Entity e, SpriteBatch batch){
 		//draws entities
 		Position p = posMapper.get(e);
 		SpriteComp s = spriteMapper.get(e);
-		Sprite tmp = entitySprites.get(nameMapper.get(e).getName())[s.mainSprite];
+		Sprite tmp = spriteManager.getEntitySprites(nameMapper.get(e).getName())[s.mainSprite];
 		
 		batch.draw(tmp , isoVec.x + p.getIsoOffset().x, isoVec.y + p.getIsoOffset().y, tmp.getWidth() * tmp.getScaleX(), tmp.getHeight() * tmp.getScaleY());		//static entities
-	}
-	public ArrayMap<String, Sprite[]> getSprites() {
-		return entitySprites;
 	}
 	public SkeletonRenderer getSkeletonRenderer() {
 		return skeletonRenderer;
@@ -388,13 +395,10 @@ public class EntityRenderSystem{
 	public SkeletonRendererDebug getDebugRenderer() {
 		return debugRenderer;
 	}
-	public void loadSprites(ArrayMap<String, Sprite[]> entitySprites){
-		this.entitySprites = entitySprites;
-	}
 	public MaskingSystem getMasks() {
 		return masks;
 	}
-	public enum Direction{
-		NW,NE,SW,SE,NORTH,SOUTH
+	public SpriteManager getSpriteManager() {
+		return spriteManager;
 	}
 }

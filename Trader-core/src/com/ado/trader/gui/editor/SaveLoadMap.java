@@ -198,7 +198,7 @@ public class SaveLoadMap extends SaveLoadMenu {
 		//clear existing data
 		FileHandle tmp = Gdx.files.external("adoGame/editor/maps/tmp");
 		tmp.emptyDirectory();
-		gameRes.getWorld().getManager(EntityDeletionManager.class).deleteAllEntities();
+		GameServices.getWorld().getManager(EntityDeletionManager.class).deleteAllEntities();
 		
 		for(int x = 0; x < 3; x++){
 			for(int y = 0; y < 3; y++){
@@ -225,6 +225,7 @@ public class SaveLoadMap extends SaveLoadMenu {
 		
 		loadConnectedRegion(r, j, dir, gameRes);
 	}
+	
 	private void loadConnectedRegion(JsonValue r, Json j, FileHandle dir, GameServices gameRes){
 		JsonValue m;
 		if(r.has("conn")){
