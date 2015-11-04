@@ -65,6 +65,7 @@ public class MapStreamer {
 		
 		return r;
 	}
+	
 	//Json writer writes to tmp dir or straight to .zip
 	public void saveRegion(MapRegion r, Json writer){
 		writer.writeObjectStart();
@@ -80,6 +81,7 @@ public class MapStreamer {
 		saveChunks(r, writer);
 		
 		writer.writeObjectEnd();
+		
 		try{
 			writer.getWriter().close();
 		}catch(Exception ex){
@@ -87,6 +89,7 @@ public class MapStreamer {
 		}
 	}
 	
+	//check and list connected regions
 	private void writeConnections(MapRegion r, Json writer){
 		writer.writeObjectStart("conn");
 		
@@ -95,7 +98,8 @@ public class MapStreamer {
 		}
 		writer.writeObjectEnd();
 	}
-
+	
+	//check and list which chunks are open to connections
 	private void checkBorderChunks(MapRegion r, Json writer){
 		//list the regions border chunks
 		writer.writeArrayStart("openChunks");

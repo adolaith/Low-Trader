@@ -9,9 +9,7 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
-import com.badlogic.gdx.utils.TimeUtils;
 
 public class EditorStreamer extends MapStreamer {
 	FileHandle dir;
@@ -81,7 +79,7 @@ public class EditorStreamer extends MapStreamer {
 			return;
 		}
 		
-		//copy tmp to actual map
+		//copy shifted-tmp to actual map
 		map.activeRegions = tmp;
 		
 //		Gdx.app.log("Streamer: ", "OLD Cam region:"+ camRegion.x +", "+camRegion.y);
@@ -89,6 +87,28 @@ public class EditorStreamer extends MapStreamer {
 		//write unloaded regions to file
 		writeUnloadedRegions(unloadRegions);
 		
+		loadConnectedRegions();
+		
+		repositionCamera(cam);
+		
+//		System.out.println("MapStream TIME: " + TimeUtils.timeSinceNanos(t));
+	}
+	
+	//move map regions. if region is outside map min-max, it is added to the unload list.
+	private void shiftRegion(int x, int y, Array<MapRegion> unloadRegions, MapRegion[][] tmp){
+		if(map.getRegionMap()[x][y] == null) return;
+		
+		if(x + shiftX < 0 || x + shiftX > 2 || y + shiftY < 0 || y + shiftY > 2){
+			unloadRegions.add(map.getRegionMap()[x][y]);
+//			Gdx.app.log("Streamer: ", "Region to UNLOAD: "+ map.getRegionMap()[x][y].getId());
+			return;
+		}
+			
+		tmp[x + shiftX][y + shiftY] = map.getRegionMap()[x][y];
+//		Gdx.app.log("Streamer: ", "Map region: "+ x +", "+ y + ". to : "+ (x + shiftX) +", "+ (y + shiftY) + ". ID: "+ map.getRegionMap()[x][y].getId());
+	}
+	
+	private void loadConnectedRegions(){
 		JsonValue c;
 		//load connected regions
 		for(int x = 0; x < 3; x++){
@@ -199,23 +219,8 @@ public class EditorStreamer extends MapStreamer {
 				}
 			}
 		}
-		
-		repositionCamera(cam);
-		
-//		System.out.println("MapStream TIME: " + TimeUtils.timeSinceNanos(t));
 	}
-	private void shiftRegion(int x, int y, Array<MapRegion> unloadRegions, MapRegion[][] tmp){
-		if(map.getRegionMap()[x][y] == null) return;
-		
-		if(x + shiftX < 0 || x + shiftX > 2 || y + shiftY < 0 || y + shiftY > 2){
-			unloadRegions.add(map.getRegionMap()[x][y]);
-//			Gdx.app.log("Streamer: ", "Region to UNLOAD: "+ map.getRegionMap()[x][y].getId());
-			return;
-		}
-			
-		tmp[x + shiftX][y + shiftY] = map.getRegionMap()[x][y];
-//		Gdx.app.log("Streamer: ", "Map region: "+ x +", "+ y + ". to : "+ (x + shiftX) +", "+ (y + shiftY) + ". ID: "+ map.getRegionMap()[x][y].getId());
-	}
+	
 	private void repositionCamera(OrthographicCamera cam){
 		Vector2 camRegion = IsoUtils.getColRow((int) cam.position.x, (int) cam.position.y, Map.tileWidth, Map.tileHeight);
 		Vector2 camChunk = Map.worldVecToChunk((int) camRegion.x, (int) camRegion.y);
@@ -229,6 +234,7 @@ public class EditorStreamer extends MapStreamer {
 		
 //		Gdx.app.log("Streamer: ", "CAM RE-POS");
 	}
+	
 	private void writeUnloadedRegions(Array<MapRegion> regions){
 		if(regions.size == 0) return;
 		if(saveDir == null){

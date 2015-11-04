@@ -35,13 +35,16 @@ public class MapEditorScreen implements Screen {
 	public MapEditorScreen(GameMain game, String loadDir) {
 		MapEditorScreen.game = game;
 		MapEditorInput input = new MapEditorInput();
+		
 		gameServices = new GameServices(1280, 720, input, loadDir);
+		
+		input.addPlacementManager(new PlacementManager(gameServices));
+		
+		gameServices.getMap().createMap(input.getPlacementManager().getTilePl());
 		
 		initWorld();
 		
 		gameServices.setStreamer(new EditorStreamer(gameServices.getMap()));
-		
-		input.addPlacementManager(new PlacementManager(gameServices));
 		
 		LabelStyle style = new LabelStyle(gameServices.getFont(), Color.WHITE);
 		fps = new Label("", style);

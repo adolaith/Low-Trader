@@ -1,8 +1,10 @@
 package com.ado.trader.map;
 
 import com.ado.trader.entities.components.WallSprite;
+import com.ado.trader.input.MapEditorInput;
 import com.ado.trader.pathfinding.Mover;
 import com.ado.trader.pathfinding.TileBasedMap;
+import com.ado.trader.placement.TilePlaceable;
 import com.ado.trader.systems.GameTime;
 import com.ado.trader.systems.SaveSystem;
 import com.ado.trader.utils.GameServices;
@@ -20,7 +22,6 @@ import com.badlogic.gdx.utils.Array;
 public class Map implements TileBasedMap{
 	public static int tileWidth = 64*2;
 	public static int tileHeight = 32*2;
-	int nextRegionId;
 	
 	Sprite tileOutline;
 	Array<Sprite> tileSprites;
@@ -34,8 +35,6 @@ public class Map implements TileBasedMap{
 	
 	public Map(GameServices gameRes) {
 		init(gameRes.getAtlas(), GameServices.getWorld());
-		
-		createMap();
 	}
 	
 	public Map(String loadName, GameServices gameRes) {
@@ -53,9 +52,12 @@ public class Map implements TileBasedMap{
 	}
 
 	//creates a map with tile in an isometric layout
-	private void createMap(){
-		MapRegion region = new MapRegion(0);
-		nextRegionId++;
+	public void createMap(TilePlaceable tilePlacer){
+		int startId = tilePlacer.getNextRegionId();
+		tilePlacer.incrementID();
+		
+		MapRegion region = new MapRegion(startId);
+
 		Chunk chunk = new Chunk(world);
 		
 		//set chunk to middle of region
@@ -377,12 +379,6 @@ public class Map implements TileBasedMap{
 		tgtVec = worldVecToTile(tx, ty);
 		
 		return srcLayer.map[(int) srcVec.x][(int) srcVec.y].travelCost + tgtLayer.map[(int) tgtVec.x][(int) tgtVec.y].travelCost; 
-	}
-	public void setNextId(int id){
-		nextRegionId = id;
-	}
-	public int getNextId(){
-		return nextRegionId;
 	}
 	public int getWidthInTiles() {
 		//chunk tile width * (region chunk width * active region map width)

@@ -143,5 +143,17 @@ public class SpriteManager {
 	}
 	public Sprite[] getFeatureSprites(String key){
 		return featureSprites.get(key);
-	}	
+	}
+	public ArrayMap<String, Sprite[]> getEntitySprites() {
+		return entitySprites;
+	}
+	public ArrayMap<String, Sprite> getItemSprites() {
+		return itemSprites;
+	}
+	public ArrayMap<String, Sprite[]> getWallSprites() {
+		return wallSprites;
+	}
+	public ArrayMap<String, Sprite[]> getFeatureSprites() {
+		return featureSprites;
+	}
 }

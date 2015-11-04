@@ -4,7 +4,7 @@ import com.ado.trader.entities.EntityFactory;
 import com.ado.trader.gui.BasicWindow;
 import com.ado.trader.gui.GuiUtils;
 import com.ado.trader.gui.ToolTip;
-import com.ado.trader.rendering.EntityRenderSystem;
+import com.ado.trader.rendering.SpriteManager;
 import com.ado.trader.systems.AiSystem;
 import com.ado.trader.utils.GameServices;
 import com.badlogic.gdx.Gdx;
@@ -101,6 +101,16 @@ public class EntityEditor extends BasicWindow {
 		FileHandle file = Gdx.files.internal("data/entities/entityEditor.cfg");
 		componentList = j.fromJson(null, file);
 		
+		//create and populate gui table with 'add component' buttons
+		loadComponentButtons(add);
+		
+		//create default, empty view
+//		scroll.add(createEntry(componentList.get("name"))).expand().fillX().row();
+		
+		scroll.layout();
+	}
+	
+	private void loadComponentButtons(ImageButton add){
 		Table listTable = new Table();
 		ScrollPane buttonList = GuiUtils.createScrollTable(gameRes.getSkin());
 		buttonList.setWidget(listTable);
@@ -120,15 +130,11 @@ public class EntityEditor extends BasicWindow {
 			}
 		});
 		
-//		scroll.add(createEntry(componentList.get("name"))).expand().fillX().row();
-		
-		scroll.layout();
-		
 		for(JsonValue c = componentList.child; c != null; c = c.next){
 			if(c.name.matches("name")) continue;
 			
 			Button button = new Button(bStyle);
-			l = new Label(c.name, lStyle);
+			Label l = new Label(c.name, lStyle);
 			final JsonValue component = c;
 			button.add(l);
 			button.addListener(new ClickListener(){
@@ -146,6 +152,8 @@ public class EntityEditor extends BasicWindow {
 	public Table createEntry(JsonValue componentDesc){
 		Table t = new Table();
 		t.padBottom(3);
+		
+		System.out.println("Create Entry:" + componentDesc);
 		
 		if(!componentDesc.name.matches("name")){
 			ImageButton del = GuiUtils.createImageButton("gui/exitIcon", null, "gui/button", null, gameRes.getSkin());
@@ -197,10 +205,14 @@ public class EntityEditor extends BasicWindow {
 			SelectBox<String> spriteBox = GuiUtils.createSelectBox(gameRes.getSkin(), gameRes.getFont());
 			
 			Array<String> sprites = new Array<String>();
-			EntityRenderSystem render = gameRes.getRenderer().getRenderEntitySystem();
-			for(String s: render.getSprites().keys()){
-				sprites.add(s);
-			}
+			SpriteManager spriteMan = gameRes.getRenderer().getRenderEntitySystem().getSpriteManager();
+			
+			//load sprite name lists
+			loadSprites(spriteMan.getEntitySprites().keys(), sprites);
+			loadSprites(spriteMan.getItemSprites().keys(), sprites);
+			loadSprites(spriteMan.getWallSprites().keys(), sprites);
+			loadSprites(spriteMan.getFeatureSprites().keys(), sprites);
+			
 			spriteBox.setItems(sprites);
 			spriteBox.setName(input.getString("name"));
 			t.add(spriteBox).padRight(4);
@@ -274,6 +286,12 @@ public class EntityEditor extends BasicWindow {
 		}
 		
 		return t;
+	}
+	
+	private void loadSprites(ArrayMap.Keys<String> list, Array<String> editorList){
+		for(String s: list){
+			editorList.add(s);
+		}
 	}
 
 	public void showWindow(float x, float y){

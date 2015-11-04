@@ -103,11 +103,9 @@ public class GameServices {
 		FileLogger.writeLog("GameServices: entities loaded");
 		
 		//centre camera on map
-		if(map.getRegionMap()[1][1] != null){
-			Vector2 tmp = IsoUtils.getIsoXY(map.getWidthInTiles()/2, map.getHeightInTiles()/2, map.getTileWidth(), map.getTileHeight());
-			renderer.getCamera().position.x = tmp.x;
-			renderer.getCamera().position.y = tmp.y;
-		}
+		Vector2 tmp = IsoUtils.getIsoXY(map.getWidthInTiles()/2, map.getHeightInTiles()/2, map.getTileWidth(), map.getTileHeight());
+		renderer.getCamera().position.x = tmp.x;
+		renderer.getCamera().position.y = tmp.y;
 
 		pathfinder = new AStarPathFinder(map, 500, false);
 	}

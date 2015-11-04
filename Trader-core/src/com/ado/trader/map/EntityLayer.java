@@ -5,6 +5,7 @@ import com.ado.trader.entities.components.AiProfile;
 import com.ado.trader.entities.components.Animation;
 import com.ado.trader.entities.components.Area;
 import com.ado.trader.entities.components.AttributeTable;
+import com.ado.trader.entities.components.BaseId;
 import com.ado.trader.entities.components.Inventory;
 import com.ado.trader.entities.components.Money;
 import com.ado.trader.entities.components.Movement;
@@ -21,6 +22,7 @@ import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
 
 public class EntityLayer extends IntMapLayer {
+	ComponentMapper<BaseId> baseIdMap;
 	ComponentMapper<Name> nameMap;
 	ComponentMapper<SpriteComp> spriteMap;
 	ComponentMapper<Animation> animMap;
@@ -37,6 +39,7 @@ public class EntityLayer extends IntMapLayer {
 		super(w, h, c);
 		this.world = world;
 		
+		baseIdMap = world.getMapper(BaseId.class);
 		nameMap = world.getMapper(Name.class);
 		spriteMap = world.getMapper(SpriteComp.class);
 		animMap = world.getMapper(Animation.class);
@@ -47,8 +50,8 @@ public class EntityLayer extends IntMapLayer {
 		attributeMap = world.getMapper(AttributeTable.class);
 		positionMap = world.getMapper(Position.class);
 		moneyMap = world.getMapper(Money.class);
-		
 	}
+	
 	public boolean addToMap(Integer id, int x, int y) {
 		for(int i = 0; i < map[x][y].length; i++){
 			if(map[x][y][i] == null){
@@ -58,9 +61,11 @@ public class EntityLayer extends IntMapLayer {
 		}
 		return false;
 	}
+	
 	public void deleteFromMap(int x, int y) {
 		map[x][y] = null;
 	}
+	
 	public void markAreaOccupied(int x, int y, Entity e, IntMapLayer layer){
 		if (!areaMap.has(e)) return;
 		
@@ -69,6 +74,7 @@ public class EntityLayer extends IntMapLayer {
 			layer.addToMap(e.getId(), (int)(x+vec.x), (int)(y+vec.y));
 		}
 	}
+	
 	//finds neighbours of x,y to a depth of n with the desired tag.
 	public Array<Integer> getNeighborEntitys(int x, int y, int n, String tag) {
 		Array<Integer> neighbours = new Array<Integer>();
@@ -181,9 +187,11 @@ public class EntityLayer extends IntMapLayer {
 	public int getWidth() {
 		return map.length;
 	}
+	
 	public int getHeight() {
 		return map[0].length;
 	}
+	
 	@Override
 	public void saveLayer(Json chunkJson) {
 		chunkJson.writeArrayStart("entities");
@@ -198,13 +206,15 @@ public class EntityLayer extends IntMapLayer {
 					Entity e = world.getEntity(map[x][y][c]);
 
 					chunkJson.writeObjectStart();
+					
+					chunkJson.writeValue("id", baseIdMap.get(e).getId());
+					
+					chunkJson.writeValue("n", nameMap.get(e).getName());
 
 					Position p = positionMap.get(e);
 					chunkJson.writeValue("p", p.getTileX() +","+ p.getTileY() +","+ c);
 					chunkJson.writeValue("o", p.getIsoOffset().x +","+ p.getIsoOffset().y);
 					
-					chunkJson.writeValue("n", nameMap.get(e).getName());
-
 					if(areaMap.has(e)){
 						Area a = areaMap.get(e);
 						chunkJson.writeArrayStart("area");
@@ -255,6 +265,7 @@ public class EntityLayer extends IntMapLayer {
 		}
 		chunkJson.writeArrayEnd();
 	}
+	
 	public void loadLayer(JsonValue e){
 		String[] xy;
 		for(JsonValue v = e.child; v != null; v = v.next){

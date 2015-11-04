@@ -17,6 +17,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
+import com.badlogic.gdx.utils.TimeUtils;
 
 public class EntityLoader extends SaveLoadMenu {
 	Json json;
@@ -93,12 +94,15 @@ public class EntityLoader extends SaveLoadMenu {
 			return;
 		}
 		
+		String id =  String.valueOf(TimeUtils.nanoTime());
+		id = id.substring(id.length() - 6);
+		
 		FileHandle file;
-		file = Gdx.files.external(externalPath + name);
+		file = Gdx.files.external(externalPath + id);
 
 		//overwrite existing file. NO CONFIRMATION PROMPTED!
 		if(file.exists()){
-			file = Gdx.files.external(externalPath + name + "_new");
+			file = Gdx.files.external(externalPath + id + "_new");
 		}
 		
 		//set file writer
@@ -111,6 +115,8 @@ public class EntityLoader extends SaveLoadMenu {
 		
 		//write editor data
 		json.writeObjectStart();
+		
+		json.writeValue("baseId", id);
 		
 		for(Label l: editor.dataObjects.keys()){
 			json.writeObjectStart(l.getText().toString());

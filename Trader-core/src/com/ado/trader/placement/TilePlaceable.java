@@ -18,6 +18,7 @@ public class TilePlaceable extends Placeable {
 	Integer id;
 	public Integer mask;
 	public int dir;
+	int nextRegionId;
 	
 	public TilePlaceable(Map map) {
 		super(map, null);
@@ -65,8 +66,9 @@ public class TilePlaceable extends Placeable {
 	private void createRegion(int mapX, int mapY){
 		Vector2 regVec = Map.worldVecToRegion(mapX, mapY);
 		MapRegion r = new MapRegion();
-		r.setId(map.getNextId());
-		map.setNextId(map.getNextId() + 1);
+		
+		r.setId(nextRegionId);
+		incrementID();
 		
 		map.getRegionMap()[(int) regVec.x][(int) regVec.y] = r;
 		
@@ -189,5 +191,12 @@ public class TilePlaceable extends Placeable {
 		id = null;
 		mask = null;
 		dir = 0;
+	}
+	
+	public void incrementID(){
+		this.nextRegionId++;
+	}
+	public int getNextRegionId(){
+		return nextRegionId;
 	}
 }

@@ -3,6 +3,7 @@ package com.ado.trader.gui.editor;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Scanner;
 
 import com.ado.trader.gui.SaveLoadMenu;
 import com.ado.trader.gui.ToolTip;
@@ -25,6 +26,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
+import com.badlogic.gdx.utils.TimeUtils;
 
 public class SaveLoadMap extends SaveLoadMenu {
 	GameServices gameRes;
@@ -124,6 +126,11 @@ public class SaveLoadMap extends SaveLoadMenu {
 	}
 	
 	public void save(String saveName){
+		int regionCount = 0;
+		String regionData = "[";
+		String filePath;
+		Json j = new Json();
+		
 		//create map folder
 		FileHandle file = Gdx.files.external(externalPath + saveName + "/");
 		if(file.exists()){
@@ -136,25 +143,38 @@ public class SaveLoadMap extends SaveLoadMenu {
 		FileHandle tmp = Gdx.files.external("adoGame/editor/maps/tmp");
 		if(tmp.list().length > 0){
 			for(FileHandle f: tmp.list()){
-				FileHandle d = Gdx.files.external(file.file() +"/"+ f.name());
+				
+				filePath = file.file() +"/"+ f.name();
+				FileHandle d = Gdx.files.external(filePath);
 				f.moveTo(d);
+				
+				extractRegionData(filePath, regionData);
+								
+				regionCount++;
 			}
 			tmp.emptyDirectory();
 		}
 		
 		//write active regions to map folder
-		Json j = new Json();
 		
 		for(int x = 0; x < 3; x++){
 			for(int y = 0; y < 3; y++){
 				if(gameRes.getMap().getRegionMap()[x][y] == null) continue;
+				
+				filePath = file.file().getPath() + 
+						"/" + gameRes.getMap().getRegionMap()[x][y].getId();
+				
 				try {
-					j.setWriter(new FileWriter(file.file().getPath() + 
-							"/" + gameRes.getMap().getRegionMap()[x][y].getId()));
+					j.setWriter(new FileWriter(filePath));
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
+				
 				gameRes.getStreamer().saveRegion(gameRes.getMap().getRegionMap()[x][y], j);
+				
+				extractRegionData(filePath, regionData);
+				
+				regionCount++;
 			}
 		}
 		
@@ -164,14 +184,24 @@ public class SaveLoadMap extends SaveLoadMenu {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		
 		j.writeObjectStart();
-		j.writeValue("camPos", gameRes.getCam().position.x +":"+ gameRes.getCam().position.y);
+		
+		//this will need changing - RE - id generation
+		String idGen = String.valueOf(TimeUtils.nanoTime());
+		j.writeValue("id", idGen.substring(idGen.length() - 6));
+		
+		j.writeValue("count", regionCount);
+		
+		j.writeValue("regions", regionData);
 		
 		Vector2 camVec = IsoUtils.getColRow((int)gameRes.getCam().position.x, (int)gameRes.getCam().position.y,
 				Map.tileWidth, Map.tileHeight);
 		MapRegion lastRegion = gameRes.getMap().getRegion((int) camVec.x, (int) camVec.y);
 		
 		j.writeValue("lastRegion", lastRegion.getId());
+		
+		j.writeValue("camPos", gameRes.getCam().position.x +":"+ gameRes.getCam().position.y);
 		
 		j.writeObjectEnd();
 		
@@ -192,6 +222,11 @@ public class SaveLoadMap extends SaveLoadMenu {
 //		Gdx.app.log("SaveMap: ", "MAP SAVED!");
 	}
 	
+	private void extractRegionData(String regionFile, String mapHeader){
+		Scanner scan = new Scanner(regionFile);
+		mapHeader += "{" + scan.findInLine("id.+open.+]") + "},";
+		scan.close();
+	}
 	
 	public void load(){
 		
