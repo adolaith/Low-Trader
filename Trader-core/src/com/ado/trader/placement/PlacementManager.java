@@ -69,25 +69,24 @@ public class PlacementManager {
 		placementSelection.rotateSelection();
 	}
 	
-	public void setPlacementSelection(String type, String name){
+	public void setPlacementSelection(String type, String baseid){
 		switch(type){
 		case "feature":
 			placementSelection = featurePl;
-			featurePl.featureName = name;
+			featurePl.featureName = baseid;
 			featurePl.spriteIndex = 0;
 			break;
 		case "item":
 			placementSelection = itemPl;
-			itemPl.itemId = name;
+			itemPl.itemId = baseid;
 			break;
 		case "entity":
 			placementSelection = entityPl;
-			entityPl.entityName = name;
-			entityPl.spriteIndex = 0;
+			entityPl.setSelection(baseid);
 			break;
 		case "wall":
 			placementSelection = wallPl;
-			wallPl.entityName = name;
+			wallPl.entityName = baseid;
 
 			wallPl.first = WallDirection.SW;
 			break;

@@ -6,7 +6,6 @@ import com.artemis.Component;
 public class SpriteComp extends Component {
 	public String spriteName;
 	public int mainSprite;
-	public Integer secondSprite;
 	
 	public SpriteComp() {
 	}

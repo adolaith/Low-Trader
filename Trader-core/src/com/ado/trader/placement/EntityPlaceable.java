@@ -3,7 +3,7 @@ package com.ado.trader.placement;
 import com.ado.trader.entities.EntityFactory;
 import com.ado.trader.entities.components.Area;
 import com.ado.trader.entities.components.Position;
-import com.ado.trader.gui.CreateNpcWindow;
+import com.ado.trader.entities.components.SpriteComp;
 import com.ado.trader.input.InputHandler;
 import com.ado.trader.map.Chunk;
 import com.ado.trader.map.Map;
@@ -11,34 +11,37 @@ import com.ado.trader.utils.GameServices;
 import com.ado.trader.utils.IsoUtils;
 import com.artemis.ComponentMapper;
 import com.artemis.Entity;
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.JsonValue;
 
 public class EntityPlaceable extends Placeable {
-	public String entityName;
-	public int spriteIndex;
+	String baseId;
+	int spriteIndex;
 	
-	ComponentMapper<Area> areaMapper;
+	JsonValue profile;
+	
 	ComponentMapper<Position> positionMapper;
-	
-	EntityFactory entities;
+	ComponentMapper<Area> areaMapper;
+	ComponentMapper<SpriteComp> spriteMapper;
 	
 	public EntityPlaceable(GameServices gameRes) {
 		super(gameRes.getMap(), gameRes.getRenderer().getRenderEntitySystem());
-		this.entities = gameRes.getEntities();
 		
 		areaMapper = map.getWorld().getMapper(Area.class);
 		positionMapper = map.getWorld().getMapper(Position.class);
-		
+		spriteMapper = map.getWorld().getMapper(SpriteComp.class);
 	}
 	
 	public void place(int mapX,int mapY){
-		JsonValue profile = entities.getEntityData().get(entityName);
+		Entity e = EntityFactory.createEntity(profile);
 		
-		Entity e = EntityFactory.createEntity(entityName, spriteIndex);
+		//change sprite
+		SpriteComp sprite = spriteMapper.get(e); 
+		if(sprite.mainSprite != spriteIndex){
+			sprite.mainSprite = spriteIndex;
+		}
 		
 		Chunk c = map.getChunk(mapX, mapY);
 		Vector2 tile = Map.worldVecToTile(mapX, mapY);
@@ -61,9 +64,8 @@ public class EntityPlaceable extends Placeable {
 			}
 		}
 	}
+	
 	public void renderPreview(SpriteBatch batch){
-		JsonValue profile = entities.getEntityData().get(entityName);
-		
 		if(delete || !profile.has("sprite"))return;
 		
 		Vector2 mousePos = IsoUtils.getColRow((int)InputHandler.getMousePos().x, (int)InputHandler.getMousePos().y,
@@ -72,7 +74,8 @@ public class EntityPlaceable extends Placeable {
 		mousePos = IsoUtils.getIsoXY((int)mousePos.x, (int)mousePos.y, 
 				map.getTileWidth(), map.getTileHeight());
 		
-		Sprite sprite = entityRenderer.getSprites().get(entityName)[spriteIndex];
+		String spriteName = profile.get("sprite").getString("sprite");
+		Sprite sprite = entityRenderer.getSpriteManager().getEntitySprites(spriteName)[spriteIndex];
 		
 		batch.begin();
 		if(profile.has("area")){
@@ -93,7 +96,8 @@ public class EntityPlaceable extends Placeable {
 	}
 	
 	public void rotateSelection(){
-		Sprite[] sprites = entityRenderer.getSprites().get(entityName);
+		String spriteName = profile.get("sprite").getString("sprite");
+		Sprite[] sprites = entityRenderer.getSpriteManager().getEntitySprites(spriteName);
 		
 		if(spriteIndex < sprites.length ){
 			if(sprites[spriteIndex + 1] != null){
@@ -104,11 +108,19 @@ public class EntityPlaceable extends Placeable {
 		spriteIndex = 0;
 	}
 	
+	public void setSelection(String baseId){
+		this.baseId = baseId;
+		this.spriteIndex = 0;
+		
+		profile = EntityFactory.getEntityData().get("1").get(baseId);
+	}
+	
 	public void dragPlace(Vector2 start, Vector2 widthHeight) {}
 
 	@Override
 	void clearSettings() {
 		spriteIndex = 0;
-		entityName = null;
+		baseId = null;
+		profile = null;
 	}
 }

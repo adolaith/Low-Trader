@@ -19,7 +19,6 @@ import com.ado.trader.entities.components.Wall;
 import com.ado.trader.items.ItemFactory;
 import com.ado.trader.map.EntityLayer;
 import com.ado.trader.rendering.EntityRenderSystem;
-import com.ado.trader.rendering.EntityRenderSystem.Direction;
 import com.ado.trader.utils.FileLogger;
 import com.ado.trader.utils.GameServices;
 import com.ado.trader.utils.IsoUtils;
@@ -79,25 +78,6 @@ public class EntityLoader {
 		
 		groupManager = world.getManager(GroupManager.class);
 	}
-	
-	//loads all animations
-	public ArrayMap<String, SkeletonData> loadSpineData(TextureAtlas atlas, EntityFactory entities){
-		ArrayMap<String, SkeletonData> skeletons = new ArrayMap<String, SkeletonData>();
-		String[] files = Gdx.files.internal("data/anim/files.txt").readString().split(",");
-		
-		for(String file: files){
-			FileLogger.writeLog("EntityLoader: loadSpineData: "+ file);
-			SkeletonJson json = new SkeletonJson(atlas);
-			json.setScale(2f);
-
-			FileHandle f = Gdx.files.internal("data/anim/" +file+ ".json");
-			SkeletonData skelData = json.readSkeletonData(f);
-			skeletons.put(skelData.getName(), skelData);
-
-			EntityFactory.animationPool.put(skelData.getName(), new AnimationStateData(skelData));
-		}
-		return skeletons;
-	}
 
 	//use after loading entity profiles. Loads level data
 	public void loadSavedEntities(String fileName, GameServices gameRes){
@@ -138,7 +118,8 @@ public class EntityLoader {
 			
 			case "pos":
 				int[] pos = d.asIntArray();
-				Vector2 mapXY = IsoUtils.getColRow(pos[0], pos[1], gameRes.getMap().getTileWidth(), gameRes.getMap().getTileHeight());
+				Vector2 mapXY = IsoUtils.getColRow(pos[0], pos[1], 
+						gameRes.getMap().getTileWidth(), gameRes.getMap().getTileHeight());
 				mapXY.x += 0.5;
 				
 				positionMap.get(e).setPosition((int)mapXY.x, (int)mapXY.y, pos[2]);
@@ -148,7 +129,8 @@ public class EntityLoader {
 				}else{
 					EntityLayer eLayer = gameRes.getMap().getEntityLayer();
 					eLayer.addToMap(e.getId(), (int)mapXY.x, (int)mapXY.y, pos[2]);
-					eLayer.markAreaOccupied((int)mapXY.x, (int)mapXY.y, pos[2], e, gameRes.getMap().getEntityLayer());
+					eLayer.markAreaOccupied((int)mapXY.x, (int)mapXY.y, pos[2], 
+							e, gameRes.getMap().getEntityLayer());
 				}
 				break;
 				
@@ -210,97 +192,5 @@ public class EntityLoader {
 			}
 			
 		}
-	}
-
-	//loads entity profile templates
-	public void loadEntityArchetypes(TextureAtlas atlas, EntityFactory collection, EntityRenderSystem entityRenderer) {
-		ArrayMap<String, Archetype> entities = collection.getEntityProfiles();
-		
-		ArrayMap<String, Sprite[]> sprites = new ArrayMap<String, Sprite[]>();
-
-		Json json = new Json();
-		JsonValue profiles = json.fromJson(null, Gdx.files.internal("data/EntityProfiles"));
-		profiles = profiles.child();
-		
-		//loops each entity
-		for(JsonValue e = profiles.child(); e != null; e = e.next()){
-			ArchetypeBuilder entity = new ArchetypeBuilder();
-			
-			entity.add(Name.class);
-			entity.add(Position.class);
-			//loops entity components
-			for(JsonValue d = e.child; d != null; d = d.next){
-				switch(d.name){
-				case "sprite":
-					entity.add(SpriteComp.class);
-					//load sprites into memory
-					sprites.put(e.get("name").asString(), createSprites(d, e, atlas));
-					break;
-				case "animation":
-					entity.add(Animation.class);
-					break;
-				case "ai":
-					entity.add(AiProfile.class);
-					entity.add(Locations.class);
-					break;
-				case "area":
-					entity.add(Area.class);
-					break;
-				case "attributes":
-					entity.add(AttributeTable.class);
-					for(JsonValue a = d.child; a != null; a = a.next){
-						switch(d.name){
-						case "money":
-							entity.add(Money.class);		
-							break;
-						case "health":
-							
-							break;
-						}
-					}
-					break;
-				case "inventory":
-					entity.add(Inventory.class);
-					break;
-				case "movement":
-					entity.add(Movement.class);
-					entity.add(Target.class);
-					break;
-				case "group":
-					if(d.asString().matches("wall")){
-						entity.add(Wall.class);	
-					}
-					break;
-				}
-			}
-			//build and store archetype
-			entities.put(e.get("name").asString(), entity.build(world));
-			//store entity component data/settings
-			collection.getEntityData().put(e.get("name").asString(), e);
-		}
-		entityRenderer.loadSprites(sprites);
-	}
-	private Sprite[] createSprites(JsonValue spriteData, JsonValue entityData, TextureAtlas atlas){
-		String[] list = spriteData.asStringArray();
-		Sprite[] sprites = new Sprite[4];
-		int x = 0;
-		for(String s: list){
-			Sprite sprite = atlas.createSprite(s);
-			sprite.scale(1);
-			sprites[x] = sprite;
-			
-			if(entityData.has("group")){
-				if(entityData.getString("group").matches("wall")){
-					x++;
-					continue;
-				}
-			}
-			Sprite spriteFlip = new Sprite(sprite);
-			spriteFlip.flip(true, false);
-			sprites[x + 1] = spriteFlip;
-			
-			x += 2;
-		}
-		return sprites;
 	}
 }

@@ -69,7 +69,7 @@ public class BasicWindow extends Table{
 		add(titleBar).height(24).fillX().expandX().padTop(2).padLeft(2).padRight(2).row();
 		
 		body = new Table();
-		body.top();
+		body.top().padTop(6);
 		body.setBackground(skin.newDrawable("gui/fGround"));
 		
 		
@@ -108,5 +108,8 @@ public class BasicWindow extends Table{
 	}
 	public void setTitle(Label title) {
 		this.titleLabel = title;
+	}
+	public Table getBody(){
+		return body;
 	}
 }

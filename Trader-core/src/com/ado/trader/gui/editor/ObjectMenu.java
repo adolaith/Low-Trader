@@ -1,10 +1,12 @@
 package com.ado.trader.gui.editor;
 
+import com.ado.trader.entities.EntityFactory;
 import com.ado.trader.gui.BasicWindow;
 import com.ado.trader.gui.GuiUtils;
 import com.ado.trader.gui.ToolTip;
 import com.ado.trader.input.MapEditorInput;
 import com.ado.trader.placement.PlacementManager;
+import com.ado.trader.rendering.SpriteManager;
 import com.ado.trader.utils.GameServices;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -26,17 +28,19 @@ public class ObjectMenu extends BasicWindow {
 	ArrayMap<String, Table> tableList;
 	ArrayMap<String, JsonValue> entityProfiles;
 	float buttonSize = 32 * 1.2f;
+	SpriteManager spriteMan;
 
 	public ObjectMenu(GameServices gameRes) {
 		super("Object menu", 310, 200, gameRes.getFont(), gameRes.getSkin(), gameRes.getStage());
 
 		tableList = new ArrayMap<String, Table>();
 		entityProfiles = new ArrayMap<String, JsonValue>();
+		spriteMan = gameRes.getRenderer().getRenderEntitySystem().getSpriteManager();
 		
 		tableList.put("tileMenu", tileMenu(gameRes));
-//		tableList.put("entityMenu", entityMenu(gameRes));
+		tableList.put("entityMenu", entityMenu(gameRes));
 //		tableList.put("wallMenu", wallMenu(gameRes));
-//		tableList.put("itemsMenu", itemsMenu(gameRes));
+		tableList.put("itemsMenu", itemsMenu(gameRes));
 		
 		for(Table t: tableList.values()){
 			t.top();
@@ -51,24 +55,25 @@ public class ObjectMenu extends BasicWindow {
 		
 		Table itemsMenu = new Table();
 		itemsMenu.setFillParent(false);
-		itemsMenu.defaults().size(buttonSize); 
+		itemsMenu.top().left().defaults().size(buttonSize); 
 		
-		gameRes.getItems();
-		ArrayMap<String, Sprite> spriteList = ItemFactory.getItemSprites();
-		gameRes.getItems();
-		ArrayMap<String, JsonValue> data = ItemFactory.getItemData();
+		ArrayMap<String, JsonValue> data = EntityFactory.getEntityData().get("2");
 		
-		for(final String name: data.keys()){
+		for(JsonValue e: data.values()){
+			final JsonValue d = e;
 			
-			SpriteDrawable tmp = new SpriteDrawable(new Sprite(spriteList.get(name)));
+			String spriteName = d.get("sprite").getString("spriteName");
+			SpriteDrawable tmp = new SpriteDrawable(new Sprite(spriteMan.getItemSprite(spriteName)));
 
-			ImageButton butt = new ImageButton(GuiUtils.setImgButtonStyle(tmp, null, gameRes.getSkin().getDrawable("gui/button"), null));
+			ImageButton butt = new ImageButton(GuiUtils.setImgButtonStyle(
+					tmp, null, gameRes.getSkin().getDrawable("gui/button"), null));
 			butt.addListener(new ChangeListener() {
 				public void changed(ChangeEvent event, Actor actor) {
 					MapEditorInput input = (MapEditorInput) gameRes.getInput();
-					input.getPlacementManager().setPlacementSelection("item",name);
+					input.getPlacementManager().setPlacementSelection("item", d.get("baseid").getString("id"));
 				}
 			});
+			
 			addToTable(butt, itemsMenu);
 		}
 		
@@ -85,24 +90,27 @@ public class ObjectMenu extends BasicWindow {
 		
 		Table wallMenu = new Table();
 		wallMenu.setFillParent(false);
-		wallMenu.defaults().size(buttonSize);
+		wallMenu.top().left().defaults().size(buttonSize);
 		
-		ArrayMap<String, Sprite[]> spriteList = gameRes.getRenderer().getRenderEntitySystem().getSprites();
-		ArrayMap<String, JsonValue> list = gameRes.getEntities().getEntityData();
+		ArrayMap<String, JsonValue> list = EntityFactory.getEntityData().get("3");
 		
 		for(JsonValue e: list.values()){
 			final JsonValue d = e;
+			
 			if(d.has("group")){
-				if(d.get("group").asString().matches("wall")){
-					Sprite tmp = new Sprite(spriteList.get(d.getString("name"))[0]);
+				if(d.get("group").getString("group").matches("wall")){
 					
-					ImageButton butt = new ImageButton(GuiUtils.setImgButtonStyle(new SpriteDrawable(tmp), null, gameRes.getSkin().getDrawable("gui/button"), null));
+					Sprite tmp = new Sprite(spriteMan.getWallSprites(d.get("sprite").getString("spriteName"))[0]);
+					
+					ImageButton butt = new ImageButton(GuiUtils.setImgButtonStyle(
+							new SpriteDrawable(tmp), null, gameRes.getSkin().getDrawable("gui/button"), null));
 					butt.addListener(new ChangeListener() {
 						public void changed(ChangeEvent event, Actor actor) {
 							MapEditorInput input = (MapEditorInput) gameRes.getInput();
-							input.getPlacementManager().setPlacementSelection("wall", d.getString("name"));
+							input.getPlacementManager().setPlacementSelection("wall", d.get("baseid").getString("id"));
 						}
 					});
+					
 					addToTable(butt, wallMenu);
 				}
 			}
@@ -125,8 +133,9 @@ public class ObjectMenu extends BasicWindow {
 		entityMenu.setFillParent(false);
 		entityMenu.top().left().defaults().size(buttonSize);
 		
-		ArrayMap<String, Sprite[]> spriteList = gameRes.getRenderer().getRenderEntitySystem().getSprites();
-		ArrayMap<String, JsonValue> list = gameRes.getEntities().getEntityData();
+		SpriteManager spriteMan = gameRes.getRenderer().getRenderEntitySystem().getSpriteManager();
+		
+		ArrayMap<String, JsonValue> list = EntityFactory.getEntityData().get("1");
 		
 		//static entity buttons (tables, containers, signs etc)
 		for(JsonValue e: list.values()){
@@ -135,41 +144,43 @@ public class ObjectMenu extends BasicWindow {
 			if(d.has("animation"))continue;
 			
 			if(d.has("group")){
-				if(d.get("group").asString().matches("wall")){
+				if(d.get("group").getString("group").matches("wall")){
 					continue;
 				}
 			}
 			
-			final Sprite tmp = new Sprite(spriteList.get(d.getString("name"))[0]);
+			final Sprite tmp = new Sprite(spriteMan.getEntitySprites(d.get("sprite").getString("spriteName"))[0]);
 			
-			ImageButton butt = new ImageButton(GuiUtils.setImgButtonStyle(new SpriteDrawable(tmp), null, gameRes.getSkin().getDrawable("gui/button"), null));
+			ImageButton butt = new ImageButton(GuiUtils.setImgButtonStyle(
+					new SpriteDrawable(tmp), null, gameRes.getSkin().getDrawable("gui/button"), null));
 			butt.addListener(new ChangeListener() {
 				public void changed(ChangeEvent event, Actor actor) {
 					
-					input.getPlacementManager().setPlacementSelection("entity", d.getString("name"));	
+					input.getPlacementManager().setPlacementSelection("entity", d.get("baseid").getString("id"));	
 				}
 			});
 			addToTable(butt, entityMenu);
 		}
 		
-		//feature(decoration) buttons(lamps, windows)
-		ArrayMap<String, JsonValue> features = input.getPlacementManager().getFeaturePl().getFeatures().getFeaturesList();
-		//loop profiles
-		for(JsonValue e: features.values()){
-			final JsonValue d = e;
-			
-			Sprite tmp = new Sprite(spriteList.get(d.getString("name"))[0]);
-			
-			//make button with icon
-			ImageButton butt = new ImageButton(GuiUtils.setImgButtonStyle(new SpriteDrawable(tmp), null, gameRes.getSkin().getDrawable("gui/button"), null));
-			butt.addListener(new ChangeListener() {
-				public void changed(ChangeEvent event, Actor actor) {
-					MapEditorInput input = (MapEditorInput) gameRes.getInput();
-					input.getPlacementManager().setPlacementSelection("feature", d.getString("name"));						
-				}
-			});
-			addToTable(butt, entityMenu);
-		}
+//		//feature(decoration) buttons(lamps, windows)
+//		ArrayMap<String, JsonValue> features = input.getPlacementManager().getFeaturePl().getFeatures().getFeaturesList();
+//		//loop profiles
+//		for(JsonValue e: features.values()){
+//			final JsonValue d = e;
+//			
+//			Sprite tmp = new Sprite(spriteMan.getEntitySprites(d.get("sprite").getString("spriteName"))[0]);
+//			
+//			//make button with icon
+//			ImageButton butt = new ImageButton(GuiUtils.setImgButtonStyle(
+//					new SpriteDrawable(tmp), null, gameRes.getSkin().getDrawable("gui/button"), null));
+//			butt.addListener(new ChangeListener() {
+//				public void changed(ChangeEvent event, Actor actor) {
+//					MapEditorInput input = (MapEditorInput) gameRes.getInput();
+//					input.getPlacementManager().setPlacementSelection("feature", d.get("baseid").getString("id"));						
+//				}
+//			});
+//			addToTable(butt, entityMenu);
+//		}
 		
 		pane.setOverscroll(false, false);
 		pane.setWidget(entityMenu);
@@ -239,13 +250,17 @@ public class ObjectMenu extends BasicWindow {
 		
 		for(int x = 0; x < profileCount; x++){
 			final int i = x;
-			ImageButton imgb = new ImageButton(GuiUtils.setImgButtonStyle(new SpriteDrawable(gameRes.getMap().getTileSprites().get(i)), null, gameRes.getSkin().getDrawable("gui/button"), null));
+			
+			ImageButton imgb = new ImageButton(GuiUtils.setImgButtonStyle(
+					new SpriteDrawable(gameRes.getMap().getTileSprites().get(i)), null, 
+					gameRes.getSkin().getDrawable("gui/button"), null));
 			imgb.addListener(new ChangeListener() {
 				public void changed(ChangeEvent event, Actor actor) {
 					MapEditorInput input = (MapEditorInput) gameRes.getInput();
 					input.getPlacementManager().setPlacementSelection("tile", i);
 				}
 			});
+			
 			addToTable(imgb, menu);
 		}
 		
@@ -262,8 +277,10 @@ public class ObjectMenu extends BasicWindow {
 
 		for(int x = 0; x < profileCount; x++){
 			final int i = x;
+			
 			Sprite s = gameRes.getMap().getTileMasks().getMaskSprites()[i][0];
-			ImageButton imgb = new ImageButton(GuiUtils.setImgButtonStyle(new SpriteDrawable(s), null, gameRes.getSkin().getDrawable("gui/button"), null));
+			ImageButton imgb = new ImageButton(GuiUtils.setImgButtonStyle(
+					new SpriteDrawable(s), null, gameRes.getSkin().getDrawable("gui/button"), null));
 			imgb.addListener(new ChangeListener() {
 				public void changed(ChangeEvent event, Actor actor) {
 					PlacementManager placement = ((MapEditorInput) gameRes.getInput()).getPlacementManager();
@@ -273,6 +290,7 @@ public class ObjectMenu extends BasicWindow {
 					}
 				}
 			});
+			
 			addToTable(imgb, menu);
 		}
 		

@@ -16,6 +16,7 @@ public class SpriteManager {
 		loadSprites(atlas);
 
 	}
+	
 	private void loadSprites(TextureAtlas atlas){
 		entitySprites = new ArrayMap<String, Sprite[]>();
 		itemSprites = new ArrayMap<String, Sprite>();
@@ -73,6 +74,7 @@ public class SpriteManager {
 		
 		entitySprites.put(region.name, list);
 	}
+	
 	//wall sprite direction index; SE/NW = 0, SW/NE = 1
 	private void loadWallSprites(TextureAtlas atlas, AtlasRegion region){
 		String name = region.name.substring(region.name.indexOf('/') + 1);

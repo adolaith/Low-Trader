@@ -16,6 +16,8 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Button.ButtonStyle;
+import com.badlogic.gdx.scenes.scene2d.ui.CheckBox;
+import com.badlogic.gdx.scenes.scene2d.ui.CheckBox.CheckBoxStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
@@ -31,22 +33,27 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ArrayMap;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
+import com.badlogic.gdx.utils.TimeUtils;
 
 public class EntityEditor extends BasicWindow {
 	GameServices gameRes;
 	
 	ArrayMap<Label, Actor> dataObjects;
-	Table scroll;
+	Table scroll, checkBoxes;
 	JsonValue componentList;
 	
 	LabelStyle lStyle;
 	TextFieldStyle tfStyle;
 	ButtonStyle bStyle;
+	
+	String id;
 
 	public EntityEditor(GameServices gameRes) {
-		super("Entity Editor", 350, 250, gameRes.getFont(), gameRes.getSkin(), gameRes.getStage());
+		super("Entity Editor", 500, 350, gameRes.getFont(), gameRes.getSkin(), gameRes.getStage());
 		this.gameRes = gameRes;
 		setName("entityEditor");
+		
+//		setDebug(true, true);
 		
 		dataObjects = new ArrayMap<Label, Actor>();
 		
@@ -62,17 +69,28 @@ public class EntityEditor extends BasicWindow {
 		n.setColor(new Color(n.getColor().r, n.getColor().g, n.getColor().b, 0.6f));
 		tfStyle.disabledBackground = new NinePatchDrawable(n);
 		
-		//save/load buttons
+		//new profile button
 		bStyle = GuiUtils.setButtonStyle(gameRes.getSkin().getDrawable("gui/button"), null);
 		Button b = new Button(bStyle);
-		Label l = new Label("Load", lStyle);
+		Label l = new Label("New", lStyle);
+		b.add(l).left();
+		b.addListener(new ClickListener(){
+			public void clicked (InputEvent event, float x, float y) {
+				newProfile();
+			}
+		});
+		body.add(b).width(64).left().padLeft(6).padRight(6);
+		
+		//save/load buttons
+		b = new Button(bStyle);
+		l = new Label("Load", lStyle);
 		b.add(l).left();
 		b.addListener(new ClickListener(){
 			public void clicked (InputEvent event, float x, float y) {
 				loader.showWindow(getX(), getY(), true);
 			}
 		});
-		body.add(b).width(64).expandX().right();
+		body.add(b).width(64).left().padLeft(6).padRight(6);
 		
 		b = new Button(bStyle);
 		l = new Label("Save", lStyle);
@@ -82,8 +100,12 @@ public class EntityEditor extends BasicWindow {
 				loader.saveProfile();
 			}
 		});
-		body.add(b).width(64).left();
+		body.add(b).width(64).left().padRight(6);
 		
+		//type checkboxes
+		createCheckBoxes();
+		
+		//component list button
 		ImageButton add = GuiUtils.createImageButton("gui/arrow", null, "gui/button", null, gameRes.getSkin());
 		body.add(add).right().expandX().row();
 		
@@ -93,8 +115,8 @@ public class EntityEditor extends BasicWindow {
 		//scrollpane
 		ScrollPane sp = GuiUtils.createScrollTable(gameRes.getSkin());
 		sp.setWidget(scroll);
-		
-		body.add(sp).right().colspan(3).top().expand().fillX().row();
+
+		body.add(sp).center().colspan(4).top().expand().fillX().padTop(6).row();
 		
 		//component selection
 		Json j = new Json();
@@ -108,6 +130,85 @@ public class EntityEditor extends BasicWindow {
 //		scroll.add(createEntry(componentList.get("name"))).expand().fillX().row();
 		
 		scroll.layout();
+	}
+	
+	private void newProfile(){
+		scroll.clearChildren();
+		dataObjects.clear();
+		
+		Table idEntry = createEntry(componentList.get("baseid")); 
+		scroll.add(idEntry).expand().fillX().row();
+		
+		id =  String.valueOf(TimeUtils.nanoTime());
+		id = id.substring(id.length() - 6);
+		
+		((TextField)idEntry.findActor("id")).setText(id);
+		
+		scroll.layout();
+	}
+	
+	private void createCheckBoxes(){
+		checkBoxes = new Table();
+		checkBoxes.defaults().padRight(4).left();
+		
+		CheckBoxStyle chkStyle = new CheckBoxStyle(gameRes.getSkin().getDrawable("gui/checkbox"), 
+				gameRes.getSkin().getDrawable("gui/checkboxT"), gameRes.getFont(), Color.BLACK);
+		
+		CheckBox chkBox = new CheckBox("Entity", chkStyle);
+		chkBox.getImageCell().size(18).padRight(4);
+		chkBox.setName("ent");
+		chkBox.addListener(new ClickListener(){
+			public void clicked (InputEvent event, float x, float y) {
+				CheckBox chk = checkBoxes.findActor("item");
+				if(chk.isChecked()){
+					chk.setChecked(false);
+				}
+				
+				chk = checkBoxes.findActor("wall");
+				if(chk.isChecked()){
+					chk.setChecked(false);
+				}
+			}
+		});
+		checkBoxes.add(chkBox);
+		
+		chkBox = new CheckBox("Wall", chkStyle);
+		chkBox.getImageCell().size(18).padRight(4);
+		chkBox.setName("wall");
+		chkBox.addListener(new ClickListener(){
+			public void clicked (InputEvent event, float x, float y) {
+				CheckBox chk = checkBoxes.findActor("item");
+				if(chk.isChecked()){
+					chk.setChecked(false);
+				}
+				
+				chk = checkBoxes.findActor("ent");
+				if(chk.isChecked()){
+					chk.setChecked(false);
+				}
+			}
+		});
+		checkBoxes.add(chkBox);
+		
+		chkBox = new CheckBox("Item", chkStyle);
+		chkBox.getImageCell().size(18).padRight(4);
+		chkBox.setName("item");
+		chkBox.addListener(new ClickListener(){
+			public void clicked (InputEvent event, float x, float y) {
+				CheckBox chk = checkBoxes.findActor("wall");
+				if(chk.isChecked()){
+					chk.setChecked(false);
+				}
+				
+				chk = checkBoxes.findActor("ent");
+				if(chk.isChecked()){
+					chk.setChecked(false);
+				}
+			}
+		});
+		checkBoxes.add(chkBox);
+		
+		body.add(checkBoxes).left();
 	}
 	
 	private void loadComponentButtons(ImageButton add){
@@ -153,9 +254,7 @@ public class EntityEditor extends BasicWindow {
 		Table t = new Table();
 		t.padBottom(3);
 		
-		System.out.println("Create Entry:" + componentDesc);
-		
-		if(!componentDesc.name.matches("name")){
+		if(!componentDesc.name.matches("name") && !componentDesc.name.matches("baseid")){
 			ImageButton del = GuiUtils.createImageButton("gui/exitIcon", null, "gui/button", null, gameRes.getSkin());
 			del.addListener(new ClickListener(){
 				public void clicked (InputEvent event, float x, float y) {
@@ -297,6 +396,8 @@ public class EntityEditor extends BasicWindow {
 	public void showWindow(float x, float y){
 		super.showWindow(x, y);
 		
+		newProfile();
+		
 		//disable game input
 //		InputHandler.getMultiplexer().removeProcessor(gameRes.getInput());
 	}
@@ -311,4 +412,16 @@ public class EntityEditor extends BasicWindow {
 	public ArrayMap<Label, Actor> getDataObjects() {
 		return dataObjects;
 	}
+	public Table getCheckBoxes(){
+		return checkBoxes;		
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+	
 }

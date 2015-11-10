@@ -15,10 +15,12 @@ public class MapStreamer {
 		this.map = map;
 		this.j = new Json();
 
-		JsonValue cfg = j.fromJson(null, Gdx.files.internal("data/entities/classTags.lst"));
+		JsonValue cfg = j.fromJson(null, Gdx.files.internal("data/entities/classTags.cfg"));
 		
 		//load entity component class tags
 		for(JsonValue v = cfg.child; v != null; v = v.next){
+			if(v.name.matches("note")) continue;
+			
 			try {
 				j.addClassTag(v.name, Class.forName(v.asString()));
 			} catch (ClassNotFoundException e) {
