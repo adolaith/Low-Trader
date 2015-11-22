@@ -8,7 +8,10 @@ import com.ado.trader.map.MapStreamer;
 import com.ado.trader.pathfinding.AStarPathFinder;
 import com.ado.trader.rendering.Renderer;
 import com.ado.trader.systems.EntityDeletionManager;
+import com.ado.trader.systems.GameTime;
 import com.artemis.World;
+import com.artemis.WorldConfiguration;
+import com.artemis.WorldConfigurationBuilder;
 import com.artemis.managers.GroupManager;
 import com.artemis.managers.TagManager;
 import com.badlogic.gdx.Gdx;
@@ -44,13 +47,14 @@ public class GameServices {
 	
 	AStarPathFinder pathfinder;
 	//God class containing objects needed globally
-	public GameServices(int camWidth, int camHeight, InputHandler input, String loadDir){
+	public GameServices(int camWidth, int camHeight, WorldConfigurationBuilder worldConfig, InputHandler input, String loadDir){
 		atlas = new TextureAtlas("img/master.pack");
 		
 		Texture texture = new Texture(Gdx.files.internal("font/white.png"), true);
 		texture.setFilter(TextureFilter.Linear, TextureFilter.Linear);
 		
-		this.font = new BitmapFont(Gdx.files.internal("font/white.fnt"), new TextureRegion(texture), false);
+		this.font = new BitmapFont(Gdx.files.internal("font/white.fnt"),
+				new TextureRegion(texture), false);
 		
 //		this.font = new BitmapFont(Gdx.files.internal("font/white.fnt"));
 		font.getData().setScale(0.6f);
@@ -58,10 +62,11 @@ public class GameServices {
 		cam = new OrthographicCamera(camWidth, camHeight);
 		this.skin = new Skin(atlas);
 		
-		world = new World();
-		world.setManager(new EntityDeletionManager());
-		world.setManager(new TagManager());
-		world.setManager(new GroupManager());
+		WorldConfiguration config = worldConfig.with(new EntityDeletionManager(), 
+				new TagManager(), new GroupManager(), new GameTime(1.0f))
+				.build();
+				
+		world = new World(config);
 		
 		if(loadDir == null){
 			map = new Map(this);

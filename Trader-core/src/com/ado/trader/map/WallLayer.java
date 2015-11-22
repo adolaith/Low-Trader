@@ -72,7 +72,7 @@ public class WallLayer implements Layer {
 			}
 			
 			int[] sprites = w.get("s").asIntArray();
-			spriteMap.get(e).mainSprite = sprites[0];
+			spriteMap.get(e).spriteIndex = sprites[0];
 			if(sprites.length > 1){
 				spriteMap.get(e).secondSprite = sprites[1];	
 			}
@@ -106,7 +106,7 @@ public class WallLayer implements Layer {
 				
 				SpriteComp sc = spriteMap.get(e);
 				chunkJson.writeArrayStart("s");
-				chunkJson.writeValue(sc.mainSprite);
+				chunkJson.writeValue(sc.spriteIndex);
 				if(sc.secondSprite != null){
 					chunkJson.writeValue(sc.secondSprite);
 				}

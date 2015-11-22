@@ -7,14 +7,19 @@ import java.util.zip.ZipInputStream;
 
 import com.ado.trader.entities.components.Area;
 import com.ado.trader.entities.components.Name;
+import com.ado.trader.entities.components.Position;
+import com.ado.trader.entities.components.SerializableComponent;
+import com.ado.trader.entities.components.SpriteComp;
 import com.ado.trader.map.Chunk;
 import com.ado.trader.utils.FileLogger;
 import com.ado.trader.utils.GameServices;
 import com.artemis.Component;
 import com.artemis.ComponentMapper;
 import com.artemis.Entity;
+import com.artemis.World;
+import com.artemis.managers.GroupManager;
+import com.artemis.managers.TagManager;
 import com.artemis.utils.Bag;
-import com.artemis.utils.EntityBuilder;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
@@ -22,17 +27,18 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.ArrayMap;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
+import com.badlogic.gdx.utils.TimeUtils;
 import com.esotericsoftware.spine.AnimationStateData;
 import com.esotericsoftware.spine.SkeletonData;
 import com.esotericsoftware.spine.SkeletonJson;
 
 //Contains entity templates and creates entities.
 public class EntityFactory{
-	static ArrayMap<String, SkeletonData> skeletons;
-	static ArrayMap<String, AnimationStateData> animationPool;
-	static ArrayMap<String, ArrayMap<String, JsonValue>> entityData;
+	private static ArrayMap<String, SkeletonData> skeletons;
+	private static ArrayMap<String, AnimationStateData> animationPool;
+	private static ArrayMap<String, ArrayMap<String, JsonValue>> entityData;
 	
-	static Json j;
+	private static Json j;
 	
 	public EntityFactory(TextureAtlas atlas){
 		animationPool = new ArrayMap<String, AnimationStateData>();
@@ -52,28 +58,56 @@ public class EntityFactory{
 			}
 		}
 		
-		//loads entity profiles. loadDebugMode() is used in editor,
-		//loadEntityProfiles() is used in the compiled jar
+		/*loads entity profiles. loadDebugMode() is used in editor,
+		 *loadEntityProfiles() is used in the compiled jar 
+		 */
 		loadDebugMode();
 //		loadEntityProfiles();
 		
 		skeletons = loadSpineData(atlas, this);
 	}
 	
-	public static Entity createEntity(JsonValue e){
-		EntityBuilder builder = new EntityBuilder(GameServices.getWorld());
+	//create first entity from profile takes ~4ms and 0ms for every entity of the same type after that. 
+	public static Entity createEntity(String id){
+		long start = TimeUtils.nanoTime(); 
 		
-		for(JsonValue v = e.child; v != null; v = v.next){
-			try {
-				Component c = (Component) j.readValue(Class.forName(v.getString("class")), v);
-				builder.with(c);
-			} catch (ClassNotFoundException e1) {
-				Gdx.app.log("EntityDataLoader", "error loading/deseriallizing entity");
-				e1.printStackTrace();
+		World w = GameServices.getWorld();
+		TagManager tagMan = w.getSystem(TagManager.class);
+		GroupManager groupMan = w.getSystem(GroupManager.class);
+		String[] split = id.split("\\.");
+		
+		JsonValue jsonData = entityData.get(split[0]).get(split[1]);
+		
+		Entity e = w.createEntity();
+						
+		for(JsonValue c = jsonData.child; c != null; c = c.next){
+
+			if(c.name.matches("tag")){
+				tagMan.register(c.asString(), e);
+			}else if(c.name.matches("group")){
+				String[] groups = c.getString("group").split(","); 
+				
+				for(String g: groups){
+					groupMan.add(e, g);
+				}
+			}else{
+				Class<? extends Component> className = j.getClass(c.name);
+				
+				SerializableComponent component = (SerializableComponent) e.edit().create(className);
+				
+				component.load(c);
+				
+				e.edit().add(component);
 			}
 		}
 		
-		return builder.build();
+		//all entities get a Position component
+		e.edit().add(new Position());
+		
+		start = TimeUtils.timeSinceNanos(start);
+		System.out.println("EntityFactory > createEntity(Time): " + (start / 1000000));
+		
+		return e;
 	}
 	
 	//this code wont work in editor, only in compiled .jar. NEED TO WRITE EDITOR/DEBUG TMP CODE
@@ -81,7 +115,6 @@ public class EntityFactory{
 		try{
 			FileLogger.writeLog("READING INTERNAL ENTITIES...");
 			CodeSource src = this.getClass().getProtectionDomain().getCodeSource();
-			Json j = new Json();
 
 			if( src != null ) {
 				URL jar = src.getLocation();
@@ -135,6 +168,21 @@ public class EntityFactory{
 		}
 		
 		entityData.get(idSplit[0]).put(idSplit[1], data);
+		
+//		ArchetypeBuilder builder = new ArchetypeBuilder();
+//		
+//		for(JsonValue c = data.child; c != null; c = c.next){
+//			JsonValue str = c.get("class");
+//			
+//			if(str == null) continue;
+//			
+//			@SuppressWarnings("unchecked")
+//			Class<? extends Component> className = j.getClass(str.asString());
+//			
+//			builder.add(className);			
+//		}
+//		
+//		entityArchetypes.get(idSplit[0]).put(idSplit[1], builder.build(GameServices.getWorld()));		
 	}
 
 	public static void saveEntity(int id, Json json){

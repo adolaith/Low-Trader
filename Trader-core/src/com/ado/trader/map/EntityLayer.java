@@ -198,7 +198,7 @@ public class EntityLayer extends IntMapLayer {
 		
 		for(int x=0; x<map.length; x++){
 			for(int y=0; y<map[x].length; y++){
-				for(int c = 0; c < map[x][y].length; c++){	
+				for(int c = 0; c < map[x][y].length; c++){
 
 					if(map[x][y][c] == null){
 						continue;
@@ -227,7 +227,7 @@ public class EntityLayer extends IntMapLayer {
 					if(spriteMap.has(e)){		//sprite
 						SpriteComp sC = spriteMap.get(e);
 						chunkJson.writeArrayStart("spr");
-						chunkJson.writeValue(sC.mainSprite);
+						chunkJson.writeValue(sC.spriteIndex);
 
 						if(sC.secondSprite != null){
 							chunkJson.writeValue(sC.secondSprite);
@@ -297,7 +297,7 @@ public class EntityLayer extends IntMapLayer {
 			if(v.has("spr")){
 				SpriteComp sC = spriteMap.get(ent);
 				int[] sprIndex = v.get("spr").asIntArray();
-				sC.mainSprite = sprIndex[0];
+				sC.spriteIndex = sprIndex[0];
 				if(sprIndex.length > 1){
 					sC.secondSprite = sprIndex[1];
 				}

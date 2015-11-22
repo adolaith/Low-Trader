@@ -10,7 +10,7 @@ import com.badlogic.gdx.utils.JsonValue;
 
 //Stores an entitys path and destionation
 
-public class Movement extends Component implements Mover, Serializable{
+public class Movement extends SerializableComponent implements Mover{
 	Path path;
 	int stepCount;		//step in path
 	Vector2 direction;
@@ -47,11 +47,11 @@ public class Movement extends Component implements Mover, Serializable{
 		this.direction = dir;
 	}
 	@Override
-	public void write(Json json) {
-		json.writeValue(velocity);
+	public void save(Json writer) {
+		writer.writeValue("mover", velocity);
 	}
 	@Override
-	public void read(Json json, JsonValue jsonData) {
-		velocity = jsonData.child.asFloat();
+	public void load(JsonValue data) {
+		velocity = data.asFloat();
 	}
 }

@@ -1,12 +1,10 @@
 package com.ado.trader.entities.components;
 
-import com.artemis.Component;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Json;
-import com.badlogic.gdx.utils.Json.Serializable;
 import com.badlogic.gdx.utils.JsonValue;
 
-public class Inventory extends Component implements Serializable{
+public class Inventory extends SerializableComponent{
 	Array<Integer> items;
 	public int max;
 
@@ -27,11 +25,11 @@ public class Inventory extends Component implements Serializable{
 		return items;
 	}
 	@Override
-	public void write(Json json) {
+	public void save(Json writer) {
 		
 	}
 	@Override
-	public void read(Json json, JsonValue jsonData) {
+	public void load(JsonValue data) {
 		
 	}
 }

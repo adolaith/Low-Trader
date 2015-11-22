@@ -17,7 +17,7 @@ import com.ado.trader.systems.StatusIconSystem.StatusIcon;
 import com.ado.trader.utils.IsoUtils;
 import com.artemis.ComponentMapper;
 import com.artemis.Entity;
-import com.badlogic.gdx.graphics.GL30;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -168,7 +168,7 @@ public class EntityRenderSystem{
 						SpriteComp s = spriteMapper.get(e);
 						
 						//get entity's main sprite
-						Sprite tmp = entitySprites.get(nameMapper.get(e).getName())[s.mainSprite];
+						Sprite tmp = entitySprites.get(nameMapper.get(e).getName())[s.spriteIndex];
 						
 						//render next entity to prevent drawing overlap
 						if(tmp.isFlipX()){
@@ -345,7 +345,7 @@ public class EntityRenderSystem{
 			break;
 		}
 		batch.flush();
-		batch.setBlendFunction(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA);
+		batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 	}
 	
 	private void drawSouthSprite(WallDirection dir, Entity e, SpriteBatch batch){
@@ -378,14 +378,14 @@ public class EntityRenderSystem{
 		}
 		
 		batch.flush();
-		batch.setBlendFunction(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA);
+		batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 	}
 	
 	private void drawSprite(Entity e, SpriteBatch batch){
 		//draws entities
 		Position p = posMapper.get(e);
 		SpriteComp s = spriteMapper.get(e);
-		Sprite tmp = spriteManager.getEntitySprites(nameMapper.get(e).getName())[s.mainSprite];
+		Sprite tmp = spriteManager.getEntitySprites(s.spriteName)[s.spriteIndex];
 		
 		batch.draw(tmp , isoVec.x + p.getIsoOffset().x, isoVec.y + p.getIsoOffset().y, tmp.getWidth() * tmp.getScaleX(), tmp.getHeight() * tmp.getScaleY());		//static entities
 	}

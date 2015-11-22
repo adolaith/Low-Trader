@@ -15,7 +15,7 @@ import com.ado.trader.systems.AnimationSystem;
 import com.ado.trader.systems.SaveSystem;
 import com.ado.trader.utils.GameServices;
 import com.artemis.Entity;
-import com.artemis.World;
+import com.artemis.WorldConfigurationBuilder;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
@@ -36,16 +36,21 @@ public class MapEditorScreen implements Screen {
 		MapEditorScreen.game = game;
 		MapEditorInput input = new MapEditorInput();
 		
-		gameServices = new GameServices(1280, 720, input, loadDir);
+		//editor specific world systems
+		WorldConfigurationBuilder worldConfig = new WorldConfigurationBuilder();
+		worldConfig.with(new AiSystem(), new SaveSystem(), new AnimationSystem());
+		
+		//Resources object
+		gameServices = new GameServices(1280, 720, worldConfig, input, loadDir);
 		
 		input.addPlacementManager(new PlacementManager(gameServices));
 		
 		gameServices.getMap().createMap(input.getPlacementManager().getTilePl());
 		
-		initWorld();
-		
+		//map region streamer
 		gameServices.setStreamer(new EditorStreamer(gameServices.getMap()));
 		
+		//FPS counter label
 		LabelStyle style = new LabelStyle(gameServices.getFont(), Color.WHITE);
 		fps = new Label("", style);
 		fps.setPosition(Gdx.graphics.getWidth() - 100, Gdx.graphics.getHeight() - 20);
@@ -54,6 +59,7 @@ public class MapEditorScreen implements Screen {
 		style = new LabelStyle(style);
 		style.fontColor = Color.BLACK;
 		
+		//GUI elements
 		new ToolTip(style, gameServices.getSkin(), gameServices.getStage());
 		new CustomCursor(gameServices);
 		new MapEditorPanel(gameServices);
@@ -62,15 +68,6 @@ public class MapEditorScreen implements Screen {
 		runLogic = true;
 	}
 	
-	private void initWorld(){
-		World world = GameServices.getWorld();
-		world.setSystem(new AiSystem(gameServices)); //TEST USE
-		world.setSystem(new AnimationSystem());
-		world.setSystem(new SaveSystem(gameServices), true);
-		world.initialize();
-		
-//		gameServices.getStage().setDebugAll(true);
-	}
 	@Override
 	public void show() {
 		

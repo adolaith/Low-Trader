@@ -35,12 +35,12 @@ public class EntityPlaceable extends Placeable {
 	}
 	
 	public void place(int mapX,int mapY){
-		Entity e = EntityFactory.createEntity(profile);
+		Entity e = EntityFactory.createEntity(baseId);
 		
 		//change sprite
 		SpriteComp sprite = spriteMapper.get(e); 
-		if(sprite.mainSprite != spriteIndex){
-			sprite.mainSprite = spriteIndex;
+		if(sprite.spriteIndex != spriteIndex){
+			sprite.spriteIndex = spriteIndex;
 		}
 		
 		Chunk c = map.getChunk(mapX, mapY);
@@ -74,7 +74,7 @@ public class EntityPlaceable extends Placeable {
 		mousePos = IsoUtils.getIsoXY((int)mousePos.x, (int)mousePos.y, 
 				map.getTileWidth(), map.getTileHeight());
 		
-		String spriteName = profile.get("sprite").getString("sprite");
+		String spriteName = profile.get("sprite").asStringArray()[0];
 		Sprite sprite = entityRenderer.getSpriteManager().getEntitySprites(spriteName)[spriteIndex];
 		
 		batch.begin();
@@ -96,7 +96,7 @@ public class EntityPlaceable extends Placeable {
 	}
 	
 	public void rotateSelection(){
-		String spriteName = profile.get("sprite").getString("sprite");
+		String spriteName = profile.get("sprite").asStringArray()[0];
 		Sprite[] sprites = entityRenderer.getSpriteManager().getEntitySprites(spriteName);
 		
 		if(spriteIndex < sprites.length ){
@@ -112,7 +112,9 @@ public class EntityPlaceable extends Placeable {
 		this.baseId = baseId;
 		this.spriteIndex = 0;
 		
-		profile = EntityFactory.getEntityData().get("1").get(baseId);
+		String[] idSplit = baseId.split("\\.");
+		
+		profile = EntityFactory.getEntityData().get(idSplit[0]).get(idSplit[1]);
 	}
 	
 	public void dragPlace(Vector2 start, Vector2 widthHeight) {}

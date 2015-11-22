@@ -45,21 +45,20 @@ public class SaveSystem extends EntityProcessingSystem {
 	ComponentMapper<FeatureSprite> featureMap;
 	
 	Json json;
-	GameServices gameRes;
 	String saveDir;
 
 	@SuppressWarnings("unchecked")
-	public SaveSystem(GameServices gameRes) {
-		super(Aspect.getAspectForAll(Type.class));
-		this.gameRes = gameRes;
+	public SaveSystem() {
+		super(Aspect.all(Type.class));
+		
+		setEnabled(false);
 	}
-	public void setPassive(boolean passive){
-		super.setPassive(passive);
-	}
+	
 	public void saveEntities(String saveDir){
 		this.saveDir = saveDir;
 		process();
 	}
+	
 	@Override
 	protected void begin(){
 		json = new Json();
@@ -100,7 +99,7 @@ public class SaveSystem extends EntityProcessingSystem {
 		if(spriteMap.has(e)){		//sprite
 			SpriteComp sC = spriteMap.get(e);
 			json.writeArrayStart("sprite");
-			json.writeValue(sC.mainSprite);
+			json.writeValue(sC.spriteIndex);
 			
 			if(sC.secondSprite != null){
 				json.writeValue(sC.secondSprite);

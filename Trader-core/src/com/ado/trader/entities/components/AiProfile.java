@@ -3,12 +3,10 @@ package com.ado.trader.entities.components;
 import com.ado.trader.entities.AiComponents.base.Task;
 import com.ado.trader.systems.AiSystem;
 import com.ado.trader.utils.GameServices;
-import com.artemis.Component;
 import com.badlogic.gdx.utils.Json;
-import com.badlogic.gdx.utils.Json.Serializable;
 import com.badlogic.gdx.utils.JsonValue;
 
-public class AiProfile extends Component implements Serializable{
+public class AiProfile extends SerializableComponent{
 	public String name;
 	Task taskProfile;
 
@@ -25,13 +23,13 @@ public class AiProfile extends Component implements Serializable{
 		this.taskProfile = taskProfile;
 	}
 	@Override
-	public void write(Json json) {
-		json.writeValue("name", name);
+	public void save(Json writer) {
+		writer.writeValue("ai", name);
 	}
 	@Override
-	public void read(Json json, JsonValue jsonData) {
+	public void load(JsonValue data) {
 		AiSystem aiSys = GameServices.getWorld().getSystem(AiSystem.class);
-		name = jsonData.getString("name");
+		name = data.asString();
 		taskProfile = aiSys.getAiProfile(this.name);
 	}
 }

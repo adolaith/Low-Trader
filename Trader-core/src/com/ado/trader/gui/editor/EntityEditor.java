@@ -33,7 +33,6 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ArrayMap;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
-import com.badlogic.gdx.utils.TimeUtils;
 
 public class EntityEditor extends BasicWindow {
 	GameServices gameRes;
@@ -46,8 +45,6 @@ public class EntityEditor extends BasicWindow {
 	TextFieldStyle tfStyle;
 	ButtonStyle bStyle;
 	
-	String id;
-
 	public EntityEditor(GameServices gameRes) {
 		super("Entity Editor", 500, 350, gameRes.getFont(), gameRes.getSkin(), gameRes.getStage());
 		this.gameRes = gameRes;
@@ -57,7 +54,7 @@ public class EntityEditor extends BasicWindow {
 		
 		dataObjects = new ArrayMap<Label, Actor>();
 		
-		final EntityLoader loader = new EntityLoader(this);
+		final EntityProfileLoader loader = new EntityProfileLoader(this);
 		
 		//styles
 		lStyle = new LabelStyle(gameRes.getFont(), Color.BLACK);
@@ -139,10 +136,7 @@ public class EntityEditor extends BasicWindow {
 		Table idEntry = createEntry(componentList.get("baseid")); 
 		scroll.add(idEntry).expand().fillX().row();
 		
-		id =  String.valueOf(TimeUtils.nanoTime());
-		id = id.substring(id.length() - 6);
-		
-		((TextField)idEntry.findActor("id")).setText(id);
+//		((TextField)idEntry.findActor("id")).setText(IdGenerator.);
 		
 		scroll.layout();
 	}
@@ -154,7 +148,30 @@ public class EntityEditor extends BasicWindow {
 		CheckBoxStyle chkStyle = new CheckBoxStyle(gameRes.getSkin().getDrawable("gui/checkbox"), 
 				gameRes.getSkin().getDrawable("gui/checkboxT"), gameRes.getFont(), Color.BLACK);
 		
-		CheckBox chkBox = new CheckBox("Entity", chkStyle);
+		CheckBox chkBox = new CheckBox("NPC", chkStyle);
+		chkBox.getImageCell().size(18).padRight(4);
+		chkBox.setName("npc");
+		chkBox.addListener(new ClickListener(){
+			public void clicked (InputEvent event, float x, float y) {
+				CheckBox chk = checkBoxes.findActor("item");
+				if(chk.isChecked()){
+					chk.setChecked(false);
+				}
+				
+				chk = checkBoxes.findActor("wall");
+				if(chk.isChecked()){
+					chk.setChecked(false);
+				}
+				
+				chk = checkBoxes.findActor("ent");
+				if(chk.isChecked()){
+					chk.setChecked(false);
+				}
+			}
+		});
+		checkBoxes.add(chkBox);
+		
+		chkBox = new CheckBox("Entity", chkStyle);
 		chkBox.getImageCell().size(18).padRight(4);
 		chkBox.setName("ent");
 		chkBox.addListener(new ClickListener(){
@@ -165,6 +182,11 @@ public class EntityEditor extends BasicWindow {
 				}
 				
 				chk = checkBoxes.findActor("wall");
+				if(chk.isChecked()){
+					chk.setChecked(false);
+				}
+				
+				chk = checkBoxes.findActor("npc");
 				if(chk.isChecked()){
 					chk.setChecked(false);
 				}
@@ -186,6 +208,11 @@ public class EntityEditor extends BasicWindow {
 				if(chk.isChecked()){
 					chk.setChecked(false);
 				}
+				
+				chk = checkBoxes.findActor("npc");
+				if(chk.isChecked()){
+					chk.setChecked(false);
+				}
 			}
 		});
 		checkBoxes.add(chkBox);
@@ -201,6 +228,11 @@ public class EntityEditor extends BasicWindow {
 				}
 				
 				chk = checkBoxes.findActor("ent");
+				if(chk.isChecked()){
+					chk.setChecked(false);
+				}
+				
+				chk = checkBoxes.findActor("npc");
 				if(chk.isChecked()){
 					chk.setChecked(false);
 				}
@@ -415,13 +447,4 @@ public class EntityEditor extends BasicWindow {
 	public Table getCheckBoxes(){
 		return checkBoxes;		
 	}
-
-	public String getId() {
-		return id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
-	}
-	
 }

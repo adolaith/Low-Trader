@@ -1,8 +1,9 @@
 package com.ado.trader.entities.components;
 
-import com.artemis.Component;
+import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.JsonValue;
 
-public class Name extends Component {
+public class Name extends SerializableComponent {
 	String value;
 
 	public Name(String name) {
@@ -15,5 +16,13 @@ public class Name extends Component {
 	}
 	public String getName(){
 		return value;
+	}
+	@Override
+	public void save(Json writer) {
+		writer.writeValue("name", value);
+	}
+	@Override
+	public void load(JsonValue data) {
+		this.value = data.asString();
 	}
 }

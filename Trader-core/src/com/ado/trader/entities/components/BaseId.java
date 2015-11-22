@@ -1,6 +1,7 @@
 package com.ado.trader.entities.components;
 
-import com.artemis.Component;
+import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.JsonValue;
 
 /*FORMAT: 00.000000
  * First unit = Type code
@@ -10,7 +11,7 @@ import com.artemis.Component;
  * 
  * Second unit = unique id from the last 6 digits of nanoTime
  */
-public class BaseId extends Component {
+public class BaseId extends SerializableComponent {
 	String id;
 
 	public BaseId() {
@@ -27,5 +28,15 @@ public class BaseId extends Component {
 
 	public void setId(String id) {
 		this.id = id;
+	}
+
+	@Override
+	public void save(Json writer) {
+		writer.writeValue("baseid", id);
+	}
+
+	@Override
+	public void load(JsonValue data) {
+		this.id = data.asString();
 	}
 }

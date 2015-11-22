@@ -2,16 +2,14 @@ package com.ado.trader.entities.components;
 
 import com.ado.trader.entities.EntityFactory;
 import com.ado.trader.map.Map;
-import com.artemis.Component;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Json;
-import com.badlogic.gdx.utils.Json.Serializable;
 import com.badlogic.gdx.utils.JsonValue;
 import com.esotericsoftware.spine.AnimationState;
 import com.esotericsoftware.spine.AnimationStateData;
 import com.esotericsoftware.spine.Skeleton;
 
-public class Animation extends Component implements Serializable{
+public class Animation extends SerializableComponent{
 	public Skeleton skeleton;
 	public AnimationState mainState;
 	public AnimationState secondaryState;
@@ -57,20 +55,21 @@ public class Animation extends Component implements Serializable{
 			skeleton.setSkin("m"+bodyName.substring(1, bodyName.indexOf("_"))+"_Front");
 		}
 	}
+	
 	@Override
-	public void write(Json json) {
-		json.writeValue("name", skeleton.getData().getName());
+	public void save(Json writer) {
+		writer.writeValue("anim", skeleton.getData().getName());
 	}
 	@Override
-	public void read(Json json, JsonValue jsonData) {
+	public void load(JsonValue data) {
 		width = Map.tileWidth;
 		height = Map.tileHeight;
 		
-		String name = jsonData.child.asString();
+		String name = data.asString();
 		skeleton = new Skeleton(EntityFactory.getSkeletons().get(name));
 		
-		AnimationStateData data = EntityFactory.getAnimationPool().get(name);
-		mainState = new AnimationState(data);
-		secondaryState = new AnimationState(data);
+		AnimationStateData animData = EntityFactory.getAnimationPool().get(name);
+		mainState = new AnimationState(animData);
+		secondaryState = new AnimationState(animData);
 	}
 }

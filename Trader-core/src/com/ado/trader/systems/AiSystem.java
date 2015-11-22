@@ -32,13 +32,11 @@ public class AiSystem extends EntityProcessingSystem{
 	ArrayMap<String, JsonValue> profiles;
 
 	public Entity currentEntity;
-	public GameServices gameRes;
 
 	@SuppressWarnings("unchecked")
-	public AiSystem(GameServices gameRes) {
-		super(Aspect.getAspectForAll(AiProfile.class));
+	public AiSystem() {
+		super(Aspect.all(AiProfile.class));
 		
-		this.gameRes = gameRes;
 		loadAiProfiles();
 	}
 

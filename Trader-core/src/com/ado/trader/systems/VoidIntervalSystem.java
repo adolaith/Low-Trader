@@ -1,8 +1,8 @@
 package com.ado.trader.systems;
 
-import com.artemis.systems.VoidEntitySystem;
+import com.artemis.BaseSystem;
 
-public class VoidIntervalSystem extends VoidEntitySystem {
+public class VoidIntervalSystem extends BaseSystem {
 	float counter;
 	final float interval;
 

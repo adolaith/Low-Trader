@@ -44,7 +44,6 @@ public class Map implements TileBasedMap{
 		tileOutline = atlas.createSprite("gui/highlightTile");
 		this.world = world;
 		activeRegions = new MapRegion[3][3];
-		world.setSystem(new GameTime(1.0f));
 		
 		overlay = new TileMaskCollection(atlas, tileWidth, tileHeight+(tileHeight/2));
 		tileSprites = loadTileSprites(atlas);

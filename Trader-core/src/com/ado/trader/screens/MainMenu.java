@@ -4,6 +4,8 @@ import com.ado.trader.GameMain;
 import com.ado.trader.gui.GameOptions;
 import com.ado.trader.gui.LoadGame;
 import com.ado.trader.gui.NewGame;
+import com.ado.trader.utils.IdGenerator;
+import com.ado.trader.utils.IdGenerator.IdType;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;

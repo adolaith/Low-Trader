@@ -76,7 +76,7 @@ public class EntityLoader {
 		featureMap = world.getMapper(Feature.class);
 		moneyMap = world.getMapper(Money.class);
 		
-		groupManager = world.getManager(GroupManager.class);
+		groupManager = world.getSystem(GroupManager.class);
 	}
 
 	//use after loading entity profiles. Loads level data
@@ -137,7 +137,7 @@ public class EntityLoader {
 			case "sprite":
 				int[] spriteIndexes = d.asIntArray();
 				SpriteComp sC = spriteMap.get(e);
-				sC.mainSprite = spriteIndexes[0];
+				sC.spriteIndex = spriteIndexes[0];
 				if(spriteIndexes.length > 1){
 					sC.secondSprite = spriteIndexes[1];
 				}

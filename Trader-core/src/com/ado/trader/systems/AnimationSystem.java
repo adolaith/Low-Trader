@@ -14,7 +14,7 @@ public class AnimationSystem extends EntityProcessingSystem {
 
 	@SuppressWarnings("unchecked")
 	public AnimationSystem() {
-		super(Aspect.getAspectForAll(Animation.class));
+		super(Aspect.all(Animation.class));
 	}
 
 	@Override
