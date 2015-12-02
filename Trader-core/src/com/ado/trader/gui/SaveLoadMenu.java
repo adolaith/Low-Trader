@@ -145,13 +145,13 @@ public class SaveLoadMenu extends BasicWindow {
 	//splashes 'game saved' label across screen before fading
 	protected void saveAlert(String text){
 		Label l = new Label(text, labelStyle);
-		l.setFontScale(3);
+		l.setFontScale(2.4f);
 		l.setWidth(200);
 		l.setHeight(40);
 		getStage().addActor(l);
 		l.toFront();
-		l.setPosition((Gdx.graphics.getWidth() / 2) - (l.getWidth()), Gdx.graphics.getHeight() / 2);
-		l.addAction(Actions.sequence(Actions.alpha(0, 2), Actions.removeActor()));
+		l.setPosition((Gdx.graphics.getWidth() / 3) - (l.getWidth()), Gdx.graphics.getHeight() / 2);
+		l.addAction(Actions.sequence(Actions.alpha(0, 3), Actions.removeActor()));
 	}
 	protected class OverwriteDialog extends BasicWindow{
 

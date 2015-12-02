@@ -1,15 +1,9 @@
 package com.ado.trader.entities;
 
-import java.net.URL;
-import java.security.CodeSource;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-
 import com.ado.trader.entities.components.Area;
 import com.ado.trader.entities.components.Name;
 import com.ado.trader.entities.components.Position;
 import com.ado.trader.entities.components.SerializableComponent;
-import com.ado.trader.entities.components.SpriteComp;
 import com.ado.trader.map.Chunk;
 import com.ado.trader.utils.FileLogger;
 import com.ado.trader.utils.GameServices;
@@ -24,6 +18,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ArrayMap;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
@@ -58,11 +53,11 @@ public class EntityFactory{
 			}
 		}
 		
-		/*loads entity profiles. loadDebugMode() is used in editor,
-		 *loadEntityProfiles() is used in the compiled jar 
+		/*loads entity profiles. 
+		 *need to load external profiles
 		 */
-		loadDebugMode();
-//		loadEntityProfiles();
+		loadInternalProfiles();
+		loadCustomProfiles();
 		
 		skeletons = loadSpineData(atlas, this);
 	}
@@ -109,80 +104,41 @@ public class EntityFactory{
 		
 		return e;
 	}
-	
-	//this code wont work in editor, only in compiled .jar. NEED TO WRITE EDITOR/DEBUG TMP CODE
-	private void loadEntityProfiles(){		
-		try{
-			FileLogger.writeLog("READING INTERNAL ENTITIES...");
-			CodeSource src = this.getClass().getProtectionDomain().getCodeSource();
 
-			if( src != null ) {
-				URL jar = src.getLocation();
-				
-				ZipInputStream zip = new ZipInputStream( jar.openStream());
-				ZipEntry ze = null;
-
-				while( ( ze = zip.getNextEntry() ) != null ) {
-					String entryName = ze.getName();
-					
-					if(entryName.startsWith("data/entities/") ){
-						
-						System.out.println("EntityFactory>loadProfiles>ENTITYPROFILE: " + entryName);
-						
-						if(entryName.endsWith(".dat")){
-							
-							loadFile(entryName);
-						}
-					}
-				}
-			}
-			FileLogger.writeLog("DONE READING ENTITIES!");
-		}catch(Exception ex){
-			System.out.println("Error reading entities inside JAR. Error: "+ ex);
-		}
-	}
-	
-	private void loadDebugMode(){
-		FileHandle rootDir = Gdx.files.local("./bin/data/entities/");
+	private void loadInternalProfiles(){
+		FileHandle baseFile = Gdx.files.internal("data/entities/BaseProfiles.dat");
 		
-		if(rootDir.exists()){
-			FileHandle[] list = rootDir.list();
+		if(baseFile.exists()){
+			Array<JsonValue> data = j.fromJson(null, baseFile);
 			
-			for(FileHandle f: list){
-				
-				if(f.name().endsWith("dat")){
-					loadFile(f.path());
-				}
+			for(JsonValue e: data){
+				loadProfile(e);
 			}
 		}
 	}
 	
-	private void loadFile(String entryName){
-		FileHandle file = Gdx.files.internal(entryName);
-		JsonValue data = j.fromJson(null, file);
+	private void loadCustomProfiles(){
+		FileHandle entityDir = Gdx.files.external("adoGame/editor/entities/");
 		
-		String[] idSplit = file.name().split("\\.");
+		if(entityDir.exists()){
+			FileHandle[] list = entityDir.list("dat");
+		
+			for(FileHandle f: list){
+				JsonValue profile = j.fromJson(null, f);
+				
+				loadProfile(profile);
+			}
+		}
+	}
+	
+	public void loadProfile(JsonValue entryData){
+		String[] idSplit = entryData.getString("baseid").split("\\.");
 		
 		if(!entityData.containsKey(idSplit[0])){
 			entityData.put(idSplit[0], new ArrayMap<String, JsonValue>());
 		}
 		
-		entityData.get(idSplit[0]).put(idSplit[1], data);
-		
-//		ArchetypeBuilder builder = new ArchetypeBuilder();
-//		
-//		for(JsonValue c = data.child; c != null; c = c.next){
-//			JsonValue str = c.get("class");
-//			
-//			if(str == null) continue;
-//			
-//			@SuppressWarnings("unchecked")
-//			Class<? extends Component> className = j.getClass(str.asString());
-//			
-//			builder.add(className);			
-//		}
-//		
-//		entityArchetypes.get(idSplit[0]).put(idSplit[1], builder.build(GameServices.getWorld()));		
+		entityData.get(idSplit[0]).put(idSplit[1], entryData);
 	}
 
 	public static void saveEntity(int id, Json json){

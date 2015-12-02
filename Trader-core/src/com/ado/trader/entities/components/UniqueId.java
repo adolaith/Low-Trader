@@ -4,14 +4,14 @@ import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
 
 //stores the id of the base entity profile/archetype to extend
-public class BaseId extends SerializableComponent {
+public class UniqueId extends SerializableComponent {
 	String[] id;
 
-	public BaseId() {
+	public UniqueId() {
 		
 	}
 	
-	public BaseId(String[] id) {
+	public UniqueId(String[] id) {
 		this.id = id;
 	}
 	
@@ -29,7 +29,7 @@ public class BaseId extends SerializableComponent {
 
 	@Override
 	public void save(Json writer) {
-		writer.writeValue("baseid", id[0] + "." + id[1]);
+		writer.writeValue("id", id[0] + "." + id[1]);
 	}
 
 	@Override

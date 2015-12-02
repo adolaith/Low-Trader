@@ -41,7 +41,7 @@ public class BasicWindow extends Table{
 		LabelStyle ls = new LabelStyle(font, Color.WHITE);
 		titleLabel = new Label(title, ls);
 		
-		titleBar.add(titleLabel).left().fill().expandX();
+		titleBar.add(titleLabel).left().padLeft(4).fill().expandX();
 		
 		ImageButton closeButton = GuiUtils.createImageButton("gui/exitIcon", null, "gui/button", null, skin);
 		closeButton.addListener(new InputListener() {
@@ -71,8 +71,7 @@ public class BasicWindow extends Table{
 		body = new Table();
 		body.top().padTop(6);
 		body.setBackground(skin.newDrawable("gui/fGround"));
-		
-		
+				
 		add(body).pad(2).top().fill().expand();
 		
 		Group layer = stage.getRoot().findActor("guiLayer");

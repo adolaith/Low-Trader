@@ -1,12 +1,9 @@
 package com.ado.trader.gui.editor;
 
-import com.ado.trader.entities.EntityFactory;
 import com.ado.trader.gui.BasicWindow;
 import com.ado.trader.gui.GuiUtils;
-import com.ado.trader.gui.ToolTip;
-import com.ado.trader.rendering.SpriteManager;
-import com.ado.trader.systems.AiSystem;
 import com.ado.trader.utils.GameServices;
+import com.ado.trader.utils.IdGenerator;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
@@ -22,22 +19,18 @@ import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
-import com.badlogic.gdx.scenes.scene2d.ui.SelectBox;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextField;
-import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldFilter.DigitsOnlyFilter;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldStyle;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.NinePatchDrawable;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.ArrayMap;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
 
 public class EntityEditor extends BasicWindow {
 	GameServices gameRes;
 	
-	ArrayMap<Label, Actor> dataObjects;
+	Array<ComponentEntry> componentEntries;
 	Table scroll, checkBoxes;
 	JsonValue componentList;
 	
@@ -46,13 +39,15 @@ public class EntityEditor extends BasicWindow {
 	ButtonStyle bStyle;
 	
 	public EntityEditor(GameServices gameRes) {
-		super("Entity Editor", 500, 350, gameRes.getFont(), gameRes.getSkin(), gameRes.getStage());
+		super("Entity Editor", 560, 350, gameRes.getFont(), gameRes.getSkin(), gameRes.getStage());
 		this.gameRes = gameRes;
 		setName("entityEditor");
 		
+		body.defaults().top();
+		
 //		setDebug(true, true);
 		
-		dataObjects = new ArrayMap<Label, Actor>();
+		componentEntries = new Array<ComponentEntry>();
 		
 		final EntityProfileLoader loader = new EntityProfileLoader(this);
 		
@@ -94,7 +89,22 @@ public class EntityEditor extends BasicWindow {
 		b.add(l).left();
 		b.addListener(new ClickListener(){
 			public void clicked (InputEvent event, float x, float y) {
-				loader.saveProfile();
+				TextFieldEntry name = (TextFieldEntry) getEntry("name");
+
+				if(name.getTextField().getText().isEmpty()){
+					name.getTextField().setColor(Color.RED);
+					name.getTextField().getStyle().fontColor = Color.YELLOW;
+					
+				}else if(!isCheckBoxSelected()){
+					setCheckBoxColour(Color.RED);
+					
+				}else{
+					loader.saveProfile();
+				
+					name.getTextField().setColor(Color.WHITE);
+					name.getTextField().getStyle().fontColor = Color.BLACK;
+					setCheckBoxColour(Color.WHITE);
+				}
 			}
 		});
 		body.add(b).width(64).left().padRight(6);
@@ -103,17 +113,19 @@ public class EntityEditor extends BasicWindow {
 		createCheckBoxes();
 		
 		//component list button
-		ImageButton add = GuiUtils.createImageButton("gui/arrow", null, "gui/button", null, gameRes.getSkin());
-		body.add(add).right().expandX().row();
+		ImageButton add = GuiUtils.createImageButton("gui/arrowPlay", null, "gui/button", null, gameRes.getSkin());
+		body.add(add).right().expandX().padRight(4).row();
 		
-		//scroll table
+		//main body scroll table
 		scroll = new Table();
+		scroll.top().padTop(4);
+		scroll.defaults().top().expandX().fillX();
 		
 		//scrollpane
 		ScrollPane sp = GuiUtils.createScrollTable(gameRes.getSkin());
 		sp.setWidget(scroll);
 
-		body.add(sp).center().colspan(4).top().expand().fillX().padTop(6).row();
+		body.add(sp).colspan(5).top().expand().fillY().fillX().padTop(2).row();
 		
 		//component selection
 		Json j = new Json();
@@ -123,22 +135,69 @@ public class EntityEditor extends BasicWindow {
 		//create and populate gui table with 'add component' buttons
 		loadComponentButtons(add);
 		
-		//create default, empty view
-//		scroll.add(createEntry(componentList.get("name"))).expand().fillX().row();
-		
 		scroll.layout();
 	}
 	
 	private void newProfile(){
 		scroll.clearChildren();
-		dataObjects.clear();
+		componentEntries.clear();
 		
-		Table idEntry = createEntry(componentList.get("baseid")); 
-		scroll.add(idEntry).expand().fillX().row();
-		
-//		((TextField)idEntry.findActor("id")).setText(IdGenerator.);
-		
+		scroll.add(createEntry(componentList.get("name"))).expandX().fillX().row();
+
 		scroll.layout();
+	}
+	
+	private boolean isCheckBoxSelected(){
+		for(Actor a: checkBoxes.getChildren()){
+			CheckBox b = (CheckBox) a;
+			if(b.getName().matches("wall") && b.isChecked()){
+				return true;
+			}else if(b.getName().matches("base")){
+				if(((CheckBox)checkBoxes.findActor("item")).isChecked() ||
+						((CheckBox)checkBoxes.findActor("npc")).isChecked() ||
+						((CheckBox)checkBoxes.findActor("ent")).isChecked()){
+					return true;
+				}
+			}else if(b.getName().matches("spawn") && b.isChecked()){
+				if(((CheckBox)checkBoxes.findActor("item")).isChecked() ||
+						((CheckBox)checkBoxes.findActor("npc")).isChecked()){
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	public String getSelectedType(){
+		String type = "";
+		
+		for(Actor a: checkBoxes.getChildren()){
+			CheckBox b = (CheckBox) a;
+			
+			if(b.getName().matches("wall") && b.isChecked()){
+				type = IdGenerator.WALL;
+			}else if(b.getName().matches("base") && b.isChecked()){
+				
+				type = IdGenerator.BASE_PROFILE + ".";
+				
+				if(((CheckBox)checkBoxes.findActor("item")).isChecked()){
+					type += IdGenerator.ITEM_ID;
+				}else if(((CheckBox)checkBoxes.findActor("npc")).isChecked()){
+					type += IdGenerator.NPC_ID;
+				}else if(((CheckBox)checkBoxes.findActor("ent")).isChecked()){
+					type += IdGenerator.ENTITY_ID;
+				}
+			}else if(b.getName().matches("spawn") && b.isChecked()){
+
+				if(((CheckBox)checkBoxes.findActor("item")).isChecked()){
+					type = IdGenerator.SPAWNABLE_ITEM;
+				}else if(((CheckBox)checkBoxes.findActor("npc")).isChecked()){
+					type = IdGenerator.SPAWNABLE_NPC;
+				}
+			}
+		}
+		
+		return type;
 	}
 	
 	private void createCheckBoxes(){
@@ -148,7 +207,61 @@ public class EntityEditor extends BasicWindow {
 		CheckBoxStyle chkStyle = new CheckBoxStyle(gameRes.getSkin().getDrawable("gui/checkbox"), 
 				gameRes.getSkin().getDrawable("gui/checkboxT"), gameRes.getFont(), Color.BLACK);
 		
-		CheckBox chkBox = new CheckBox("NPC", chkStyle);
+		CheckBox chkBox = new CheckBox("Base", chkStyle);
+		chkBox.getImageCell().size(18).padRight(4);
+		chkBox.setName("base");
+		chkBox.addListener(new ClickListener(){
+			public void clicked (InputEvent event, float x, float y) {
+				CheckBox chk = checkBoxes.findActor("wall");
+				if(chk.isChecked()){
+					chk.setChecked(false);
+				}
+				
+				chk = checkBoxes.findActor("spawn");
+				if(chk.isChecked()){
+					chk.setChecked(false);
+				}
+			}
+		});
+		checkBoxes.add(chkBox);
+		
+		chkBox = new CheckBox("Wall", chkStyle);
+		chkBox.getImageCell().size(18).padRight(4);
+		chkBox.setName("wall");
+		chkBox.addListener(new ClickListener(){
+			public void clicked (InputEvent event, float x, float y) {
+				CheckBox chk = checkBoxes.findActor("base");
+				if(chk.isChecked()){
+					chk.setChecked(false);
+				}
+				
+				chk = checkBoxes.findActor("spawn");
+				if(chk.isChecked()){
+					chk.setChecked(false);
+				}
+			}
+		});
+		checkBoxes.add(chkBox);
+		
+		chkBox = new CheckBox("Spawnable", chkStyle);
+		chkBox.getImageCell().size(18).padRight(4);
+		chkBox.setName("spawn");
+		chkBox.addListener(new ClickListener(){
+			public void clicked (InputEvent event, float x, float y) {
+				CheckBox chk = checkBoxes.findActor("base");
+				if(chk.isChecked()){
+					chk.setChecked(false);
+				}
+				
+				chk = checkBoxes.findActor("wall");
+				if(chk.isChecked()){
+					chk.setChecked(false);
+				}
+			}
+		});
+		checkBoxes.add(chkBox).row();
+		
+		chkBox = new CheckBox("NPC", chkStyle);
 		chkBox.getImageCell().size(18).padRight(4);
 		chkBox.setName("npc");
 		chkBox.addListener(new ClickListener(){
@@ -194,29 +307,6 @@ public class EntityEditor extends BasicWindow {
 		});
 		checkBoxes.add(chkBox);
 		
-		chkBox = new CheckBox("Wall", chkStyle);
-		chkBox.getImageCell().size(18).padRight(4);
-		chkBox.setName("wall");
-		chkBox.addListener(new ClickListener(){
-			public void clicked (InputEvent event, float x, float y) {
-				CheckBox chk = checkBoxes.findActor("item");
-				if(chk.isChecked()){
-					chk.setChecked(false);
-				}
-				
-				chk = checkBoxes.findActor("ent");
-				if(chk.isChecked()){
-					chk.setChecked(false);
-				}
-				
-				chk = checkBoxes.findActor("npc");
-				if(chk.isChecked()){
-					chk.setChecked(false);
-				}
-			}
-		});
-		checkBoxes.add(chkBox);
-		
 		chkBox = new CheckBox("Item", chkStyle);
 		chkBox.getImageCell().size(18).padRight(4);
 		chkBox.setName("item");
@@ -245,9 +335,11 @@ public class EntityEditor extends BasicWindow {
 	
 	private void loadComponentButtons(ImageButton add){
 		Table listTable = new Table();
+		listTable.setBackground(gameRes.getSkin().getDrawable("gui/bGround"));
+		listTable.top().padTop(4);
 		ScrollPane buttonList = GuiUtils.createScrollTable(gameRes.getSkin());
 		buttonList.setWidget(listTable);
-		buttonList.setSize(110, 100);
+		buttonList.setSize(125, getHeight() - 35);
 		buttonList.setVisible(false);
 		gameRes.getStage().addActor(buttonList);
 		
@@ -257,14 +349,13 @@ public class EntityEditor extends BasicWindow {
 					buttonList.setVisible(false);
 				}else{
 					Vector2 vec = localToStageCoordinates(new Vector2(add.getX(), add.getY()));
-					buttonList.setPosition(vec.x + 30, vec.y - buttonList.getHeight() / 2);
+					buttonList.setPosition(vec.x + 30, vec.y - (buttonList.getHeight() * 0.9f));
 					buttonList.setVisible(true);
 				}
 			}
 		});
 		
 		for(JsonValue c = componentList.child; c != null; c = c.next){
-			if(c.name.matches("name")) continue;
 			
 			Button button = new Button(bStyle);
 			Label l = new Label(c.name, lStyle);
@@ -272,156 +363,49 @@ public class EntityEditor extends BasicWindow {
 			button.add(l);
 			button.addListener(new ClickListener(){
 				public void clicked (InputEvent event, float x, float y) {
-					scroll.add(createEntry(component)).expand().fillX().row();
+					scroll.add(createEntry(component)).expandX().fillX().row();
 					scroll.layout();
-					buttonList.setVisible(false);
+//					buttonList.setVisible(false);
 				}
 			});
 			
-			listTable.add(button).width(105).expandX().left().padBottom(1).row();
+			listTable.add(button).padLeft(4).padRight(4).expandX().fillX().left().padBottom(1).row();
 		}
 	}
 	
-	public Table createEntry(JsonValue componentDesc){
-		Table t = new Table();
-		t.padBottom(3);
+	public ComponentEntry createEntry(JsonValue componentProfile){
+		String inputType = componentProfile.get("input").getString("type");
+		ComponentEntry entry = null;
 		
-		if(!componentDesc.name.matches("name") && !componentDesc.name.matches("baseid")){
-			ImageButton del = GuiUtils.createImageButton("gui/exitIcon", null, "gui/button", null, gameRes.getSkin());
-			del.addListener(new ClickListener(){
-				public void clicked (InputEvent event, float x, float y) {
-					t.clear();
-					scroll.removeActor(t);
-				}
-			});
-			t.add(del).padRight(4).size(24);
-		}
-		
-		Label l = new Label(componentDesc.name, lStyle);
-		if(componentDesc.has("class")){
-			l.setName(componentDesc.getString("class"));
-		}
-		l.addListener(new ClickListener(){
-			public void enter (InputEvent event, float x, float y, int pointer, Actor fromActor) {
-				ToolTip tt = getStage().getRoot().findActor("tooltip");
-				tt.show(componentDesc.getString("desc"));
-			}
-			public void exit (InputEvent event, float x, float y, int pointer, Actor toActor) {
-				ToolTip tt = getStage().getRoot().findActor("tooltip");
-				tt.hide();
-			}
-		});
-		t.add(l).expandX().fillX();
-		
-		JsonValue input = componentDesc.get("input");
-		
-		switch(input.getString("type")){
+		switch(inputType){
 		case "textfield":
-			TextField tfField = new TextField("", tfStyle);
-			tfField.setMessageText(input.getString("eg"));
-			tfField.setName(input.getString("name"));
-			t.add(tfField).padRight(4);
-			
-			dataObjects.put(l, tfField);
+			entry = new TextFieldEntry(this, componentProfile);
 			break;
 		case "intfield":
-			TextField intField = new TextField("", tfStyle);
-			intField.setTextFieldFilter(new DigitsOnlyFilter());
-			intField.setName(input.getString("name"));
-			t.add(intField).padRight(4);
-			
-			dataObjects.put(l, intField);
+			entry = new TextFieldEntry(this, componentProfile);
 			break;
 		case "spritelist":
-			SelectBox<String> spriteBox = GuiUtils.createSelectBox(gameRes.getSkin(), gameRes.getFont());
-			
-			Array<String> sprites = new Array<String>();
-			SpriteManager spriteMan = gameRes.getRenderer().getRenderEntitySystem().getSpriteManager();
-			
-			//load sprite name lists
-			loadSprites(spriteMan.getEntitySprites().keys(), sprites);
-			loadSprites(spriteMan.getItemSprites().keys(), sprites);
-			loadSprites(spriteMan.getWallSprites().keys(), sprites);
-			loadSprites(spriteMan.getFeatureSprites().keys(), sprites);
-			
-			spriteBox.setItems(sprites);
-			spriteBox.setName(input.getString("name"));
-			t.add(spriteBox).padRight(4);
-			
-			dataObjects.put(l, spriteBox);
+			entry = new SpriteEntry(this, componentProfile);
 			break;
 		case "area":
-			SelectBox<String> areaBox = GuiUtils.createSelectBox(gameRes.getSkin(), gameRes.getFont());
-			
-			Array<String> areaList = new Array<String>();
-			areaBox.setItems(areaList);
-			areaBox.setName(input.getString("name"));
-			t.add(areaBox).expandX().fillX().padRight(2);
-			
-			dataObjects.put(l, areaBox);
-			
-			final TextField xField = new TextField("", tfStyle);
-			xField.setTextFieldFilter(new DigitsOnlyFilter());
-			xField.setMessageText("x");
-			t.add(xField).width(30).padRight(2);
-			
-			final TextField yField = new TextField("", tfStyle);
-			yField.setTextFieldFilter(new DigitsOnlyFilter());
-			yField.setMessageText("y");
-			t.add(yField).width(30).padRight(2);
-			
-			Button sub = new Button(bStyle);
-			l = new Label("Add", lStyle);
-			sub.add(l);
-			sub.addListener(new ClickListener(){
-				public void clicked (InputEvent event, float x, float y) {
-					if(xField.getText().isEmpty() || yField.getText().isEmpty()) return;
-					
-					Array<String> list = new Array<String>(areaBox.getItems());
-					list.add("[" + xField.getText() + "," + yField.getText() + "]");
-					areaBox.setItems(list);
-					xField.setText("");
-					yField.setText("");
-				}
-			});
-			t.add(sub);
-			
+			entry = new AreaEntry(this, componentProfile);
 			break;
 		case "ailist":
-			SelectBox<String> aiBox = GuiUtils.createSelectBox(gameRes.getSkin(), gameRes.getFont());
-			
-			Array<String> aiList = new Array<String>();
-			AiSystem aiSys = GameServices.getWorld().getSystem(AiSystem.class);
-			for(String s: aiSys.getAllAiProfiles().keys()){
-				aiList.add(s);
-			}
-			aiBox.setItems(aiList);
-			aiBox.setName(input.getString("name"));
-			t.add(aiBox);
-			
-			dataObjects.put(l, aiBox);
+			entry = new AiComponentEntry(this, componentProfile);
 			break;
 		case "animlist":
-			SelectBox<String> box = GuiUtils.createSelectBox(gameRes.getSkin(), gameRes.getFont());
-			
-			Array<String> anims = new Array<String>();
-			for(String s: EntityFactory.getAnimationPool().keys()){
-				anims.add(s);
-			}
-			box.setItems(anims);
-			box.setName(input.getString("name"));
-			t.add(box);
-			
-			dataObjects.put(l, box);
+			entry = new AnimationEntry(this, componentProfile);
 			break;
 		}
 		
-		return t;
+		componentEntries.add(entry);
+		
+		return entry;
 	}
 	
-	private void loadSprites(ArrayMap.Keys<String> list, Array<String> editorList){
-		for(String s: list){
-			editorList.add(s);
+	private void setCheckBoxColour(Color colour){
+		for(Actor a: checkBoxes.getChildren()){
+			((CheckBox)a).getImage().setColor(colour);
 		}
 	}
 
@@ -440,9 +424,19 @@ public class EntityEditor extends BasicWindow {
 		//enable game input
 //		InputHandler.getMultiplexer().addProcessor(gameRes.getInput());
 	}
+	
+	public ComponentEntry getEntry(String labelName){
+		for(ComponentEntry e: componentEntries){
+			if(e.getLabel().getName().matches(labelName)){
+				return e;
+			}
+		}
+		
+		return null;
+	}
 
-	public ArrayMap<Label, Actor> getDataObjects() {
-		return dataObjects;
+	public Array<ComponentEntry> getEntries() {
+		return componentEntries;
 	}
 	public Table getCheckBoxes(){
 		return checkBoxes;		
