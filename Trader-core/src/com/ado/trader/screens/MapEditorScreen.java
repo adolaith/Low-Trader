@@ -10,6 +10,7 @@ import com.ado.trader.input.InputHandler;
 import com.ado.trader.input.MapEditorInput;
 import com.ado.trader.map.EditorStreamer;
 import com.ado.trader.placement.PlacementManager;
+import com.ado.trader.placement.TilePlaceable;
 import com.ado.trader.systems.AiSystem;
 import com.ado.trader.systems.AnimationSystem;
 import com.ado.trader.systems.SaveSystem;
@@ -45,7 +46,7 @@ public class MapEditorScreen implements Screen {
 		
 		input.addPlacementManager(new PlacementManager(gameServices));
 		
-		gameServices.getMap().createMap(input.getPlacementManager().getTilePl());
+		gameServices.getMap().createMap((TilePlaceable) input.getPlacementManager().getPlaceable("tile"));
 		
 		//map region streamer
 		gameServices.setStreamer(new EditorStreamer(gameServices.getMap()));

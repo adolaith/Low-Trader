@@ -3,14 +3,12 @@ package com.ado.trader.placement;
 import com.ado.trader.entities.EntityFactory;
 import com.ado.trader.entities.WallDirection;
 import com.ado.trader.entities.components.Position;
-import com.ado.trader.entities.components.SpriteComp;
 import com.ado.trader.entities.components.WallSprite;
 import com.ado.trader.map.Chunk;
 import com.ado.trader.map.Map;
 import com.ado.trader.rendering.EntityRenderSystem;
 import com.artemis.ComponentMapper;
 import com.artemis.Entity;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 
@@ -37,7 +35,7 @@ public class WallPlaceable extends Placeable{
 			
 			w.firstSprite = first;
 			
-			if(second!=null){
+			if(second != null){
 				e.getComponent(WallSprite.class).secondSprite = second;
 			}
 			
@@ -79,9 +77,6 @@ public class WallPlaceable extends Placeable{
 	
 	//maps click-dragged square to proper sprites
 	private void selectCorrectDirection(int x,int y,Vector2 start,Vector2 widthHeight){
-		Sprite[] sprites = entityRenderer.getSpriteManager().getWallSprites(key);
-		
-		if(sprites[1] == null)return;
 		
 		if(x==start.x&&y==start.y){		//s
 			first = WallDirection.SW;
@@ -137,5 +132,12 @@ public class WallPlaceable extends Placeable{
 	}
 	public void renderPreview(SpriteBatch batch) {
 		
+	}
+
+	@Override
+	public void setSelection(String baseid) {
+		entityName = baseid;
+
+		first = WallDirection.SW;
 	}
 }

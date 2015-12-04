@@ -8,7 +8,7 @@ import com.ado.trader.entities.components.AiProfile;
 import com.ado.trader.entities.components.Inventory;
 import com.ado.trader.entities.components.Movement;
 import com.ado.trader.entities.components.Position;
-import com.ado.trader.utils.GameServices;
+import com.ado.trader.utils.FileLogger;
 import com.artemis.Aspect;
 import com.artemis.ComponentMapper;
 import com.artemis.Entity;
@@ -83,13 +83,20 @@ public class AiSystem extends EntityProcessingSystem{
 	public Task getAiProfile(String name){
 		if(!profiles.containsKey(name)) return null;
 		
+		FileLogger.writeLog("AiSys > creating profile: " + name);
+		
 		JsonValue profile = profiles.get(name);
 		
-		return createProfile(profile, null);
+		Task t = createProfile(profile, null);
+		
+		FileLogger.writeLog("AiSys > profile created: " + t);
+		
+		return t;
 	}
 	
 	private Task createProfile(JsonValue task, Task parent){
 		Task t = createTask(task, parent);
+		FileLogger.writeLog("AiSys > task CREATED!");
 		
 		if(task.has("deco")){
 			for(JsonValue d = task.get("deco").child; d != null; d = d.next){
@@ -106,12 +113,22 @@ public class AiSystem extends EntityProcessingSystem{
 			((ParentTaskController)parent.getControl()).Add(t);
 		}
 		
+		if(task.has("param")){
+			FileLogger.writeLog("AiSys > parent task: ==" + task.getString("param") + "== created: " + t);
+		}
+		
 		return t;
 	}
 	
 	String pkgPath = "com.ado.trader.entities.AiComponents.";
 	//Creates a task class. parent task is used only for decorations
 	private Task createTask(JsonValue taskData, Task parent){
+		if(taskData.has("param")){
+			FileLogger.writeLog("AiSys > creating task: ==" + taskData.getString("param") + "==");
+		}else{
+			FileLogger.writeLog("AiSys > creating task: " + taskData.name);
+		}
+		
 		try {
 			if(taskData.has("param")){
 				JsonValue params = taskData.get("param");
@@ -189,6 +206,8 @@ public class AiSystem extends EntityProcessingSystem{
 			}
 
 		} catch (Exception e) {
+			FileLogger.writeLog("AiSys > ERROR task: " + e);
+//			FileLogger.writeLog(e.getMessage());
 			e.printStackTrace();
 		}
 		return null;

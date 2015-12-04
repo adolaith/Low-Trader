@@ -78,6 +78,7 @@ public class EntityPlaceable extends Placeable {
 		Sprite sprite = entityRenderer.getSpriteManager().getEntitySprites(spriteName)[spriteIndex];
 		
 		batch.begin();
+		
 		if(profile.has("area")){
 			if(spriteIndex == 1){
 				batch.draw(sprite , mousePos.x-4, mousePos.y-32, 
@@ -120,7 +121,7 @@ public class EntityPlaceable extends Placeable {
 	public void dragPlace(Vector2 start, Vector2 widthHeight) {}
 
 	@Override
-	void clearSettings() {
+	public void clearSettings() {
 		spriteIndex = 0;
 		baseId = null;
 		profile = null;

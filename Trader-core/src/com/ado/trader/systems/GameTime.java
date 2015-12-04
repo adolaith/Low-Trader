@@ -29,7 +29,7 @@ public class GameTime extends VoidIntervalSystem {
 		setTimeOfDay();
 		
 		if(worldTime>=Time.NIGHT.getValue()*60){
-			world.getSystem(FarmSystem.class).process();
+//			world.getSystem(FarmSystem.class).process();
 			time = Time.DAWN;
 			daysPlayed++;
 			worldTime = 0;

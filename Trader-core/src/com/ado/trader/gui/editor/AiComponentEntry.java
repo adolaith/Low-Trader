@@ -33,7 +33,7 @@ public class AiComponentEntry extends ComponentEntry {
 
 	@Override
 	public void save(Json writer) {
-		writer.writeValue(aiBox.getName(), aiBox.getSelected());
+		writer.writeValue(label.getName(), aiBox.getSelected());
 	}
 
 	@Override

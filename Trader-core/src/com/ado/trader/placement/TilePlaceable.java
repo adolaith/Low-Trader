@@ -25,7 +25,7 @@ public class TilePlaceable extends Placeable {
 	}
 	
 	@Override
-	void place(int mapX, int mapY) {
+	public void place(int mapX, int mapY) {
 		//create new map region
 		if(map.getRegion(mapX, mapY) == null){
 			createRegion(mapX, mapY);
@@ -55,7 +55,7 @@ public class TilePlaceable extends Placeable {
 	}
 	
 	@Override
-	void dragPlace(Vector2 start, Vector2 widthHeight) {
+	public void dragPlace(Vector2 start, Vector2 widthHeight) {
 		for(int x=(int) start.x; x < widthHeight.x + 1; x++){
 			for(int y=(int) start.y; y < widthHeight.y + 1; y++){
 				place(x, y);
@@ -169,7 +169,7 @@ public class TilePlaceable extends Placeable {
 	}
 	
 	@Override
-	void rotateSelection() {
+	public void rotateSelection() {
 		Sprite[][] sprites = map.getTileMasks().getMaskSprites();
 		
 		if(mask != null){
@@ -187,10 +187,14 @@ public class TilePlaceable extends Placeable {
 	}
 	
 	@Override
-	void clearSettings() {
+	public void clearSettings() {
 		id = null;
 		mask = null;
 		dir = 0;
+	}
+	
+	public void setSelection(int id){
+		this.id = id;
 	}
 	
 	public void incrementID(){
@@ -198,5 +202,9 @@ public class TilePlaceable extends Placeable {
 	}
 	public int getNextRegionId(){
 		return nextRegionId;
+	}
+
+	@Override
+	public void setSelection(String baseid) {
 	}
 }

@@ -119,7 +119,7 @@ public class EntityRenderSystem{
 														isoVec = IsoUtils.getIsoXY(tileX, tileY, map.getTileWidth(), map.getTileHeight());
 														
 														//drawWide
-//														if(drawWideEntity(chunkX, chunkY, chunk, batch))continue;
+														if(drawWideEntity(chunkX, chunkY, chunk, batch))continue;
 														
 														//draw north wall
 														renderNorthernWall(chunkX, chunkY, chunk, batch);
@@ -168,7 +168,7 @@ public class EntityRenderSystem{
 						SpriteComp s = spriteMapper.get(e);
 						
 						//get entity's main sprite
-						Sprite tmp = entitySprites.get(nameMapper.get(e).getName())[s.spriteIndex];
+						Sprite tmp = spriteManager.getEntitySprites(s.spriteName)[s.spriteIndex];
 						
 						//render next entity to prevent drawing overlap
 						if(tmp.isFlipX()){
@@ -254,7 +254,7 @@ public class EntityRenderSystem{
 		if(chunk.getItems().isOccupied(tileX, tileY)){
 			Entity i = map.getWorld().getEntity(chunk.getItems().map[tileX][tileY][0]);
 			
-			String name = nameMapper.get(i).getName();
+			String name = spriteMapper.get(i).spriteName;
 			Sprite s = spriteManager.getItemSprite(name);
 			
 			batch.draw(s, (isoVec.x + map.getTileWidth() / 2) - s.getWidth(), isoVec.y + map.getTileHeight() / 3, 
@@ -317,7 +317,7 @@ public class EntityRenderSystem{
 	}
 
 	private void drawNorthSprite(WallDirection dir, Entity e, SpriteBatch batch){
-		if(dir==null)return;
+		if(dir == null)return;
 		
 		Position p = posMapper.get(e);
 		Mask m = null;
@@ -326,7 +326,7 @@ public class EntityRenderSystem{
 			m = maskMapper.get(e);
 		}
 		
-		Sprite s = spriteManager.getWallSprites(nameMapper.get(e).getName())[dir.index()];
+		Sprite s = spriteManager.getWallSprites(wallMapper.get(e).spriteName)[dir.index()];
 		
 		Vector2 vec = null;
 		
@@ -358,7 +358,7 @@ public class EntityRenderSystem{
 			m = maskMapper.get(e);
 		}
 		
-		Sprite s = spriteManager.getWallSprites(nameMapper.get(e).getName())[dir.index()];
+		Sprite s = spriteManager.getWallSprites(wallMapper.get(e).spriteName)[dir.index()];
 		
 		Vector2 vec = null;
 		
@@ -387,7 +387,8 @@ public class EntityRenderSystem{
 		SpriteComp s = spriteMapper.get(e);
 		Sprite tmp = spriteManager.getEntitySprites(s.spriteName)[s.spriteIndex];
 		
-		batch.draw(tmp , isoVec.x + p.getIsoOffset().x, isoVec.y + p.getIsoOffset().y, tmp.getWidth() * tmp.getScaleX(), tmp.getHeight() * tmp.getScaleY());		//static entities
+		batch.draw(tmp , isoVec.x + p.getIsoOffset().x, isoVec.y + p.getIsoOffset().y,
+				tmp.getWidth() * tmp.getScaleX(), tmp.getHeight() * tmp.getScaleY());		//static entities
 	}
 	public SkeletonRenderer getSkeletonRenderer() {
 		return skeletonRenderer;

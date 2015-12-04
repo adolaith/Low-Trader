@@ -21,9 +21,9 @@ public class ItemPlaceable extends Placeable {
 	}
 
 	@Override
-	void place(int mapX, int mapY) {
+	public void place(int mapX, int mapY) {
 		
-		Entity i = EntityFactory.createItem(itemId);
+		Entity i = EntityFactory.createEntity(itemId);
 		
 		Chunk c = map.getChunk(mapX, mapY);
 		Vector2 t = Map.worldVecToTile(mapX, mapY);
@@ -33,11 +33,11 @@ public class ItemPlaceable extends Placeable {
 			
 			if(invenMap.has(e)){
 				Inventory inventory = invenMap.get(e);
-				inventory.add(i.id);
+				inventory.add(i.getId());
 				return;
 			}
 		}
-		if(!c.getItems().addToMap(i.id, (int) t.x, (int) t.y)){
+		if(!c.getItems().addToMap(i.getId(), (int) t.x, (int) t.y)){
 			Gdx.app.log("ItemPlaceable: ", "Tile is full and cannot hold any more items");
 		}
 	}
@@ -46,13 +46,18 @@ public class ItemPlaceable extends Placeable {
 	}
 	
 	@Override
-	void rotateSelection() {}
+	public void rotateSelection() {}
 
 	@Override
-	void dragPlace(Vector2 start, Vector2 widthHeight) {
+	public void dragPlace(Vector2 start, Vector2 widthHeight) {
 	}
 
 	@Override
-	void clearSettings() {
+	public void clearSettings() {
+	}
+
+	@Override
+	public void setSelection(String baseid) {
+		this.itemId = baseid;
 	}
 }

@@ -23,7 +23,7 @@ public class FeaturePlaceable extends Placeable {
 	}
 	
 	@Override
-	void place(int mapX, int mapY) {
+	public void place(int mapX, int mapY) {
 		Chunk c = map.getChunk(mapX, mapY);
 		Vector2 tile = Map.worldVecToTile(mapX, mapY);
 		
@@ -69,7 +69,7 @@ public class FeaturePlaceable extends Placeable {
 	}
 	
 	@Override
-	void dragPlace(Vector2 start, Vector2 widthHeight) {
+	public void dragPlace(Vector2 start, Vector2 widthHeight) {
 	}
 	
 	public EntityFeatures getFeatures(){
@@ -77,7 +77,7 @@ public class FeaturePlaceable extends Placeable {
 	}
 
 	@Override
-	void clearSettings() {
+	public void clearSettings() {
 		featureName = null;
 		spriteIndex = 0;
 	}

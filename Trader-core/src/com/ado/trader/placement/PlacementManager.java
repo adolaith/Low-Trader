@@ -1,7 +1,6 @@
 package com.ado.trader.placement;
 
 import com.ado.trader.entities.EntityFactory;
-import com.ado.trader.entities.WallDirection;
 import com.ado.trader.input.InputHandler;
 import com.ado.trader.utils.FileLogger;
 import com.ado.trader.utils.GameServices;
@@ -9,30 +8,28 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.ArrayMap;
 
 public class PlacementManager {
 	Placeable placementSelection;
-	EntityPlaceable entityPl;
-	TilePlaceable tilePl;
-	WallPlaceable wallPl;
-	FeaturePlaceable featurePl;
-	ItemPlaceable itemPl;
+	
+	ArrayMap<String, Placeable> placeableList; 
 	
 	InputHandler input;
 	EntityFactory entities;
 
 	public PlacementManager(GameServices gameRes) {
-		placementSelection=null;
+		placementSelection = null;
+		placeableList = new ArrayMap<String, Placeable>();
 		
 		this.entities = gameRes.getEntities();
-		
-		entityPl = new EntityPlaceable(gameRes);
-		tilePl = new TilePlaceable(gameRes.getMap());
-		wallPl = new WallPlaceable(gameRes.getMap(), gameRes.getRenderer().getRenderEntitySystem());
-		
-		featurePl = new FeaturePlaceable(gameRes);
-		
-		itemPl = new ItemPlaceable(gameRes.getMap());
+				
+		placeableList.put("entity", new EntityPlaceable(gameRes));
+		placeableList.put("tile", new TilePlaceable(gameRes.getMap()));
+		placeableList.put("wall", new WallPlaceable(gameRes.getMap(), gameRes.getRenderer().getRenderEntitySystem()));
+		placeableList.put("npc", new NpcPlaceable(gameRes));
+		placeableList.put("item", new ItemPlaceable(gameRes.getMap()));
+		placeableList.put("feature", new FeaturePlaceable(gameRes));
 		
 		FileLogger.writeLog("PlacementManager: started.");
 	}
@@ -70,56 +67,22 @@ public class PlacementManager {
 	}
 	
 	public void setPlacementSelection(String type, String baseid){
-		switch(type){
-		case "feature":
-			placementSelection = featurePl;
-			featurePl.featureName = baseid;
-			featurePl.spriteIndex = 0;
-			break;
-		case "item":
-			placementSelection = itemPl;
-			itemPl.itemId = baseid;
-			break;
-		case "entity":
-			placementSelection = entityPl;
-			entityPl.setSelection(baseid);
-			break;
-		case "wall":
-			placementSelection = wallPl;
-			wallPl.entityName = baseid;
-
-			wallPl.first = WallDirection.SW;
-			break;
-		}
+		placementSelection = placeableList.get(type);
+		placementSelection.setSelection(baseid);
 	}
 	
 	public void setPlacementSelection(String type, int id) {
-		switch(type){
-		case "tile":
-			placementSelection = tilePl;
-			tilePl.id = id;
-			break;
-		}
+		placementSelection = placeableList.get(type);
+		((TilePlaceable)placementSelection).setSelection(id);
 	}
 	
 	public void render(SpriteBatch batch){
 		if(placementSelection == null) return;
 		placementSelection.renderPreview(batch);
 	}
-	public EntityPlaceable getEntityPl() {
-		return entityPl;
-	}
-	public TilePlaceable getTilePl() {
-		return tilePl;
-	}
-	public WallPlaceable getWallPl() {
-		return wallPl;
-	}
-	public ItemPlaceable getItemPl() {
-		return itemPl;
-	}
-	public FeaturePlaceable getFeaturePl() {
-		return featurePl;
+	
+	public Placeable getPlaceable(String name){
+		return placeableList.get(name);
 	}
 	public void resetSelection(){
 		placementSelection.clearSettings();

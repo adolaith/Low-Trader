@@ -22,7 +22,7 @@ public class MapEditorPanel extends Table{
 		setName("editorPanel");
 //		setVisible(true);
 		setWidth(38);
-		setHeight(6 * 36);
+		setHeight(7 * 36);
 		setBackground(gameRes.getSkin().newDrawable("gui/bGround"));
 		
 		tables = new ArrayMap<String, Table>();

@@ -14,54 +14,124 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
+import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
+import com.badlogic.gdx.scenes.scene2d.ui.ImageTextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.ImageTextButton.ImageTextButtonStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.TextField;
+import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldStyle;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.SpriteDrawable;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ArrayMap;
 import com.badlogic.gdx.utils.JsonValue;
 
 public class ObjectMenu extends BasicWindow {
-	ArrayMap<String, Table> tableList;
-	ArrayMap<String, JsonValue> entityProfiles;
+	ArrayMap<String, Array<Button>> buttonList;
 	float buttonSize = 32 * 1.2f;
+	String current;
+	
 	SpriteManager spriteMan;
-
+	
+	Cell<Actor> topBar;
+	
+	Table scrollTable, tileOptions;
+	TextField search;	
+	
+	@SuppressWarnings("unchecked")
 	public ObjectMenu(GameServices gameRes) {
-		super("Object menu", 310, 200, gameRes.getFont(), gameRes.getSkin(), gameRes.getStage());
-
-		tableList = new ArrayMap<String, Table>();
-		entityProfiles = new ArrayMap<String, JsonValue>();
+		super("Object menu", 310, 420, gameRes.getFont(), gameRes.getSkin(), gameRes.getStage());
+		
+//		setDebug(true, true);
+		
+		current = "";
+		buttonList = new ArrayMap<String, Array<Button>>();
 		spriteMan = gameRes.getRenderer().getRenderEntitySystem().getSpriteManager();
 		
-		tableList.put("tileMenu", tileMenu(gameRes));
-		tableList.put("entityMenu", createMenu("entity", gameRes));
-		tableList.put("wallMenu", createMenu("wall", gameRes));
-		tableList.put("itemsMenu", createMenu("item", gameRes));
+		search = createSearchField(gameRes);
 		
-		for(Table t: tableList.values()){
-			t.top();
-		}
-	}
-	
-	private Table createMenu(String placeableType, final GameServices gameRes){
-		Table t = new Table();
-		t.setFillParent(false);
+		topBar = body.add().expandX().fillX().padLeft(8).padRight(8);
+		topBar.setActor(search);
+		
+		body.row();
+		
+		createTileOptions(gameRes);
 		
 		ScrollPane pane = GuiUtils.createScrollTable(gameRes.getSkin());
 		
-		Table menu = new Table();
-		menu.setFillParent(false);
-		menu.top().left().defaults().size(buttonSize); 
+		scrollTable = new Table();
+		scrollTable.setFillParent(false);
+		scrollTable.top().left();
+		
+		pane.setWidget(scrollTable);
+		
+		body.add(pane).expand().fill();
+			
+		buttonList.put("terrainMenu", tileMenu(gameRes));
+		buttonList.put("maskMenu", maskMenu(gameRes));
+		buttonList.put("entityMenu", createMenu("entity", gameRes));
+		buttonList.put("wallMenu", createMenu("wall", gameRes));
+		buttonList.put("npcMenu", createMenu("npc", gameRes));
+		buttonList.put("itemsMenu", createMenu("item", gameRes));
+		
+	}
+	
+	private TextField createSearchField(GameServices gameRes){
+		TextFieldStyle style = new TextFieldStyle();
+		style.font = gameRes.getFont();
+		style.fontColor = Color.BLACK;
+		style.background = gameRes.getSkin().getDrawable("gui/tooltip");
+		
+		TextField field = new TextField("", style);
+		
+		field.addListener(new ChangeListener() {
+			@Override
+			public void changed(ChangeEvent event, Actor actor) {
+				String search = field.getText();
+				
+				scrollTable.clear();
+				
+				if(current.matches("npcMenu")){
+					for(Button a: buttonList.get(current)){
+						ImageTextButton butt = (ImageTextButton) a;
+						String buttText = butt.getLabel().getText().toString(); 
+						if(!buttText.contains(search)){
+							butt.setVisible(false);
+						}else{
+							butt.setVisible(true);
+						}
+					}
+				}else{
+					for(Button a: buttonList.get(current)){
+						ImageTextButton butt = (ImageTextButton) a;
+						String buttText = butt.getLabel().getText().toString();
+						
+						if(buttText.contains(search)){
+							scrollTable.add(butt).padTop(2).padRight(2).expandX().fillX().height(42).row();
+						}
+					}
+				}
+				
+				scrollTable.layout();
+			}
+		});
+		
+		return field;
+	}
+	
+	private Array<Button> createMenu(String placeableType, final GameServices gameRes){
+		Array<Button> array = new Array<Button>();
 		
 		//loop entity profiles array root
 		for(String typeId: EntityFactory.getEntityData().keys()){
 			
-			//check id types
+			//check prefix-id type
 			if(placeableType.matches("wall") && !typeId.matches(IdGenerator.WALL)){
 				continue;
 			}else if(placeableType.matches("item") && (!typeId.matches(IdGenerator.BASE_PROFILE) &&
@@ -69,6 +139,9 @@ public class ObjectMenu extends BasicWindow {
 				continue;
 			}else if(placeableType.matches("entity") &&
 					!typeId.matches(IdGenerator.BASE_PROFILE)){
+				continue;
+			}else if(placeableType.matches("npc") && (!typeId.matches(IdGenerator.BASE_PROFILE) &&
+					!typeId.matches(IdGenerator.SPAWNABLE_NPC))){
 				continue;
 			}
 			
@@ -83,43 +156,60 @@ public class ObjectMenu extends BasicWindow {
 				}else if(placeableType.matches("entity") &&
 						id.charAt(0) != (IdGenerator.ENTITY_ID)){
 					continue;
+				}else if(placeableType.matches("npc") &&
+						typeId.matches(IdGenerator.BASE_PROFILE) &&
+						id.charAt(0) != (IdGenerator.NPC_ID)){
+					continue;
 				}
 							
 				final JsonValue data = list.get(id);
 				
-				//get sprite for image button
-				String spriteName = data.get("sprite").asStringArray()[0];
 				SpriteDrawable tmp = null;
 				
-				switch(placeableType){
-				case "item":
-					tmp = new SpriteDrawable(new Sprite(spriteMan.getItemSprite(spriteName)));	
-					break;
-				case "wall":
-					tmp = new SpriteDrawable(new Sprite(spriteMan.getWallSprites(spriteName)[0]));
-					break;
-				case "entity":
-					tmp = new SpriteDrawable(new Sprite(spriteMan.getEntitySprites(spriteName)[0]));
-					break;
+				//get sprite for image button
+				if(data.has("sprite")){
+					String spriteName = data.get("sprite").asStringArray()[0];
+									
+					switch(placeableType){
+					case "item":
+						tmp = new SpriteDrawable(new Sprite(spriteMan.getItemSprite(spriteName)));	
+						break;
+					case "wall":
+						tmp = new SpriteDrawable(new Sprite(spriteMan.getWallSprites(spriteName)[0]));
+						break;
+					case "entity":
+						tmp = new SpriteDrawable(new Sprite(spriteMan.getEntitySprites(spriteName)[0]));
+						break;
+					}
 				}
 				
 				//create image button
-				ImageButton butt = createButton(tmp, data, placeableType, gameRes);
+				ImageTextButton butt = createButton(tmp, data, placeableType, gameRes);
 				
-				addToTable(butt, menu);
+				array.add(butt);
 			}
 		}
-		
-		pane.setOverscroll(false, false);
-		pane.setWidget(menu);
-		t.add(pane).fill().expand().left();
-		
-		return t;
+				
+		return array;
 	}
 	
-	private ImageButton createButton(SpriteDrawable img, JsonValue data, String placementType, GameServices gameRes){
-		ImageButton butt = new ImageButton(GuiUtils.setImgButtonStyle(
-				img, null, gameRes.getSkin().getDrawable("gui/button"), null));
+	private ImageTextButton createButton(SpriteDrawable img, JsonValue data, String placementType, GameServices gameRes){
+		//button styling and creation
+		ImageTextButtonStyle style = new ImageTextButtonStyle();
+		style.up = gameRes.getSkin().getDrawable("gui/button");
+		
+		Drawable over = gameRes.getSkin().newDrawable("gui/button", Color.LIGHT_GRAY);
+		style.over = over;
+		
+		style.imageUp = img;
+		style.font = gameRes.getFont();
+		style.fontColor = Color.WHITE;
+		style.overFontColor = Color.BLUE;
+		ImageTextButton butt = new ImageTextButton(data.getString("name"), style);
+		
+		//button config
+		butt.getLabelCell().expandX().center();
+		butt.getImageCell().left().padLeft(6).padRight(6);
 		
 		butt.addListener(new ClickListener() {
 			public void enter (InputEvent event, float x, float y, int pointer, Actor fromActor) {
@@ -140,32 +230,34 @@ public class ObjectMenu extends BasicWindow {
 		return butt;
 	}
 	
-	//terrain tile menu
-	private Table tileMenu(final GameServices gameRes){
-		Table t = new Table();
-		t.setFillParent(false);
+	private void createTileOptions(final GameServices gameRes){
+		tileOptions = new Table();
+		tileOptions.setFillParent(false);
 		
 		final ToolTip toolTip = (ToolTip)(gameRes.getStage().getRoot().findActor("tooltip"));
-		
-		final Table terrainMenu = tileTable(gameRes);
-		
-		final Table maskMenu = maskTable(gameRes);
-		
-		final ScrollPane pane = GuiUtils.createScrollTable(gameRes.getSkin());
 		
 		Button b = new Button(GuiUtils.setButtonStyle("gui/button", null, gameRes.getSkin()));
 		LabelStyle lStyle = new LabelStyle(gameRes.getFont(), Color.WHITE);
 		b.add(new Label("Tiles", lStyle));
 		b.addListener(new ClickListener(){
 			public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-				if(pane.getWidget() != terrainMenu){
-					pane.setWidget(terrainMenu);
+				if(!current.matches("terrainMenu")){
+					removeTable();
+					
+					for(Button b: buttonList.get("terrainMenu")){
+						if(scrollTable.getCells().size != 0 && (scrollTable.getCells().size + 1) % 5 == 0){
+							scrollTable.add(b).padTop(2).padRight(2).width(56).height(56).row();
+						}else{
+							scrollTable.add(b).padTop(2).padRight(2).width(56).height(56);
+						}
+					}
+					scrollTable.layout();
 				}
 				return true;
 			}
 		});
 		
-		t.add(b).left();
+		tileOptions.add(b).left().expandX();
 		
 		b = new Button(GuiUtils.setButtonStyle("gui/button", null, gameRes.getSkin()));
 		b.add(new Label("Masks", lStyle));
@@ -177,26 +269,29 @@ public class ObjectMenu extends BasicWindow {
 				toolTip.hide();
 			}
 			public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-				if(pane.getWidget() != maskMenu){
-					pane.setWidget(maskMenu);
+				if(!current.matches("maskMenu")){
+					removeTable();
+					
+					for(Button b: buttonList.get("maskMenu")){
+						if(scrollTable.getCells().size != 0 && (scrollTable.getCells().size + 1) % 5 == 0){
+							scrollTable.add(b).padTop(2).padRight(2).width(56).height(56).row();
+						}else{
+							scrollTable.add(b).padTop(2).padRight(2).width(56).height(56);
+						}
+					}
+					scrollTable.layout();
 				}
 				return true;
 			}
 		});
 		
-		t.add(b).left().row();
-		t.add(pane).colspan(2).fill().expand().left();
-		pane.setWidget(terrainMenu);
-
-		return t;
+		tileOptions.add(b).right().expandX();
+		
 	}
 	
-	private Table tileTable(final GameServices gameRes){
-		Table menu = new Table();
-		menu.top().left();
-		menu.setFillParent(false);
-		
-		menu.defaults().size(buttonSize);
+	private Array<Button> tileMenu(final GameServices gameRes){
+		Array<Button> array = new Array<Button>();
+//		menu.defaults().size(buttonSize);
 		
 		int profileCount = gameRes.getMap().getTilePool().getTileProfiles().size;
 		
@@ -213,17 +308,13 @@ public class ObjectMenu extends BasicWindow {
 				}
 			});
 			
-			addToTable(imgb, menu);
+			array.add(imgb);
 		}
-		
-		return menu;
+		return array;
 	}
 	
-	private Table maskTable(final GameServices gameRes){
-		Table menu = new Table();
-		menu.top().left();
-		menu.setFillParent(false);
-		menu.defaults().size(buttonSize);
+	private Array<Button> maskMenu(final GameServices gameRes){
+		Array<Button> array = new Array<Button>();
 		
 		int profileCount = gameRes.getMap().getTileMasks().getMaskSprites().length;
 
@@ -243,36 +334,64 @@ public class ObjectMenu extends BasicWindow {
 				}
 			});
 			
-			addToTable(imgb, menu);
+			array.add(imgb);
 		}
 		
-		return menu;
+		return array;
 	}
 	
-	//lays buttons out in a grid with a width of 5 buttons then a new row
-	private void addToTable(ImageButton b, Table t){
-		if(t.getCells().size != 0 && (t.getCells().size + 1) % 5 == 0){
-			t.add(b).padTop(2).padRight(2).width(56).height(56).row();
-		}else{
-			t.add(b).padTop(2).padRight(2).width(56).height(56);
-		}
-	}
-	public Table getTable(String name){
-		return tableList.get(name);
-	}
-	@Override
 	public void hideWindow(){
-		body.clear();
 		super.hideWindow();
+		
+		removeTable();
 	}
-	public void setCurrentTable(Table t){
-		if(isVisible() && body.getChildren().size > 0){
-			if(body.getChildren().first() == t){
-				hideWindow();
-				return;
-			}
+	
+	public void setCurrentTable(String newTable){
+		if(current.matches(newTable)){
+			hideWindow();
+			return;
 		}
-		body.clear();
-		body.add(t).expand().fill();
+		
+		removeTable();
+		
+		if(newTable.matches("tileMenu||terrainMenu||maskMenu")){
+			Array<Button> list = null;
+			if(newTable.matches("tileMenu")){
+				topBar.setActor(tileOptions);
+				
+				list = buttonList.get("terrainMenu");
+				
+				current = "terrainMenu";
+			}else{
+				list = buttonList.get(newTable);
+				
+				current = newTable;
+			}
+			
+			for(Button b: list){
+				if(scrollTable.getCells().size != 0 && (scrollTable.getCells().size + 1) % 5 == 0){
+					scrollTable.add(b).padTop(2).padRight(2).width(56).height(56).row();
+				}else{
+					scrollTable.add(b).padTop(2).padRight(2).width(56).height(56);
+				}
+			}
+		}else{
+			topBar.setActor(search);
+			
+			for(Button b: buttonList.get(newTable)){
+				scrollTable.add(b).padTop(2).padRight(2).expandX().fillX().height(42).row();
+			}
+			
+			current = newTable;
+		}
+		
+		scrollTable.layout();		
+	}
+	
+	private void removeTable(){
+		scrollTable.clear();
+		scrollTable.layout();
+		
+		current = "";
 	}
 }

@@ -4,9 +4,11 @@ import com.ado.trader.entities.components.Area;
 import com.ado.trader.entities.components.Name;
 import com.ado.trader.entities.components.Position;
 import com.ado.trader.entities.components.SerializableComponent;
+import com.ado.trader.entities.components.WallSprite;
 import com.ado.trader.map.Chunk;
 import com.ado.trader.utils.FileLogger;
 import com.ado.trader.utils.GameServices;
+import com.ado.trader.utils.IdGenerator;
 import com.artemis.Component;
 import com.artemis.ComponentMapper;
 import com.artemis.Entity;
@@ -36,7 +38,6 @@ public class EntityFactory{
 	private static Json j;
 	
 	public EntityFactory(TextureAtlas atlas){
-		animationPool = new ArrayMap<String, AnimationStateData>();
 		entityData = new ArrayMap<String, ArrayMap<String, JsonValue>>();
 		j = new Json();
 
@@ -59,7 +60,7 @@ public class EntityFactory{
 		loadInternalProfiles();
 		loadCustomProfiles();
 		
-		skeletons = loadSpineData(atlas, this);
+		loadAnimData(atlas, this);
 	}
 	
 	//create first entity from profile takes ~4ms and 0ms for every entity of the same type after that. 
@@ -80,15 +81,20 @@ public class EntityFactory{
 			if(c.name.matches("tag")){
 				tagMan.register(c.asString(), e);
 			}else if(c.name.matches("group")){
-				String[] groups = c.getString("group").split(","); 
+				String[] groups = c.asStringArray(); 
 				
 				for(String g: groups){
 					groupMan.add(e, g);
 				}
 			}else{
-				Class<? extends Component> className = j.getClass(c.name);
-				
-				SerializableComponent component = (SerializableComponent) e.edit().create(className);
+				SerializableComponent component;
+				if(split[0].matches(IdGenerator.WALL) && c.name.matches("sprite")){
+					component = new WallSprite();
+				}else{
+					Class<? extends Component> className = j.getClass(c.name);
+					
+					component = (SerializableComponent) e.edit().create(className);
+				}		
 				
 				component.load(c);
 				
@@ -186,12 +192,13 @@ public class EntityFactory{
 	}
 	
 	//loads all animations
-	public ArrayMap<String, SkeletonData> loadSpineData(TextureAtlas atlas, EntityFactory entities){
-		ArrayMap<String, SkeletonData> skeletons = new ArrayMap<String, SkeletonData>();
+	public void loadAnimData(TextureAtlas atlas, EntityFactory entities){
+		skeletons = new ArrayMap<String, SkeletonData>();
+		animationPool = new ArrayMap<String, AnimationStateData>();
 		String[] files = Gdx.files.internal("data/anim/files.txt").readString().split(",");
 		
 		for(String file: files){
-			FileLogger.writeLog("EntityLoader: loadSpineData: "+ file);
+			FileLogger.writeLog("EntityLoader: loadAnimData: "+ file);
 			SkeletonJson json = new SkeletonJson(atlas);
 			json.setScale(2f);
 
@@ -201,7 +208,6 @@ public class EntityFactory{
 
 			animationPool.put(skelData.getName(), new AnimationStateData(skelData));
 		}
-		return skeletons;
 	}
 	
 	public static ArrayMap<String, AnimationStateData> getAnimationPool() {

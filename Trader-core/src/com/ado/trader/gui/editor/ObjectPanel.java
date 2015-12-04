@@ -17,16 +17,17 @@ public class ObjectPanel extends Table {
 
 	public ObjectPanel(final GameServices gameRes, final MapEditorPanel panel) {
 		setWidth(38);
-		setHeight(6 * 36);
+		setHeight(7 * 36);
 		defaults().center().width(30).height(30).pad(2);
 		
 		objectMenus = new ObjectMenu(gameRes);
 		
 		createButton("zoneTile", "Tile menu", "tileMenu", gameRes);
-		createButton("wallIcon", "Wall menu", "wallMenu", gameRes);
+		createButton("headIcon", "NPC menu", "npcMenu", gameRes);
 		createButton("entityIcon", "Entity menu", "entityMenu", gameRes);
 		createButton("workIcon", "Item menu", "itemsMenu", gameRes);
-		
+		createButton("wallIcon", "Wall menu", "wallMenu", gameRes);
+				
 		final ToolTip toolTip = (ToolTip)(gameRes.getStage().getRoot().findActor("tooltip"));
 		//delete button
 		ImageButton deleteButton = GuiUtils.createImageButton("gui/trashcanIcon", null, "gui/button", null, gameRes.getSkin());
@@ -86,13 +87,21 @@ public class ObjectPanel extends Table {
 				toolTip.hide();
 			}
 			public void clicked (InputEvent event, float x, float y) {
-				Table t = objectMenus.getTable(menuName);
+				if(objectMenus.isVisible()){
+
+					objectMenus.setCurrentTable(menuName);
+					
+					if(!objectMenus.isVisible()){
+						return;
+					}
+				}else{
+					objectMenus.setCurrentTable(menuName);	
+					
+					Viewport view = gameRes.getStage().getViewport();
+					objectMenus.showWindow((view.getScreenX() + view.getScreenWidth()) - getWidth() - (objectMenus.getWidth() + 8), getY());
+				}
 				
-				objectMenus.setCurrentTable(t);
 				objectMenus.getTitle().setText(tooltip);
-				Viewport view = gameRes.getStage().getViewport();
-				objectMenus.showWindow((view.getScreenX() + view.getScreenWidth()) - getWidth() - (objectMenus.getWidth() + 8), getY());
-				
 			}
 		});
 		add(b).row();

@@ -24,13 +24,18 @@ public class Health extends SerializableComponent {
 
 	@Override
 	public void load(JsonValue data) {
-		String[] list = data.asStringArray();
-		if(list.length > 1){
-			this.current = Integer.valueOf(list[0]);
-			this.max = Integer.valueOf(list[1]);
+		if(data.isArray()){
+			String[] list = data.asStringArray();
+			if(list.length > 1){
+				this.current = Integer.valueOf(list[0]);
+				this.max = Integer.valueOf(list[1]);
+			}else{
+				this.current = Integer.valueOf(list[0]);
+				this.max = Integer.valueOf(list[0]);
+			}
 		}else{
-			this.current = Integer.valueOf(list[0]);
-			this.max = Integer.valueOf(list[0]);
+			this.max = data.asInt();
+			this.current = max;
 		}
 	}
 

@@ -20,7 +20,7 @@ public class AnimationSystem extends EntityProcessingSystem {
 	@Override
 	protected void process(Entity e) {
 		if(animMapper.has(e)){
-			animMapper.get(e).setPosition(world.getMapper(Position.class).get(e).getIsoPosition());
+			animMapper.get(e).setPosition(world.getMapper(Position.class).get(e).getIsoOffset());
 			animMapper.get(e).getMainState().update(world.getDelta());
 			animMapper.get(e).getMainState().apply(animMapper.get(e).getSkeleton());
 			animMapper.get(e).getSkeleton().update(world.getDelta());

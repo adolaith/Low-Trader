@@ -4,7 +4,8 @@ import com.badlogic.gdx.math.RandomXS128;
 
 /*		FFFF = 65,535; FFF = 4095
  * 
- * 		Entity ID Format: FFFF.FFFF
+ * 	Entity ID Format: FFFF.FFFF
+ * 
  * 			RESERVED  0000. = base profile
  * 			RESERVED  0001. = spawnable NPC
  * 			RESERVED  0002. = spawnable item/consumable
