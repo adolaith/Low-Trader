@@ -5,7 +5,7 @@ a learning project using:
 
 -libGDX
 
--Spine
+-Spriter
 
 -Artemis-odb
 
