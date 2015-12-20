@@ -7,6 +7,7 @@ import com.ado.trader.pathfinding.TileBasedMap;
 import com.ado.trader.placement.TilePlaceable;
 import com.ado.trader.systems.GameTime;
 import com.ado.trader.systems.SaveSystem;
+import com.ado.trader.utils.FileLogger;
 import com.ado.trader.utils.GameServices;
 import com.ado.trader.utils.IsoUtils;
 import com.artemis.Entity;
@@ -69,9 +70,11 @@ public class Map implements TileBasedMap{
 		for(int x = 0; x < layer.getWidth(); x++){
 			for(int y = 0; y < layer.getHeight(); y++){
 				if(x == 0||y == 0){
+					//set bottom and left border tiles to debug tile
 					layer.map[x][y] = tilePool.createTile(0);
 				}else{
-					layer.map[x][y] = tilePool.createTile(1);
+					//fill layer with: DEBUG ; tile
+					layer.map[x][y] = tilePool.createTile(0);
 				}
 			}
 		}
@@ -282,6 +285,10 @@ public class Map implements TileBasedMap{
 		int tileX = (int) Math.floor((mapX - (region.x * (3 * 32))) - chunk.x * 32);
 		
 		int tileY = (int) Math.floor((mapY - (region.y * (3 * 32))) - chunk.y * 32);
+		
+		FileLogger.writeLog("MAP > worldVecToTile > region: " + region);
+		FileLogger.writeLog("MAP > worldVecToTile > chunk: " + chunk);
+		FileLogger.writeLog("MAP > worldVecToTile > tile: " + tileX + " : " + tileY);
 		
 		return chunk.set(tileX, tileY);
 	}

@@ -43,10 +43,9 @@ public class TextFieldEntry extends ComponentEntry {
 
 	@Override
 	public void save(Json writer) {
-		if(field.getText().contains(",")){
-			String[] split = field.getText().split("\\,");
-			
+		if(field.getText().contains(",") || label.getName().matches("group")){
 			writer.writeArrayStart(label.getName());
+			String[] split = field.getText().split("\\,");
 			
 			for(String s: split){
 				writer.writeValue(s);
@@ -54,7 +53,7 @@ public class TextFieldEntry extends ComponentEntry {
 			
 			writer.writeArrayEnd();
 		}else{
-			writer.writeValue(label.getName(), field.getText());	
+			writer.writeValue(label.getName(), field.getText());
 		}
 		
 	}

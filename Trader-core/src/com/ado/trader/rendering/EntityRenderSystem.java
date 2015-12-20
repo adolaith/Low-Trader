@@ -10,10 +10,12 @@ import com.ado.trader.entities.components.Position;
 import com.ado.trader.entities.components.SpriteComp;
 import com.ado.trader.entities.components.Status;
 import com.ado.trader.entities.components.WallSprite;
+import com.ado.trader.input.InputHandler;
 import com.ado.trader.map.Chunk;
 import com.ado.trader.map.Map;
 import com.ado.trader.map.MapRegion;
-import com.ado.trader.systems.StatusIconSystem.StatusIcon;
+import com.ado.trader.systems.AnimationSystem;
+import com.ado.trader.utils.GameServices;
 import com.ado.trader.utils.IsoUtils;
 import com.artemis.ComponentMapper;
 import com.artemis.Entity;
@@ -23,10 +25,8 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.math.Vector2;
-import com.esotericsoftware.spine.Skeleton;
-import com.esotericsoftware.spine.SkeletonBounds;
-import com.esotericsoftware.spine.SkeletonRenderer;
-import com.esotericsoftware.spine.SkeletonRendererDebug;
+import com.brashmonkey.spriter.LibGdxDrawer;
+import com.brashmonkey.spriter.Player;
 
 //Handles rendering of all active Entities.
 //Renders next entity selected for placement at the mouses location.
@@ -42,13 +42,10 @@ public class EntityRenderSystem{
 	ComponentMapper<Name> nameMapper;
 	
 	Map map;
-	SkeletonRenderer skeletonRenderer;
-	SkeletonRendererDebug debugRenderer;
 	MaskingSystem masks;
 	SpriteManager spriteManager;
 	
 	Vector2 isoVec;
-	SkeletonBounds bounds = new SkeletonBounds();
 
 	public EntityRenderSystem(TextureAtlas atlas, Map map, MaskingSystem masks) {
 		this.map = map;
@@ -66,14 +63,10 @@ public class EntityRenderSystem{
 		statusMapper = map.getWorld().getMapper(Status.class);
 		posMapper = map.getWorld().getMapper(Position.class);
 		
-		skeletonRenderer = new SkeletonRenderer();
-		debugRenderer = new SkeletonRendererDebug();
-		skeletonRenderer.setPremultipliedAlpha(true);
 	}
 	
 	//renders entities from the rear of the map to front, avoiding sprite overlap caused by isometric view
 	public void renderEntities(SpriteBatch batch, OrthographicCamera camera){
-		debugRenderer.getShapeRenderer().setProjectionMatrix(camera.combined);
 		
 		if(batch.isDrawing()){
 			batch.end();
@@ -81,57 +74,56 @@ public class EntityRenderSystem{
 		batch.begin();
 		
 		//loops active regions
-		int sum = map.getRegionMap().length + map.getRegionMap()[0].length;
-
-		for(int count = sum; count >= 0; count--){		//DEPTH COUNTER
-			for(int y = map.getRegionMap()[0].length - 1; y >= 0; y--){
-				for(int x = map.getRegionMap().length - 1; x >= 0; x--){		//DIAGONAL REGION READ
-					if(x + y - count == 0){
-						if(map.getRegionMap()[x][y] == null){
+		int regionSum = map.getRegionMap().length + map.getRegionMap()[0].length;
+		
+		for(int regionCount = regionSum; regionCount >= 0; regionCount--){		//DEPTH COUNTER
+			for(int regionY = map.getRegionMap()[0].length - 1; regionY >= 0; regionY--){
+				for(int regionX = map.getRegionMap().length - 1; regionX >= 0; regionX--){		//DIAGONAL REGION READ
+					if(regionX + regionY - regionCount == 0){
+						if(map.getRegionMap()[regionX][regionY] == null){
 							continue;
 						}
-						MapRegion region = map.getRegionMap()[x][y];
+						MapRegion region = map.getRegionMap()[regionX][regionY];
 
 						//loops chunks in a region
-						int regionSum = region.getWidth() + region.getHeight();
+						int chunkSum = region.getWidth() + region.getHeight();
 
-						for(int regionCount = regionSum; regionCount >= 0; regionCount--){		//DEPTH COUNTER
-							for(int regionY = region.getHeight() - 1; regionY >= 0; regionY--){
-								for(int regionX = region.getWidth() - 1; regionX >= 0; regionX--){		//DIAGONAL CHUNK READ
-									if(regionX + regionY - regionCount == 0){
-										if(region.getChunk(regionX , regionY) == null){
+						for(int chunkCount = chunkSum; chunkCount >= 0; chunkCount--){		//DEPTH COUNTER
+							for(int chunkY = region.getHeight() - 1; chunkY >= 0; chunkY--){
+								for(int chunkX = region.getWidth() - 1; chunkX >= 0; chunkX--){		//DIAGONAL CHUNK READ
+									if(chunkX + chunkY - chunkCount == 0){
+										if(region.getChunk(chunkX , chunkY) == null){
 											continue;
 										}
-										Chunk chunk = region.getChunk(regionX , regionY);
+										Chunk chunk = region.getChunk(chunkX , chunkY);
 										
 										//loops tiles in a chunk
-										int chunkSum = chunk.getWidth() + chunk.getHeight();
+										int tileSum = chunk.getWidth() + chunk.getHeight();
 
-										for(int chunkCount = chunkSum; chunkCount >= 0; chunkCount--){		//DEPTH COUNTER
-											for(int chunkY = chunk.getHeight() - 1; chunkY >= 0; chunkY--){
-												for(int chunkX = chunk.getWidth() - 1; chunkX >= 0; chunkX--){		//DIAGONAL TILE READ
+										for(int tileCount = tileSum; tileCount >= 0; tileCount--){		//DEPTH COUNTER
+											for(int tileY = chunk.getHeight() - 1; tileY >= 0; tileY--){
+												for(int tileX = chunk.getWidth() - 1; tileX >= 0; tileX--){		//DIAGONAL TILE READ
 													
-													if(chunkX + chunkY - chunkCount == 0){
+													if(tileX + tileY - tileCount == 0){
 														//get tile vec
-														int tileX = x * region.getWidthInTiles() + regionX * chunk.getWidth() + chunkX;
-														int tileY = y * region.getHeightInTiles() + regionY * chunk.getHeight() + chunkY;
-
-														isoVec = IsoUtils.getIsoXY(tileX, tileY, map.getTileWidth(), map.getTileHeight());
+														Vector2 worldTileVec = Map.tileToWorld(tileX, tileY, chunkX, chunkY, regionX, regionY);
+														
+														isoVec = IsoUtils.getIsoXY((int) worldTileVec.x, (int) worldTileVec.y, map.getTileWidth(), map.getTileHeight());
 														
 														//drawWide
-														if(drawWideEntity(chunkX, chunkY, chunk, batch))continue;
+														if(drawWideEntity(tileX, tileY, chunk, batch))continue;
 														
 														//draw north wall
-														renderNorthernWall(chunkX, chunkY, chunk, batch);
+														renderNorthernWall(tileX, tileY, chunk, batch);
 														
 														//draw items
-														renderItems(chunkX, chunkY, chunk, batch);
+														renderItems(tileX, tileY, chunk, batch);
 														
 														//draw entities
-														renderEntity(chunkX, chunkY, chunk, batch);
+														renderEntity(tileX, tileY, chunk, batch);
 														
 														//draw south wall
-														renderSouthernWall(chunkX, chunkY, chunk, batch);
+														renderSouthernWall(tileX, tileY, chunk, batch);
 													}
 												}
 											}
@@ -234,17 +226,32 @@ public class EntityRenderSystem{
 					drawSprite(e,batch);
 					
 				}else if(animMapper.has(e)){		//RENDER ANIMATED(NPC) ENTITY
-					Skeleton skel = animMapper.get(e).getSkeleton();
-					skeletonRenderer.draw(batch,skel);
+					LibGdxDrawer drawer = GameServices.getWorld().getSystem(AnimationSystem.class).getDrawer();
+					Player player = animMapper.get(e).getPlayer();
+					Position pos = posMapper.get(e);
 					
-					//render status icons
-					if(statusMapper.has(e)){
-						StatusIcon icon = statusMapper.get(e).getStatusIcon();
-						Vector2 iconPos = new Vector2(skel.getX(), skel.getY());
-						bounds.update(skel, true);
-						iconPos.y += bounds.getHeight() + 4;
-						icon.drawIcon(batch, iconPos);
+					player.setPosition(isoVec.x + pos.getIsoOffset().x + (Map.tileWidth / 2), isoVec.y + pos.getIsoOffset().y + (Map.tileHeight / 2));
+					
+					drawer.draw(player);
+					
+					if(InputHandler.DEBUG){
+						drawer.getShapeRenderer().setAutoShapeType(true);
+						drawer.getShapeRenderer().begin();
+						
+						drawer.drawBoxes(player);
+						
+						drawer.getShapeRenderer().end();
 					}
+					
+					
+//					//render status icons
+//					if(statusMapper.has(e)){
+//						StatusIcon icon = statusMapper.get(e).getStatusIcon();
+//						Vector2 iconPos = new Vector2(skel.getX(), skel.getY());
+//						bounds.update(skel, true);
+//						iconPos.y += bounds.getHeight() + 4;
+//						icon.drawIcon(batch, iconPos);
+//					}
 				}
 			}
 		}
@@ -332,14 +339,14 @@ public class EntityRenderSystem{
 		
 		switch(dir){
 		case NE:
-			vec = new Vector2((int)isoVec.x + (30 * s.getScaleX()), (int)isoVec.y + (16 * s.getScaleY()));
-			masks.drawMask(batch, 1, vec, s.getHeight(), p, m);
+			vec = new Vector2((int)isoVec.x + 2, (int)isoVec.y);
+			masks.drawMask(batch, dir.index(), vec, s.getHeight(), p, m);
 			batch.draw(s , vec.x, vec.y, s.getWidth() * s.getScaleX(), s.getHeight() * s.getScaleY());
 			
 			break;
 		case NW:
-			vec = new Vector2((int)isoVec.x - 4, (int)isoVec.y + (16 * s.getScaleY()));
-			masks.drawMask(batch, 0, vec, s.getHeight(), p, m);
+			vec = new Vector2((int)isoVec.x - 2, (int)isoVec.y);
+			masks.drawMask(batch, dir.index(), vec, s.getHeight(), p, m);
 			batch.draw(s , vec.x, vec.y, s.getWidth() * s.getScaleX(), s.getHeight() * s.getScaleY());
 			
 			break;
@@ -364,14 +371,14 @@ public class EntityRenderSystem{
 		
 		switch(dir){
 		case SE:
-			vec = new Vector2((int)isoVec.x + (28 * s.getScaleX()), (int)isoVec.y);
-			masks.drawMask(batch, 0, vec, s.getHeight(), p, m);
-			batch.draw(s , vec.x, vec.y,s.getWidth() * s.getScaleX(), s.getHeight() * s.getScaleY());
+			vec = new Vector2((int)isoVec.x, (int)isoVec.y);
+			masks.drawMask(batch, dir.index(), vec, s.getHeight(), p, m);
+			batch.draw(s , vec.x, vec.y, s.getWidth() * s.getScaleX(), s.getHeight() * s.getScaleY());
 		
 			break;
 		case SW:
 			vec = new Vector2((int)isoVec.x, (int)isoVec.y);
-			masks.drawMask(batch, 1, vec, s.getHeight(), p, m);
+			masks.drawMask(batch, dir.index(), vec, s.getHeight(), p, m);
 			batch.draw(s , vec.x, vec.y, s.getWidth() * s.getScaleX(), s.getHeight() * s.getScaleY());
 			
 			break;
@@ -389,12 +396,6 @@ public class EntityRenderSystem{
 		
 		batch.draw(tmp , isoVec.x + p.getIsoOffset().x, isoVec.y + p.getIsoOffset().y,
 				tmp.getWidth() * tmp.getScaleX(), tmp.getHeight() * tmp.getScaleY());		//static entities
-	}
-	public SkeletonRenderer getSkeletonRenderer() {
-		return skeletonRenderer;
-	}
-	public SkeletonRendererDebug getDebugRenderer() {
-		return debugRenderer;
 	}
 	public MaskingSystem getMasks() {
 		return masks;

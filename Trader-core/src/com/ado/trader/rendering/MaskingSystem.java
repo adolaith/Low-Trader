@@ -31,17 +31,29 @@ public class MaskingSystem {
 				name = name.split("_")[0];
 				
 				if(maskSprites.containsKey(name)){
-					Sprite[] list = maskSprites.get(name);
-					Sprite secondMask = new Sprite(a);
-					secondMask.scale(1f);
-					list[1] = secondMask;
 					continue;
 				}
 				
-				Sprite[] list = new Sprite[2];
-				Sprite firstMask = new Sprite(a);
-				firstMask.scale(1f);
-				list[0] = firstMask;
+				Sprite[] list = new Sprite[4];
+				
+				Sprite sprite = new Sprite(a);
+				sprite.scale(1f);
+				list[a.index] = sprite;
+				
+				sprite = new Sprite(a);
+				sprite.flip(true, false);
+				sprite.scale(1f);
+				list[a.index + 1] = sprite;
+				
+				sprite = atlas.createSprite(a.name, a.index + 1);
+				if(sprite != null){
+					sprite.scale(1);
+					list[a.index + 2] = sprite;
+
+					sprite = new Sprite(sprite);
+					sprite.flip(true, false);
+					list[a.index + 3] = sprite;
+				}
 				
 				maskSprites.put(name, list);
 			}
@@ -56,6 +68,7 @@ public class MaskingSystem {
 			//only sprites over 64 in height get masked(keep fences short) 
 			if(height > 64){
 				setGlMask(batch);
+				
 				Sprite s = maskSprites.get("wallMask")[spriteIndex];
 				
 				batch.draw(s, vec.x, vec.y, s.getWidth()*s.getScaleX(),s.getHeight()*s.getScaleY());

@@ -1,8 +1,8 @@
 package com.ado.trader.entities;
 
 public enum WallDirection {
-	NW(0),
-	NE(1),
+	NW(3),
+	NE(2),
 	SW(1),
 	SE(0);
 	

@@ -25,14 +25,9 @@ import com.badlogic.gdx.utils.ArrayMap;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.TimeUtils;
-import com.esotericsoftware.spine.AnimationStateData;
-import com.esotericsoftware.spine.SkeletonData;
-import com.esotericsoftware.spine.SkeletonJson;
 
 //Contains entity templates and creates entities.
 public class EntityFactory{
-	private static ArrayMap<String, SkeletonData> skeletons;
-	private static ArrayMap<String, AnimationStateData> animationPool;
 	private static ArrayMap<String, ArrayMap<String, JsonValue>> entityData;
 	
 	private static Json j;
@@ -60,7 +55,6 @@ public class EntityFactory{
 		loadInternalProfiles();
 		loadCustomProfiles();
 		
-		loadAnimData(atlas, this);
 	}
 	
 	//create first entity from profile takes ~4ms and 0ms for every entity of the same type after that. 
@@ -106,7 +100,6 @@ public class EntityFactory{
 		e.edit().add(new Position());
 		
 		start = TimeUtils.timeSinceNanos(start);
-		System.out.println("EntityFactory > createEntity(Time): " + (start / 1000000));
 		
 		return e;
 	}
@@ -191,31 +184,6 @@ public class EntityFactory{
 		}
 	}
 	
-	//loads all animations
-	public void loadAnimData(TextureAtlas atlas, EntityFactory entities){
-		skeletons = new ArrayMap<String, SkeletonData>();
-		animationPool = new ArrayMap<String, AnimationStateData>();
-		String[] files = Gdx.files.internal("data/anim/files.txt").readString().split(",");
-		
-		for(String file: files){
-			FileLogger.writeLog("EntityLoader: loadAnimData: "+ file);
-			SkeletonJson json = new SkeletonJson(atlas);
-			json.setScale(2f);
-
-			FileHandle f = Gdx.files.internal("data/anim/" +file+ ".json");
-			SkeletonData skelData = json.readSkeletonData(f);
-			skeletons.put(skelData.getName(), skelData);
-
-			animationPool.put(skelData.getName(), new AnimationStateData(skelData));
-		}
-	}
-	
-	public static ArrayMap<String, AnimationStateData> getAnimationPool() {
-		return animationPool;
-	}
-	public static ArrayMap<String, SkeletonData> getSkeletons() {
-		return skeletons;
-	}
 	public static ArrayMap<String, ArrayMap<String, JsonValue>> getEntityData() {
 		return entityData;
 	}

@@ -26,6 +26,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.NinePatchDrawable;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
+import com.badlogic.gdx.utils.SnapshotArray;
 
 public class EntityEditor extends BasicWindow {
 	GameServices gameRes;
@@ -142,12 +143,14 @@ public class EntityEditor extends BasicWindow {
 		scroll.clearChildren();
 		componentEntries.clear();
 		
+		disableCheckboxes(false);
+		
 		scroll.add(createEntry(componentList.get("name"))).expandX().fillX().row();
 
 		scroll.layout();
 	}
 	
-	private boolean isCheckBoxSelected(){
+	public boolean isCheckBoxSelected(){
 		for(Actor a: checkBoxes.getChildren()){
 			CheckBox b = (CheckBox) a;
 			if(b.getName().matches("wall") && b.isChecked()){
@@ -166,6 +169,41 @@ public class EntityEditor extends BasicWindow {
 			}
 		}
 		return false;
+	}
+	
+	public void markCheckBoxesSelected(String baseid){
+		String[] id = baseid.split("\\.");
+		
+		if(id[0].matches(IdGenerator.BASE_PROFILE)){
+			((CheckBox)checkBoxes.findActor("base")).setChecked(true);
+			
+			if(id[1].charAt(0) == IdGenerator.ENTITY_ID){
+				((CheckBox)checkBoxes.findActor("ent")).setChecked(true);
+			}else if(id[1].charAt(0) == IdGenerator.ITEM_ID){
+				((CheckBox)checkBoxes.findActor("item")).setChecked(true);
+			}else if(id[1].charAt(0) == IdGenerator.NPC_ID){
+				((CheckBox)checkBoxes.findActor("npc")).setChecked(true);
+			}
+		}else if(id[0].matches(IdGenerator.WALL)){
+			((CheckBox)checkBoxes.findActor("wall")).setChecked(true);
+		}else if(id[0].matches(IdGenerator.SPAWNABLE_ITEM)){
+			((CheckBox)checkBoxes.findActor("spawn")).setChecked(true);
+			((CheckBox)checkBoxes.findActor("item")).setChecked(true);
+		}else if(id[0].matches(IdGenerator.SPAWNABLE_NPC)){
+			((CheckBox)checkBoxes.findActor("spawn")).setChecked(true);
+			((CheckBox)checkBoxes.findActor("npc")).setChecked(true);
+		}
+	}
+	
+	public void disableCheckboxes(boolean isDisabled){
+		SnapshotArray<Actor> boxes = checkBoxes.getChildren();
+		
+		for(int i = 0; i < boxes.size; i++){
+			CheckBox b = (CheckBox) boxes.get(i);
+			if(b != null){
+				b.setDisabled(isDisabled);
+			}
+		}
 	}
 	
 	public String getSelectedType(){
@@ -212,6 +250,8 @@ public class EntityEditor extends BasicWindow {
 		chkBox.setName("base");
 		chkBox.addListener(new ClickListener(){
 			public void clicked (InputEvent event, float x, float y) {
+				if(((CheckBox)checkBoxes.findActor("base")).isDisabled()) return;
+				
 				CheckBox chk = checkBoxes.findActor("wall");
 				if(chk.isChecked()){
 					chk.setChecked(false);
@@ -230,6 +270,8 @@ public class EntityEditor extends BasicWindow {
 		chkBox.setName("wall");
 		chkBox.addListener(new ClickListener(){
 			public void clicked (InputEvent event, float x, float y) {
+				if(((CheckBox)checkBoxes.findActor("wall")).isDisabled()) return;
+				
 				CheckBox chk = checkBoxes.findActor("base");
 				if(chk.isChecked()){
 					chk.setChecked(false);
@@ -248,6 +290,8 @@ public class EntityEditor extends BasicWindow {
 		chkBox.setName("spawn");
 		chkBox.addListener(new ClickListener(){
 			public void clicked (InputEvent event, float x, float y) {
+				if(((CheckBox)checkBoxes.findActor("spawn")).isDisabled()) return;
+				
 				CheckBox chk = checkBoxes.findActor("base");
 				if(chk.isChecked()){
 					chk.setChecked(false);
@@ -266,6 +310,8 @@ public class EntityEditor extends BasicWindow {
 		chkBox.setName("npc");
 		chkBox.addListener(new ClickListener(){
 			public void clicked (InputEvent event, float x, float y) {
+				if(((CheckBox)checkBoxes.findActor("npc")).isDisabled()) return;
+				
 				CheckBox chk = checkBoxes.findActor("item");
 				if(chk.isChecked()){
 					chk.setChecked(false);
@@ -289,6 +335,8 @@ public class EntityEditor extends BasicWindow {
 		chkBox.setName("ent");
 		chkBox.addListener(new ClickListener(){
 			public void clicked (InputEvent event, float x, float y) {
+				if(((CheckBox)checkBoxes.findActor("ent")).isDisabled()) return;
+				
 				CheckBox chk = checkBoxes.findActor("item");
 				if(chk.isChecked()){
 					chk.setChecked(false);
@@ -312,6 +360,8 @@ public class EntityEditor extends BasicWindow {
 		chkBox.setName("item");
 		chkBox.addListener(new ClickListener(){
 			public void clicked (InputEvent event, float x, float y) {
+				if(((CheckBox)checkBoxes.findActor("item")).isDisabled()) return;
+				
 				CheckBox chk = checkBoxes.findActor("wall");
 				if(chk.isChecked()){
 					chk.setChecked(false);
@@ -395,6 +445,9 @@ public class EntityEditor extends BasicWindow {
 			break;
 		case "animlist":
 			entry = new AnimationEntry(this, componentProfile);
+			break;
+		case "extEnt":
+			entry = new ExtendedEntity(this, componentProfile);
 			break;
 		}
 		

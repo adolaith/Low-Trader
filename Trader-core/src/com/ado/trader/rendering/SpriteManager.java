@@ -1,5 +1,6 @@
 package com.ado.trader.rendering;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
@@ -77,21 +78,30 @@ public class SpriteManager {
 	
 	//wall sprite direction index; SE/NW = 0, SW/NE = 1
 	private void loadWallSprites(TextureAtlas atlas, AtlasRegion region){
-		String name = region.name.substring(region.name.indexOf('/') + 1);
-		
-		if(wallSprites.containsKey(name)){
-			Sprite s = new Sprite(region);
-			s.scale(1);
-			wallSprites.get(name)[region.index] = s;
+		if(wallSprites.containsKey(region.name) || region.index > 0){
 			return;
 		}
 		
-		Sprite[] list = new Sprite[2];
+		Sprite[] list = new Sprite[4];
 		Sprite s = new Sprite(region);
 		s.scale(1);
 		list[region.index] = s;
 		
-		wallSprites.put(name, list);
+		s = new Sprite(s);
+		s.flip(true, false);
+		list[region.index + 1] = s;
+		
+		s = atlas.createSprite(region.name, region.index + 1);
+		if(s != null){
+			s.scale(1);
+			list[2] = s;
+
+			s = new Sprite(s);
+			s.flip(true, false);
+			list[3] = s;
+		}
+		
+		wallSprites.put(region.name, list);
 	}
 	private void loadFeatureSprites(TextureAtlas atlas, AtlasRegion region){
 		if(featureSprites.containsKey(region.name) || region.index > 0){

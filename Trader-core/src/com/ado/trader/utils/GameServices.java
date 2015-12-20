@@ -7,6 +7,7 @@ import com.ado.trader.map.Map;
 import com.ado.trader.map.MapStreamer;
 import com.ado.trader.pathfinding.AStarPathFinder;
 import com.ado.trader.rendering.Renderer;
+import com.ado.trader.systems.AnimationSystem;
 import com.ado.trader.systems.EntityDeletionManager;
 import com.ado.trader.systems.GameTime;
 import com.artemis.World;
@@ -29,6 +30,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.brashmonkey.spriter.Spriter;
 
 public class GameServices {
 	Stage stage;
@@ -46,6 +48,7 @@ public class GameServices {
 	EntityFactory entities;
 	
 	AStarPathFinder pathfinder;
+	
 	//God class containing objects needed globally
 	public GameServices(int camWidth, int camHeight, WorldConfigurationBuilder worldConfig, InputHandler input, String loadDir){
 		atlas = new TextureAtlas("img/master.pack");
@@ -63,7 +66,7 @@ public class GameServices {
 		this.skin = new Skin(atlas);
 		
 		WorldConfiguration config = worldConfig.with(new EntityDeletionManager(), 
-				new TagManager(), new GroupManager(), new GameTime(1.0f))
+				new TagManager(), new GroupManager(), new GameTime(1.0f), new AnimationSystem())
 				.build();
 				
 		world = new World(config);
@@ -76,7 +79,11 @@ public class GameServices {
 		
 		renderer = new Renderer(this);
 		
-		this.stage = new Stage(new StretchViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(),
+		world.getSystem(AnimationSystem.class).loadDrawer(
+				renderer.getBatch(), renderer.getShapeRenderer());
+		
+		this.stage = new Stage(new StretchViewport(
+				Gdx.graphics.getWidth(), Gdx.graphics.getHeight(),
 				new OrthographicCamera()), renderer.getBatch()){
 			@Override
 			public void draw () {
@@ -156,6 +163,7 @@ public class GameServices {
 	public void dispose(){
 		atlas.dispose();
 		stage.dispose();
+		Spriter.dispose();				
 		renderer.dispose();
 		font.dispose();
 	}

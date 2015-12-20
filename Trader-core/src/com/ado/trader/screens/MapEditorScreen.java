@@ -1,7 +1,6 @@
 package com.ado.trader.screens;
 
 import com.ado.trader.GameMain;
-import com.ado.trader.buildings.BuildingCollection;
 import com.ado.trader.gui.CustomCursor;
 import com.ado.trader.gui.ToolTip;
 import com.ado.trader.gui.editor.MapEditorPanel;
@@ -27,19 +26,18 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 public class MapEditorScreen implements Screen {
 	static GameMain game;
 	GameServices gameServices;
-	BuildingCollection buildings;
 	
 	static Vector2 velocity = new Vector2(); //camera velocity
 	Entity currentlySelected;
 	Label fps;
-
+	
 	public MapEditorScreen(GameMain game, String loadDir) {
 		MapEditorScreen.game = game;
 		MapEditorInput input = new MapEditorInput();
 		
 		//editor specific world systems
 		WorldConfigurationBuilder worldConfig = new WorldConfigurationBuilder();
-		worldConfig.with(new AiSystem(), new SaveSystem(), new AnimationSystem());
+		worldConfig.with(new AiSystem(), new SaveSystem());
 		
 		//Resources object
 		gameServices = new GameServices(1280, 720, worldConfig, input, loadDir);
@@ -124,6 +122,8 @@ public class MapEditorScreen implements Screen {
 
 	@Override
 	public void dispose() {
+		AnimationSystem animSys = GameServices.getWorld().getSystem(AnimationSystem.class); 
+		animSys.getAtlasLoader().dispose();
 		gameServices.dispose();
 	}
 }

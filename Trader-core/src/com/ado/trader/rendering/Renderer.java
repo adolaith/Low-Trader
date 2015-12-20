@@ -77,6 +77,9 @@ public class Renderer{
 	public EntityRenderSystem getRenderEntitySystem() {
 		return renderEntity;
 	}
+	public ShapeRenderer getShapeRenderer(){
+		return sr;
+	}
 	public void dispose(){
 		batch.dispose();
 		sr.dispose();

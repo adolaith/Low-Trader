@@ -175,7 +175,8 @@ public class ObjectMenu extends BasicWindow {
 						tmp = new SpriteDrawable(new Sprite(spriteMan.getItemSprite(spriteName)));	
 						break;
 					case "wall":
-						tmp = new SpriteDrawable(new Sprite(spriteMan.getWallSprites(spriteName)[0]));
+						Sprite s = spriteMan.getWallSprites(spriteName)[0];
+						tmp = new SpriteDrawable(new Sprite(s));
 						break;
 					case "entity":
 						tmp = new SpriteDrawable(new Sprite(spriteMan.getEntitySprites(spriteName)[0]));
@@ -318,24 +319,24 @@ public class ObjectMenu extends BasicWindow {
 		
 		int profileCount = gameRes.getMap().getTileMasks().getMaskSprites().length;
 
-		for(int x = 0; x < profileCount; x++){
-			final int i = x;
-			
-			Sprite s = gameRes.getMap().getTileMasks().getMaskSprites()[i][0];
-			ImageButton imgb = new ImageButton(GuiUtils.setImgButtonStyle(
-					new SpriteDrawable(s), null, gameRes.getSkin().getDrawable("gui/button"), null));
-			imgb.addListener(new ChangeListener() {
-				public void changed(ChangeEvent event, Actor actor) {
-					PlacementManager placement = ((MapEditorInput) gameRes.getInput()).getPlacementManager();
-					if(placement.getPlacementSelection() == placement.getTilePl()){
-						placement.getTilePl().mask = i;
-						placement.getTilePl().dir = 0;
-					}
-				}
-			});
-			
-			array.add(imgb);
-		}
+//		for(int x = 0; x < profileCount; x++){
+//			final int i = x;
+//			
+//			Sprite s = gameRes.getMap().getTileMasks().getMaskSprites()[i][0];
+//			ImageButton imgb = new ImageButton(GuiUtils.setImgButtonStyle(
+//					new SpriteDrawable(s), null, gameRes.getSkin().getDrawable("gui/button"), null));
+//			imgb.addListener(new ChangeListener() {
+//				public void changed(ChangeEvent event, Actor actor) {
+//					PlacementManager placement = ((MapEditorInput) gameRes.getInput()).getPlacementManager();
+//					if(placement.getPlacementSelection() == placement.getTilePl()){
+//						placement.getTilePl().mask = i;
+//						placement.getTilePl().dir = 0;
+//					}
+//				}
+//			});
+//			
+//			array.add(imgb);
+//		}
 		
 		return array;
 	}

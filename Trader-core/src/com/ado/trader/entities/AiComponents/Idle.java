@@ -3,6 +3,7 @@ package com.ado.trader.entities.AiComponents;
 import com.ado.trader.entities.AiComponents.base.LeafTask;
 import com.ado.trader.entities.components.Animation;
 import com.ado.trader.systems.AiSystem;
+import com.ado.trader.utils.GameServices;
 import com.artemis.managers.GroupManager;
 
 public class Idle extends LeafTask {
@@ -17,7 +18,7 @@ public class Idle extends LeafTask {
 	
 	@Override
 	public void doTask() {
-		animCount += aiSys.game.getWorld().getDelta();
+		animCount += GameServices.getWorld().getDelta();
 		if(animCount >= interval){
 			control.finishWithSuccess();
 		}
@@ -26,13 +27,15 @@ public class Idle extends LeafTask {
 	public void start() {
 		super.start();
 		Animation a = aiSys.currentEntity.getComponent(Animation.class);
-		GroupManager gm = aiSys.getWorld().getManager(GroupManager.class);
+		GroupManager gm = aiSys.getWorld().getSystem(GroupManager.class);
 		if(gm.isInGroup(aiSys.currentEntity, "human")){
 			a.resetAnimation();
 		}
 		animCount = 0;
 		interval = a.getSkeleton().getData().findAnimation("idle").getDuration();
 		a.getMainState().setAnimation(0, "idle", true);
+		
+		System.out.println("Idle: IDLING");
 	}
 	@Override
 	public void end() {

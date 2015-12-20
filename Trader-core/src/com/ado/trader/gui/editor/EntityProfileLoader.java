@@ -3,15 +3,10 @@ package com.ado.trader.gui.editor;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.URL;
-import java.security.CodeSource;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 import com.ado.trader.entities.EntityFactory;
 import com.ado.trader.gui.BasicWindow;
 import com.ado.trader.gui.SaveLoadMenu;
-import com.ado.trader.utils.FileLogger;
 import com.ado.trader.utils.IdGenerator;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
@@ -93,27 +88,7 @@ public class EntityProfileLoader extends SaveLoadMenu {
 		editor.scroll.add(entry).row();
 		
 		//mark the relevant type checkbox in the editor
-		String[] id = profile.getString("baseid").split("\\.");
-		
-		if(id[0].matches(IdGenerator.BASE_PROFILE)){
-			((CheckBox)editor.checkBoxes.findActor("base")).setChecked(true);
-			
-			if(id[1].charAt(0) == IdGenerator.ENTITY_ID){
-				((CheckBox)editor.checkBoxes.findActor("ent")).setChecked(true);
-			}else if(id[1].charAt(0) == IdGenerator.ITEM_ID){
-				((CheckBox)editor.checkBoxes.findActor("item")).setChecked(true);
-			}else if(id[1].charAt(0) == IdGenerator.NPC_ID){
-				((CheckBox)editor.checkBoxes.findActor("npc")).setChecked(true);
-			}
-		}else if(id[0].matches(IdGenerator.WALL)){
-			((CheckBox)editor.checkBoxes.findActor("wall")).setChecked(true);
-		}else if(id[0].matches(IdGenerator.SPAWNABLE_ITEM)){
-			((CheckBox)editor.checkBoxes.findActor("spawn")).setChecked(true);
-			((CheckBox)editor.checkBoxes.findActor("item")).setChecked(true);
-		}else if(id[0].matches(IdGenerator.SPAWNABLE_NPC)){
-			((CheckBox)editor.checkBoxes.findActor("spawn")).setChecked(true);
-			((CheckBox)editor.checkBoxes.findActor("npc")).setChecked(true);
-		}
+		editor.markCheckBoxesSelected(profile.getString("baseid"));
 		
 		//load component entries
 		for(JsonValue e = profile.child; e != null; e = e.next()){
@@ -139,7 +114,7 @@ public class EntityProfileLoader extends SaveLoadMenu {
 		for(ComponentEntry e: editor.componentEntries){
 			if(e.getLabel().getName().matches("baseid")){
 				baseIdEntry = (TextFieldEntry) e;
-				id = ((TextFieldEntry)e).getTextField().getText();			
+				id = baseIdEntry.getTextField().getText();			
 			}
 		}
 		
@@ -151,30 +126,43 @@ public class EntityProfileLoader extends SaveLoadMenu {
 			
 			String[] idSplit = id.split("\\.");
 			
-			if(chkboxType.contains("\\.")){
+			if(chkboxType.contains(".")){
 				String[] chkBoxSplit = chkboxType.split("\\.");
 				
 				if(idSplit[0].matches(chkBoxSplit[0])){
 					if(!idSplit[1].startsWith(chkBoxSplit[1])){
-						id = chkboxType + IdGenerator.getShortId();
+						do{
+							id = chkboxType + IdGenerator.getShortId();
+						}while(checkExistingIds(id));
 					}
 				}else{
-					id = chkboxType + IdGenerator.getShortId();
+					do{
+						id = chkboxType + IdGenerator.getShortId();
+					}while(checkExistingIds(id));
 				}
 			}else if(!idSplit[0].matches(chkboxType)){
-				id = chkboxType + "." + IdGenerator.getUniqueId();
+				do{
+					id = chkboxType + "." + IdGenerator.getUniqueId();
+				}while(checkExistingIds(id));
+				
 			}
 			
 			baseIdEntry.getTextField().setText(id);
 		}else{
 			//no base id entry found, gen id + add component to list
 			if(chkboxType.contains(".")){
-				id = chkboxType + IdGenerator.getShortId();
+				do{
+					id = chkboxType + IdGenerator.getShortId();
+				}while(checkExistingIds(id));
 			}else{
-				id = chkboxType + "." + IdGenerator.getUniqueId();
+				do{
+					id = chkboxType + "." + IdGenerator.getUniqueId();
+				}while(checkExistingIds(id));
 			}
 			createBaseIdComponent(id);
 		}
+		
+		//NEEDS TO CHECK IF INTERNAL PROFILES CONTAIN NEW ID
 		
 		FileHandle file;
 		file = Gdx.files.external(externalPath + id + fileExt);
@@ -188,6 +176,16 @@ public class EntityProfileLoader extends SaveLoadMenu {
 			//splash confirmation on screen
 			saveAlert("Profile Saved");
 		}
+	}
+	
+	private boolean checkExistingIds(String newId){
+		String[] split = newId.split("\\.");
+		for(String entry: EntityFactory.getEntityData().get(split[0]).keys){
+			if(entry.matches(split[1])){
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	private void createFile(File file){
@@ -215,8 +213,6 @@ public class EntityProfileLoader extends SaveLoadMenu {
 			e.printStackTrace();
 		}
 		
-		JsonValue profile = json.fromJson(null, new FileHandle(file));
-		editor.gameRes.getEntities().loadProfile(profile);		
 	}
 	
 	private void createBaseIdComponent(String id){
@@ -244,56 +240,6 @@ public class EntityProfileLoader extends SaveLoadMenu {
 		}	
 		
 		folderList.setItems(list);
-	}
-	
-	//use this code for uncompiled runs in eclipse 
-	private void debugRead(Array<String> list, boolean loading){
-		FileHandle rootDir = Gdx.files.local("./bin/" + internalPath);
-		
-		if(rootDir.exists()){
-			FileHandle[] files = rootDir.list();
-			
-			for(FileHandle f: files){
-				if(f.name().endsWith("dat")){
-					list.add("*" + f.name());
-				}
-			}
-		}
-	}
-	
-	//only works for compiled runnable .jar. Doesnt work in eclipse editor
-	private void compiledRead(Array<String> list, boolean loading){
-		if(loading){
-			try{
-				FileLogger.writeLog("READING ENTITY PROFILES...");
-				CodeSource src = this.getClass().getProtectionDomain().getCodeSource();
-
-				if( src != null ) {
-					URL jar = src.getLocation();
-					
-					ZipInputStream zip = new ZipInputStream(jar.openStream());
-					ZipEntry ze = null;
-
-					while( ( ze = zip.getNextEntry() ) != null ) {
-						String entryName = ze.getName();
-						
-						//search the internal entity folder
-						if(entryName.startsWith("data/entities/") ){
-							//data files
-							if(entryName.endsWith(".dat")){
-								entryName = entryName.substring(entryName.lastIndexOf("\\"));
-								
-								//files of NPC type only
-								list.add("*" + entryName);
-							}
-						}
-					}
-				}
-				FileLogger.writeLog("DONE READING PROFILES!");
-			}catch(Exception ex){
-				System.out.println("Error reading entities inside JAR. Error: "+ ex);
-			}
-		}
 	}
 	
 	//file overwrite confirmation window
@@ -339,9 +285,13 @@ public class EntityProfileLoader extends SaveLoadMenu {
 						String chkboxType = editor.getSelectedType();
 						
 						if(chkboxType.contains(".")){
-							newId = chkboxType + IdGenerator.getShortId();
+							do{
+								newId = chkboxType + IdGenerator.getShortId();
+							}while(checkExistingIds(newId));
 						}else{
-							newId = chkboxType + "." + IdGenerator.getUniqueId();
+							do{
+								newId = chkboxType + "." + IdGenerator.getUniqueId();
+							}while(checkExistingIds(newId));
 						}
 						
 						for(ComponentEntry e: editor.componentEntries){

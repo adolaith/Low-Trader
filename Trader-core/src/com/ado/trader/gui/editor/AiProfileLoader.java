@@ -24,6 +24,12 @@ public class AiProfileLoader extends SaveLoadMenu {
 		this.editor = editor;
 		json = new Json();
 		
+		FileHandle aiDir = Gdx.files.external(externalPath);
+		
+		if(!aiDir.exists()){
+			aiDir.mkdirs();
+		}
+		
 		save.addListener(new ClickListener() {
 			public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
 				FileHandle file;
@@ -32,6 +38,7 @@ public class AiProfileLoader extends SaveLoadMenu {
 				}else{
 					file = Gdx.files.external(externalPath + field.getText());
 				}
+				
 				//overwrite existing file. NO CONFIRMATION PROMPTED!
 				if(file.exists()){
 					file.delete();
@@ -57,7 +64,7 @@ public class AiProfileLoader extends SaveLoadMenu {
 					e.printStackTrace();
 				}
 
-				AiSystem aiSys = gameRes.getWorld().getSystem(AiSystem.class);
+				AiSystem aiSys = GameServices.getWorld().getSystem(AiSystem.class);
 				aiSys.getAllAiProfiles().put(file.name(), json.fromJson(null, file));
 				
 				populateList(false);
